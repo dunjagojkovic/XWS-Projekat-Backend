@@ -1,6 +1,7 @@
 package com.user.UserMicroservice.model;
 
 import javax.persistence.*;
+import java.util.Date;
 
 @Entity
 @Table(name = "user_table")
@@ -15,10 +16,90 @@ public class User {
     private String surname;
     private String email;
     private String password;
-    private String address;
     private String city;
     private String country;
     private String phoneNumber;
+    private String gender;
+    private String username;
+    private Boolean isPublic;
+    private String biography;
+    private Date birthDate;
+    private String workExperience;
+    private String education;
+    private String hobby;
+    private String interest;
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public Boolean getPublic() {
+        return isPublic;
+    }
+
+    public void setPublic(Boolean aPublic) {
+        isPublic = aPublic;
+    }
+
+    public String getBiography() {
+        return biography;
+    }
+
+    public void setBiography(String biography) {
+        this.biography = biography;
+    }
+
+    public Date getBirthDate() {
+        return birthDate;
+    }
+
+    public void setBirthDate(Date birthDate) {
+        this.birthDate = birthDate;
+    }
+
+    public String getWorkExperience() {
+        return workExperience;
+    }
+
+    public void setWorkExperience(String workExperience) {
+        this.workExperience = workExperience;
+    }
+
+    public String getEducation() {
+        return education;
+    }
+
+    public void setEducation(String education) {
+        this.education = education;
+    }
+
+    public String getHobby() {
+        return hobby;
+    }
+
+    public void setHobby(String hobby) {
+        this.hobby = hobby;
+    }
+
+    public String getInterest() {
+        return interest;
+    }
+
+    public void setInterest(String interest) {
+        this.interest = interest;
+    }
 
     public Long getId() {
         return id;
@@ -59,15 +140,7 @@ public class User {
     public void setPassword(String password) {
         this.password = password;
     }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
+    
     public String getCity() {
         return city;
     }
