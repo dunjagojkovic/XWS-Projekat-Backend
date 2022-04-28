@@ -4,6 +4,7 @@ import com.user.UserMicroservice.config.CustomUserDetailsService;
 import com.user.UserMicroservice.dto.LoginDTO;
 import com.user.UserMicroservice.dto.LoginResponseDTO;
 import com.user.UserMicroservice.dto.RegistrationDTO;
+import com.user.UserMicroservice.dto.UserDTO;
 import com.user.UserMicroservice.model.User;
 import com.user.UserMicroservice.security.TokenUtil;
 import com.user.UserMicroservice.service.UserService;
@@ -58,6 +59,14 @@ public class UserController {
     }
     @GetMapping(path = "/current")
     public ResponseEntity<?> getCurrentUser() {
+
         return new ResponseEntity<>(userService.getCurrentUser(), HttpStatus.OK);
+    }
+
+    @PutMapping()
+    public ResponseEntity<?> edit(@RequestBody UserDTO dto) {
+        User user = userService.edit(dto);
+
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }
