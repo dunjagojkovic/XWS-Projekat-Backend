@@ -18,6 +18,9 @@ public class UserService {
     @Autowired
     UserRepository userRepository;
 
+    @Autowired
+    PasswordEncoder encoder;
+
 
     public User userRegistration(RegistrationDTO registrationDTO) {
 
@@ -29,8 +32,7 @@ public class UserService {
 
         User user = new User();
         user.setUsername(registrationDTO.getUsername());
-        //user.setPassword(encoder.encode(registrationDTO.getPassword()));
-        user.setPassword(registrationDTO.getPassword());
+        user.setPassword(encoder.encode(registrationDTO.getPassword()));
         user.setEmail(registrationDTO.getEmail());
         user.setCity(registrationDTO.getCity());
         user.setCountry(registrationDTO.getCountry());
@@ -38,7 +40,7 @@ public class UserService {
         user.setSurname(registrationDTO.getSurname());
         user.setPhoneNumber(registrationDTO.getPhoneNumber());
         user.setGender(registrationDTO.getGender());
-        user.setPublic(registrationDTO.getPublic());
+        user.setPublic(false);
         user.setBirthDate(registrationDTO.getBirthDate());
 
         return userRepository.save(user);

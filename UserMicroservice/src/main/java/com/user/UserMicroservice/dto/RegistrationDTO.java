@@ -14,7 +14,7 @@ public class RegistrationDTO {
     private String phoneNumber;
     private String gender;
     private Boolean isPublic;
-    private Date birthDate;
+    private String birthDate;
 
     public String getName() {
         return name;
@@ -96,11 +96,11 @@ public class RegistrationDTO {
         isPublic = aPublic;
     }
 
-    public Date getBirthDate() {
+    public String getBirthDate() {
         return birthDate;
     }
 
-    public void setBirthDate(Date birthDate) {
+    public void setBirthDate(String birthDate) {
         this.birthDate = birthDate;
     }
 }

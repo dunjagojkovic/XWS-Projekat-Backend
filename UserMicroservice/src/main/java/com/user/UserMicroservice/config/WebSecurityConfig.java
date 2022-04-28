@@ -52,8 +52,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
                 .anyRequest().authenticated().and()
 
-                .formLogin().loginPage("/login").permitAll().and()
-
                 .logout().permitAll().and()
 
                 .cors().and()
@@ -63,11 +61,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .addFilterBefore(new TokenAuthenticationFilter(tokenUtils, jwtUserDetailsService), BasicAuthenticationFilter.class);
         http.csrf().disable();
     }
-
     @Override
     public void configure(WebSecurity web) throws Exception {
-        web.ignoring().antMatchers(HttpMethod.POST, "/api/users/login", "/api/users/register");
-        web.ignoring().antMatchers(HttpMethod.GET, "/**");
+        web.ignoring().antMatchers(HttpMethod.POST, "/api/users/login", "api/users/register");
+        web.ignoring().antMatchers(HttpMethod.GET, "/api/users/**");
         web.ignoring().antMatchers(HttpMethod.OPTIONS, "/**");
         web.ignoring().antMatchers(HttpMethod.PUT, "/api/users");
     }

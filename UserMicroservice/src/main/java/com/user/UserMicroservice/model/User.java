@@ -23,7 +23,7 @@ public class User {
     private String username;
     private Boolean isPublic;
     private String biography;
-    private Date birthDate;
+    private String birthDate;
     private String workExperience;
     private String education;
     private String hobby;
@@ -61,11 +61,11 @@ public class User {
         this.biography = biography;
     }
 
-    public Date getBirthDate() {
+    public String getBirthDate() {
         return birthDate;
     }
 
-    public void setBirthDate(Date birthDate) {
+    public void setBirthDate(String birthDate) {
         this.birthDate = birthDate;
     }
 
