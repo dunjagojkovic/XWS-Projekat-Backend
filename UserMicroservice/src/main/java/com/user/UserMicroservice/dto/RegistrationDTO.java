@@ -1,7 +1,5 @@
 package com.user.UserMicroservice.dto;
 
-import java.util.Date;
-
 public class RegistrationDTO {
 
     private String name;
@@ -9,8 +7,6 @@ public class RegistrationDTO {
     private String email;
     private String username;
     private String password;
-    private String city;
-    private String country;
     private String phoneNumber;
     private String gender;
     private Boolean isPublic;
@@ -54,22 +50,6 @@ public class RegistrationDTO {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public String getCity() {
-        return city;
-    }
-
-    public void setCity(String city) {
-        this.city = city;
-    }
-
-    public String getCountry() {
-        return country;
-    }
-
-    public void setCountry(String country) {
-        this.country = country;
     }
 
     public String getPhoneNumber() {

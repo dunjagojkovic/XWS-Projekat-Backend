@@ -56,4 +56,8 @@ public class UserController {
         responseDTO.setToken(token);
         return ResponseEntity.ok(responseDTO);
     }
+    @GetMapping(path = "/current")
+    public ResponseEntity<?> getCurrentUser() {
+        return new ResponseEntity<>(userService.getCurrentUser(), HttpStatus.OK);
+    }
 }

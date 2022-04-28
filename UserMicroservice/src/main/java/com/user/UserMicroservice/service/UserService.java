@@ -2,13 +2,11 @@ package com.user.UserMicroservice.service;
 
 import com.user.UserMicroservice.dto.RegistrationDTO;
 import com.user.UserMicroservice.model.User;
-import com.user.UserMicroservice.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.PessimisticLockingFailureException;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
+import com.user.UserMicroservice.repository.UserRepository;
+import com.user.UserMicroservice.config.SecurityUtils;
 
 import java.util.Optional;
 
@@ -34,8 +32,6 @@ public class UserService {
         user.setUsername(registrationDTO.getUsername());
         user.setPassword(encoder.encode(registrationDTO.getPassword()));
         user.setEmail(registrationDTO.getEmail());
-        user.setCity(registrationDTO.getCity());
-        user.setCountry(registrationDTO.getCountry());
         user.setName(registrationDTO.getName());
         user.setSurname(registrationDTO.getSurname());
         user.setPhoneNumber(registrationDTO.getPhoneNumber());
@@ -45,6 +41,12 @@ public class UserService {
 
         return userRepository.save(user);
 
+    }
+
+    public User getCurrentUser() {
+
+        String username = SecurityUtils.getCurrentUserLogin().get();
+        return userRepository.findByUsername(username).get();
     }
 
 }
