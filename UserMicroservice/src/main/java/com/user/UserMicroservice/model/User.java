@@ -145,4 +145,14 @@ public class User {
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
+
+	public Boolean getIsPublic() {
+		return isPublic;
+	}
+
+	public void setIsPublic(Boolean isPublic) {
+		this.isPublic = isPublic;
+	}
+    
+    
 }
