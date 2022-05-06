@@ -1,6 +1,7 @@
 package com.user.UserMicroservice.service;
 
 import com.user.UserMicroservice.config.SecurityUtils;
+import com.user.UserMicroservice.dto.ChangePasswordDTO;
 import com.user.UserMicroservice.dto.RegistrationDTO;
 import com.user.UserMicroservice.dto.UserDTO;
 import com.user.UserMicroservice.model.User;
@@ -9,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -69,5 +72,42 @@ public class UserService {
             optionalUser.get().setPublic(userDTO.getPublic());
 
         return userRepository.save(optionalUser.get());
+    }
+
+    public User changePassword(ChangePasswordDTO changePasswordDTO) {
+
+        User user = getCurrentUser();
+
+        if(!encoder.matches(changePasswordDTO.getOldPassword(), user.getPassword())) {
+            return null;
+        }
+
+        user.setPassword(encoder.encode(changePasswordDTO.getNewPassword()));
+
+        return userRepository.save(user);
+    }
+
+    public List<User> filterUsers(UserDTO dto) {
+        List<User> users = userRepository.findAllByIsPublic(true);
+        List<User> results = new ArrayList<>();
+
+        for(User user: users){
+            if(user.getUsername().toLowerCase().contains(dto.getSearchTerm().toLowerCase()) || user.getName().toLowerCase().contains(dto.getSearchTerm().toLowerCase()) || user.getSurname().toLowerCase().contains(dto.getSearchTerm().toLowerCase())){
+                if(!userExists(user, results)){
+                    results.add(user);
+                }
+            }
+        }
+        return results;
+    }
+
+    public boolean userExists(User user, List<User> users) {
+
+        for(User u: users){
+            if(u.getId().equals(user.getId())){
+                return true;
+            }
+        }
+        return false;
     }
 }

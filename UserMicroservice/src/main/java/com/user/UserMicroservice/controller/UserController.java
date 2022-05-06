@@ -1,10 +1,7 @@
 package com.user.UserMicroservice.controller;
 
 import com.user.UserMicroservice.config.CustomUserDetailsService;
-import com.user.UserMicroservice.dto.LoginDTO;
-import com.user.UserMicroservice.dto.LoginResponseDTO;
-import com.user.UserMicroservice.dto.RegistrationDTO;
-import com.user.UserMicroservice.dto.UserDTO;
+import com.user.UserMicroservice.dto.*;
 import com.user.UserMicroservice.model.User;
 import com.user.UserMicroservice.security.TokenUtil;
 import com.user.UserMicroservice.service.UserService;
@@ -13,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:4200")
@@ -68,5 +67,22 @@ public class UserController {
         User user = userService.edit(dto);
 
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PostMapping(path = "/password")
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordDTO changePasswordDTO) {
+        User user = userService.changePassword(changePasswordDTO);
+
+        if(user == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PostMapping(path = "/filterUsers")
+    public ResponseEntity<?> filterUsers(@RequestBody UserDTO dto){
+        List<User> users = userService.filterUsers(dto);
+        return new ResponseEntity<>(users, HttpStatus.OK);
     }
 }
