@@ -48,3 +48,11 @@ func (service *PostService) InsertPostDislike(id primitive.ObjectID, user string
 func (service *PostService) GetPostDislikes(id primitive.ObjectID) ([]string, error) {
 	return service.store.GetPostDislikes(id)
 }
+
+func (service *PostService) GetUserPosts(username string) ([]model.Post, error) {
+	return service.store.GetUserPosts(username)
+}
+
+func (service *PostService) GetFollowingPosts(users []string) ([]model.Post, error) {
+	return service.store.GetFollowingPosts(users)
+}
