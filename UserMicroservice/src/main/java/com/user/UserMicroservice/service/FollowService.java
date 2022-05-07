@@ -1,5 +1,6 @@
 package com.user.UserMicroservice.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -59,8 +60,23 @@ public class FollowService {
 			if(r.getFollower().equals(followDTO.getFollower()) && r.getFollowing().equals(followDTO.getFollowing())) {
 				requestRepository.deleteById(r.getId());
 			}	
-		}
-	
-		
+		}	
 	}
+	
+	public List<String> getFollowing(String username) {
+		
+		List<Follow> follows = followRepository.findAll();
+		List<String> following = new ArrayList<>();
+		
+		for(Follow follow: follows) {
+			
+			if(follow.getFollower().equals(username)) {
+				following.add(follow.getFollowing());
+			}
+			
+		}
+		
+		return following;
+	}
+	
 }

@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -83,6 +84,18 @@ public class UserController {
     @PostMapping(path = "/filterUsers")
     public ResponseEntity<?> filterUsers(@RequestBody UserDTO dto){
         List<User> users = userService.filterUsers(dto);
+        return new ResponseEntity<>(users, HttpStatus.OK);
+    }
+    
+    @GetMapping(path = "/public")
+    public ResponseEntity<?> getPublicProfile() {
+
+    	List<String> users = userService.getPublicProfile();
+    	
+        if(users.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
 }
