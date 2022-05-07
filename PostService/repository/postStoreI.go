@@ -15,4 +15,6 @@ type PostStoreI interface {
 	GetPostLikes(id primitive.ObjectID) ([]string, error)
 	InsertPostDislike(id primitive.ObjectID, user string) (primitive.ObjectID, error)
 	GetPostDislikes(id primitive.ObjectID) ([]string, error)
+	GetUserPosts(username string) ([]model.Post, error)
+	GetFollowingPosts(users []string) ([]model.Post, error)
 }

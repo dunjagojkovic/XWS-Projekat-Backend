@@ -20,6 +20,10 @@ type User struct {
 	Username string
 }
 
+type Following struct {
+	Users []string
+}
+
 type PostController struct {
 	service *service.PostService
 }
@@ -64,6 +68,17 @@ func decodeCommentBody(r io.Reader) (*model.Comment, error) {
 	return &rt, nil
 }
 
+func decodeFollowingBody(r io.Reader) (*Following, error) {
+
+	dec := json.NewDecoder(r)
+	dec.DisallowUnknownFields()
+	var rt Following
+	if err := dec.Decode(&rt); err != nil {
+		return nil, err
+	}
+	return &rt, nil
+}
+
 func decodeLikeBody(r io.Reader) (*User, error) {
 
 	dec := json.NewDecoder(r)
@@ -87,6 +102,13 @@ func (pc *PostController) GetPostCommentsHandler(w http.ResponseWriter, req *htt
 	_id, _ := primitive.ObjectIDFromHex(id)
 	comments, _ := pc.service.GetPostComments(_id)
 	renderJSON(w, comments)
+}
+
+func (pc *PostController) GetUserPostsHandler(w http.ResponseWriter, req *http.Request) {
+
+	username, _ := (mux.Vars(req)["username"])
+	posts, _ := pc.service.GetUserPosts(username)
+	renderJSON(w, posts)
 }
 
 func (pc *PostController) CreatePostHandler(w http.ResponseWriter, req *http.Request) {
@@ -207,4 +229,28 @@ func (pc *PostController) GetPostDislikesHandler(w http.ResponseWriter, req *htt
 	_id, _ := primitive.ObjectIDFromHex(id)
 	dislikes, _ := pc.service.GetPostDislikes(_id)
 	renderJSON(w, dislikes)
+}
+
+func (pc *PostController) GetFollowingPostsHandler(w http.ResponseWriter, req *http.Request) {
+
+	// Enforce a JSON Content-Type.
+	contentType := req.Header.Get("Content-Type")
+	mediatype, _, err := mime.ParseMediaType(contentType)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if mediatype != "application/json" {
+		http.Error(w, "expect application/json Content-Type", http.StatusUnsupportedMediaType)
+		return
+	}
+
+	rt, err := decodeFollowingBody(req.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	posts, _ := pc.service.GetFollowingPosts(rt.Users)
+	renderJSON(w, posts)
 }

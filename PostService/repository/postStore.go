@@ -79,6 +79,30 @@ func (store *PostStore) GetPostComments(id primitive.ObjectID) ([]model.Comment,
 	return result.CommentList, nil
 }
 
+func (store *PostStore) GetUserPosts(username string) ([]model.Post, error) {
+	filter := bson.D{{"user", username}}
+
+	cur, err := store.posts.Find(context.TODO(), filter)
+	if err != nil {
+		return nil, err
+	}
+
+	var posts []model.Post
+
+	// Iterate through the cursor
+	for cur.Next(context.TODO()) {
+		var post model.Post
+		err := cur.Decode(&post)
+		if err != nil {
+			return nil, err
+		}
+
+		posts = append(posts, post)
+	}
+
+	return posts, nil
+}
+
 func (store *PostStore) InsertPostLike(id primitive.ObjectID, user string) (primitive.ObjectID, error) {
 
 	filter := bson.D{{"_id", id}}
@@ -162,4 +186,37 @@ func decode(cursor *mongo.Cursor) (posts []*model.Post, err error) {
 	}
 	err = cursor.Err()
 	return
+}
+
+func (store *PostStore) GetFollowingPosts(users []string) ([]model.Post, error) {
+
+	cur, err := store.posts.Find(context.TODO(), bson.D{{}})
+	if err != nil {
+		return nil, err
+	}
+
+	var posts []model.Post
+
+	// Iterate through the cursor
+	for cur.Next(context.TODO()) {
+		var post model.Post
+		err := cur.Decode(&post)
+		if err != nil {
+			return nil, err
+		}
+
+		posts = append(posts, post)
+	}
+
+	var followingPosts []model.Post
+
+	for _, post := range posts {
+		for _, user := range users {
+			if post.User == user {
+				followingPosts = append(followingPosts, post)
+			}
+		}
+	}
+
+	return followingPosts, nil
 }
