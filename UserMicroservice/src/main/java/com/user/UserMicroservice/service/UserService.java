@@ -40,7 +40,7 @@ public class UserService {
         user.setSurname(registrationDTO.getSurname());
         user.setPhoneNumber(registrationDTO.getPhoneNumber());
         user.setGender(registrationDTO.getGender());
-        user.setPublic(false);
+        user.setPublic(true);
         user.setBirthDate(registrationDTO.getBirthDate());
 
         return userRepository.save(user);
@@ -49,27 +49,56 @@ public class UserService {
     public User getCurrentUser() {
 
         String username = SecurityUtils.getCurrentUserLogin().get();
+        System.out.println(username);
         return userRepository.findByUsername(username).get();
     }
 
     public User edit(UserDTO userDTO) {
 
-        Optional<User> optionalUser = userRepository.findById(getCurrentUser().getId());
+        Optional<User> optionalUser = userRepository.findByUsername(userDTO.getUsername());
 
-            optionalUser.get().setName(userDTO.getName());
-            optionalUser.get().setEmail(userDTO.getEmail());
-            optionalUser.get().setPhoneNumber(userDTO.getPhoneNumber());
-            optionalUser.get().setSurname(userDTO.getSurname());
-            optionalUser.get().setPassword(userDTO.getPassword());
-            optionalUser.get().setBiography(userDTO.getBiography());
-            optionalUser.get().setBirthDate(userDTO.getBirthDate());
-            optionalUser.get().setGender(userDTO.getGender());
-            optionalUser.get().setEducation(userDTO.getEducation());
-            optionalUser.get().setHobby(userDTO.getHobby());
-            optionalUser.get().setUsername(userDTO.getUsername());
-            optionalUser.get().setWorkExperience(userDTO.getWorkExperience());
-            optionalUser.get().setInterest(userDTO.getInterest());
-            optionalUser.get().setPublic(userDTO.getPublic());
+            if (userDTO.getName() != null && !userDTO.getName().equals("")){
+                optionalUser.get().setName(userDTO.getName());
+            }
+            if (userDTO.getEmail() != null && !userDTO.getEmail().equals("")) {
+                optionalUser.get().setEmail(userDTO.getEmail());
+            }
+            if (userDTO.getSurname() != null && !userDTO.getSurname().equals("")) {
+                optionalUser.get().setSurname(userDTO.getSurname());
+            }
+            if (userDTO.getPhoneNumber() != null && !userDTO.getPhoneNumber().equals("")) {
+                optionalUser.get().setPhoneNumber(userDTO.getPhoneNumber());
+            }
+            if (userDTO.getBiography() != null && !userDTO.getBiography().equals("")) {
+                optionalUser.get().setBiography(userDTO.getBiography());
+            }
+            if (userDTO.getBirthDate() != null && !userDTO.getBirthDate().equals("")) {
+                optionalUser.get().setBirthDate(userDTO.getBirthDate());
+            }
+            if (userDTO.getGender() != null && !userDTO.getGender().equals("")) {
+                optionalUser.get().setGender(userDTO.getGender());
+            }
+            if (userDTO.getEducation() != null && !userDTO.getEducation().equals("")) {
+                optionalUser.get().setEducation(userDTO.getEducation());
+            }
+            if (userDTO.getPassword() != null && !userDTO.getPassword().equals("")) {
+                optionalUser.get().setPassword(userDTO.getPassword());
+            }
+            if (userDTO.getHobby() != null && !userDTO.getHobby().equals("")) {
+                optionalUser.get().setHobby(userDTO.getHobby());
+            }
+            if (userDTO.getUsername() != null && !userDTO.getUsername().equals("")) {
+                optionalUser.get().setUsername(userDTO.getUsername());
+            }
+            if (userDTO.getWorkExperience() != null && !userDTO.getWorkExperience().equals("")) {
+                optionalUser.get().setWorkExperience(userDTO.getWorkExperience());
+            }
+            if (userDTO.getInterest() != null && !userDTO.getInterest().equals("")) {
+                optionalUser.get().setInterest(userDTO.getInterest());
+            }
+            if (userDTO.getPublic() != null && !userDTO.getPublic().equals("")) {
+                optionalUser.get().setPublic(userDTO.getPublic());
+            }
 
         return userRepository.save(optionalUser.get());
     }

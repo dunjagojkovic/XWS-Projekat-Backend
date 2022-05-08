@@ -49,8 +49,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
 
                 .authorizeRequests().antMatchers("/api/users/register").permitAll()
+                .antMatchers("/error").permitAll()
+                .antMatchers("/error/**").permitAll()
+                .antMatchers("/your Urls that dosen't need security/**").permitAll()
 
                 .anyRequest().authenticated().and()
+
+              // .formLogin().loginPage("/login").permitAll().and()
 
                 .logout().permitAll().and()
 
@@ -64,7 +69,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     public void configure(WebSecurity web) throws Exception {
         web.ignoring().antMatchers(HttpMethod.POST, "/api/users/login", "api/users/register");
-        web.ignoring().antMatchers(HttpMethod.GET, "/api/users/**");
+        web.ignoring().antMatchers(HttpMethod.GET, "/api/users/current");
         web.ignoring().antMatchers(HttpMethod.OPTIONS, "/**");
         web.ignoring().antMatchers(HttpMethod.PUT, "/api/users");
         web.ignoring().antMatchers(HttpMethod.POST, "/api/follow/follower");
@@ -73,5 +78,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         web.ignoring().antMatchers(HttpMethod.POST, "/api/users/filterUsers");
         web.ignoring().antMatchers(HttpMethod.GET, "/api/users/public");
         web.ignoring().antMatchers(HttpMethod.GET, "/api/follow/following/**");
+        web.ignoring().antMatchers("/error/**");
     }
 }

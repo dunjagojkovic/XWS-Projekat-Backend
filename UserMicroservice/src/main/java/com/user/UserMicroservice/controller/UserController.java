@@ -11,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -46,7 +45,7 @@ public class UserController {
     @PostMapping(path = "/login")
     public ResponseEntity<?> login(@RequestBody LoginDTO loginDTO) {
 
-        User user = customUserService.findByUsername(loginDTO.getUsername());
+        User user = customUserService.findUserByUsername(loginDTO.getUsername());
 
         if (user == null || !passwordEncoder.matches(loginDTO.getPassword(), user.getPassword()) || !loginDTO.getUsername().equals(user.getUsername())) {
             return  ResponseEntity.ok(HttpStatus.UNAUTHORIZED);
