@@ -12,6 +12,16 @@ public class RegistrationDTO {
     private Boolean isPublic;
     private String birthDate;
 
+    private String type;
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
     public String getName() {
         return name;
     }

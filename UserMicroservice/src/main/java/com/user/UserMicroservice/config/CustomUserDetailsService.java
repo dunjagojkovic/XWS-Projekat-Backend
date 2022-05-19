@@ -35,6 +35,8 @@ public class CustomUserDetailsService implements UserDetailsService {
         String password = user.get().getPassword();
 
         builder.password(password);
+        builder.authorities(user.get().getRole().toString());
+
 
 
         return builder.build();
@@ -51,7 +53,9 @@ public class CustomUserDetailsService implements UserDetailsService {
         }
 
         Authority authority = new Authority();
+        authority.setName(user.get().getRole().toString());
         authorities.add(authority);
+
         return authorities;
     }
 

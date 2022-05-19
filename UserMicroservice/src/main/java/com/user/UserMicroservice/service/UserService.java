@@ -42,6 +42,7 @@ public class UserService {
         user.setGender(registrationDTO.getGender());
         user.setPublic(true);
         user.setBirthDate(registrationDTO.getBirthDate());
+        user.setType("User");
 
         return userRepository.save(user);
     }
@@ -55,9 +56,11 @@ public class UserService {
 
     public User edit(UserDTO userDTO) {
 
-        Optional<User> optionalUser = userRepository.findByUsername(userDTO.getUsername());
+        //Optional<User> optionalUser = userRepository.findByUsername(userDTO.getUsername());
+        Optional<User> optionalUser = userRepository.findById(getCurrentUser().getId());
 
-            if (userDTO.getName() != null && !userDTO.getName().equals("")){
+
+        if (userDTO.getName() != null && !userDTO.getName().equals("")){
                 optionalUser.get().setName(userDTO.getName());
             }
             if (userDTO.getEmail() != null && !userDTO.getEmail().equals("")) {
@@ -80,9 +83,6 @@ public class UserService {
             }
             if (userDTO.getEducation() != null && !userDTO.getEducation().equals("")) {
                 optionalUser.get().setEducation(userDTO.getEducation());
-            }
-            if (userDTO.getPassword() != null && !userDTO.getPassword().equals("")) {
-                optionalUser.get().setPassword(userDTO.getPassword());
             }
             if (userDTO.getHobby() != null && !userDTO.getHobby().equals("")) {
                 optionalUser.get().setHobby(userDTO.getHobby());

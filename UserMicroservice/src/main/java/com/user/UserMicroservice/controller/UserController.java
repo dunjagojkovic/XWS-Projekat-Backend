@@ -8,6 +8,7 @@ import com.user.UserMicroservice.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,7 +32,7 @@ public class UserController {
     private CustomUserDetailsService customUserService;
 
     @PostMapping(consumes = "application/json", path = "/register")
-    public ResponseEntity<?> registerClient(@RequestBody RegistrationDTO registrationDTO) {
+    public ResponseEntity<?> registerUser(@RequestBody RegistrationDTO registrationDTO) {
 
         User user = userService.userRegistration(registrationDTO);
 
@@ -63,13 +64,15 @@ public class UserController {
     }
 
     @PutMapping()
+    @PreAuthorize("hasAuthority('User')")
     public ResponseEntity<?> edit(@RequestBody UserDTO dto) {
         User user = userService.edit(dto);
 
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     @PostMapping(path = "/password")
+    @PreAuthorize("hasAuthority('User')")
     public ResponseEntity<?> changePassword(@RequestBody ChangePasswordDTO changePasswordDTO) {
         User user = userService.changePassword(changePasswordDTO);
 
