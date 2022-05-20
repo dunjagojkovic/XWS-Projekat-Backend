@@ -21,7 +21,7 @@ public class User {
     private Boolean isPublic;
     private String biography;
     private String birthDate;
-    private String workExperience;
+    private String workExperience;  //entitet umesto stringa ime, id
     private String education;
     private String hobby;
     private String interest;

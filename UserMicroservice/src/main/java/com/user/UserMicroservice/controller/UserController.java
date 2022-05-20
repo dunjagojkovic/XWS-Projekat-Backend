@@ -71,7 +71,7 @@ public class UserController {
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
-    @PostMapping(path = "/password")
+    @PostMapping(path = "/changePassword")
     @PreAuthorize("hasAuthority('User')")
     public ResponseEntity<?> changePassword(@RequestBody ChangePasswordDTO changePasswordDTO) {
         User user = userService.changePassword(changePasswordDTO);
