@@ -52,6 +52,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/error").permitAll()
                 .antMatchers("/error/**").permitAll()
                 .antMatchers("/your Urls that dosen't need security/**").permitAll()
+                .antMatchers("/forgottenpassword").permitAll()
+                .antMatchers("/checkActivationCode").permitAll()
+                .antMatchers("//checkForgottenPasswor").permitAll()
 
                 .anyRequest().authenticated().and()
 

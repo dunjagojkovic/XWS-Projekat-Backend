@@ -1,5 +1,7 @@
 package com.user.UserMicroservice.model;
 
+import java.time.LocalDateTime;
+
 import javax.persistence.*;
 
 @Entity
@@ -25,8 +27,57 @@ public class User {
     private String education;
     private String hobby;
     private String interest;
+    private String activationCode;
+    private boolean activated;
+    private LocalDateTime activationCodeValidity;
+    private String passwordResetCode;
+    private LocalDateTime passwordResetCodeValidity;
+    
+    
 
-    public String getGender() {
+    public String getPasswordResetCode() {
+		return passwordResetCode;
+	}
+
+	public void setPasswordResetCode(String passwordResetCode) {
+		this.passwordResetCode = passwordResetCode;
+	}
+
+	public LocalDateTime getPasswordResetCodeValidity() {
+		return passwordResetCodeValidity;
+	}
+
+	public void setPasswordResetCodeValidity(LocalDateTime passwordResetCodeValidity) {
+		this.passwordResetCodeValidity = passwordResetCodeValidity;
+	}
+
+	public LocalDateTime getActivationCodeValidity() {
+		return activationCodeValidity;
+	}
+
+	public void setActivationCodeValidity(LocalDateTime activationCodeValidity) {
+		this.activationCodeValidity = activationCodeValidity;
+	}
+
+	public String getActivationCode() {
+		return activationCode;
+	}
+
+	public void setActivationCode(String activationCode) {
+		this.activationCode = activationCode;
+	}
+
+	
+
+	public boolean isActivated() {
+		return activated;
+	}
+
+	public void setActivated(boolean activated) {
+		this.activated = activated;
+	}
+
+	public String getGender() {
         return gender;
     }
 
@@ -153,6 +204,8 @@ public class User {
 	public void setIsPublic(Boolean isPublic) {
 		this.isPublic = isPublic;
 	}
+
+
     
     
 }
