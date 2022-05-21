@@ -64,6 +64,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
                 .addFilterBefore(new TokenAuthenticationFilter(tokenUtils, jwtUserDetailsService), BasicAuthenticationFilter.class);
         http.csrf().disable();
+        
+        http
+        .headers()
+        .xssProtection()
+        .and()
+        .contentSecurityPolicy("script-src 'self'");
     }
 
     //OVDE SE STAVLJA ONO ZA STA NE TREBA TOKEN, NE DODAVATI SVE MOGUCE RUTE!!!!!!!!!!!!!
