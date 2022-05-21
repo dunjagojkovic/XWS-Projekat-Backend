@@ -1,5 +1,7 @@
 package com.user.UserMicroservice.dto;
 
+import com.user.UserMicroservice.validation.ValidPassword;
+
 public class UserDTO {
     public String getName() {
         return name;
@@ -116,6 +118,7 @@ public class UserDTO {
     private String name;
     private String surname;
     private String email;
+    @ValidPassword
     private String password;
     private String phoneNumber;
     private String gender;

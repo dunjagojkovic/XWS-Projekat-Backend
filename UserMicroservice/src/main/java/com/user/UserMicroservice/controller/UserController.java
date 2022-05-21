@@ -10,9 +10,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+import javax.validation.Valid;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:4200")
@@ -32,8 +35,12 @@ public class UserController {
     private CustomUserDetailsService customUserService;
 
     @PostMapping(consumes = "application/json", path = "/register")
-    public ResponseEntity<?> registerUser(@RequestBody RegistrationDTO registrationDTO) {
-
+    public ResponseEntity<?> registerUser(@RequestBody @Valid RegistrationDTO registrationDTO, BindingResult result) {
+    	
+    	if (result.hasErrors()){
+    		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    	
         User user = userService.userRegistration(registrationDTO);
 
         if(user == null) {
