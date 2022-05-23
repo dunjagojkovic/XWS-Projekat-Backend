@@ -64,7 +64,7 @@ public class UserController {
     }
 
     @PutMapping()
-    @PreAuthorize("hasAuthority('User')")
+    @PreAuthorize("hasAuthority('Userr')")
     public ResponseEntity<?> edit(@RequestBody UserDTO dto) {
         User user = userService.edit(dto);
 
