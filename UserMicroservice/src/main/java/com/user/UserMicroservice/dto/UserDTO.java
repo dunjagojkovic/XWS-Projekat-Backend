@@ -118,8 +118,6 @@ public class UserDTO {
     private String name;
     private String surname;
     private String email;
-    @ValidPassword
-    private String password;
     private String phoneNumber;
     private String gender;
     private String username;
