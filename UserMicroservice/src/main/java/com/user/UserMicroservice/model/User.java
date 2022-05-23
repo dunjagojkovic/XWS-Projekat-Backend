@@ -21,10 +21,23 @@ public class User {
     private Boolean isPublic;
     private String biography;
     private String birthDate;
-    private String workExperience;
+    private String workExperience;  //entitet umesto stringa ime, id
     private String education;
     private String hobby;
     private String interest;
+    private String type;
+
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getRole() { return type.toString(); }
+
 
     public String getGender() {
         return gender;
