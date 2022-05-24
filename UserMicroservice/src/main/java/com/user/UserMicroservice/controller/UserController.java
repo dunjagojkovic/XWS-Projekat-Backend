@@ -41,15 +41,12 @@ public class UserController {
     private CustomUserDetailsService customUserService;
 
     @PostMapping(consumes = "application/json", path = "/register")
-    public ResponseEntity<?> registerClient(HttpServletRequest request, @RequestBody @Valid RegistrationDTO registrationDTO, BindingResult result) { 	
+    public ResponseEntity<?> registerClient(HttpServletRequest request, @RequestBody RegistrationDTO registrationDTO, BindingResult result) { 	
     	if (result.hasErrors()){
     		System.out.println("Result has errors!");
     		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-    	
-    	User user = userService.userRegistration(registrationDTO, request);
-    	
-
+    	User user = userService.userRegistration(registrationDTO, request);	
         if(user == null) {
         	System.out.println("Created user is null!");
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -153,7 +150,7 @@ public class UserController {
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
     
-	@RequestMapping(method = RequestMethod.POST, value = "/checkActivationCode",consumes = "text/plain",produces = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(method = RequestMethod.POST, value = "/checkActivationCode",consumes = "application/json",produces = MediaType.APPLICATION_JSON_VALUE)
 	@CrossOrigin(origins = "*")
 	public ResponseEntity<String> checkActivationCode(@RequestBody String c) throws JsonProcessingException{
 		System.out.println("Activation code "+c);
