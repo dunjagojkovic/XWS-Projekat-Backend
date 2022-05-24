@@ -9,6 +9,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.user.UserMicroservice.service.formatter.AccountActivationFormatter;
+import com.user.UserMicroservice.service.formatter.LoginCodeFormatter;
 import com.user.UserMicroservice.service.formatter.ResetPasswordFormatter;
 
 @Service
@@ -42,6 +43,18 @@ public class MailService<T> {
 		message.setFrom("dislinkt.xml@gmail.com");
 		message.setTo(recipient);
 		message.setText(formatter.getText(code, siteUrl));
+		message.setSubject(formatter.getSubject());
+		
+		mailSender.send(message);
+	}
+
+	@Async
+	public void sendCodetToEmail(String email, String loginCode, String siteURL) {
+		SimpleMailMessage message = new SimpleMailMessage();
+		LoginCodeFormatter formatter = new LoginCodeFormatter();
+		message.setFrom("dislinkt.xml@gmail.com");
+		message.setTo(email);
+		message.setText(formatter.getText(loginCode, siteURL));
 		message.setSubject(formatter.getSubject());
 		
 		mailSender.send(message);

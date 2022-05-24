@@ -11,6 +11,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -18,6 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 @Configuration
+@EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
@@ -52,13 +54,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/error").permitAll()
                 .antMatchers("/error/**").permitAll()
                 .antMatchers("/your Urls that dosen't need security/**").permitAll()
-                .antMatchers("/forgottenpassword").permitAll()
-                .antMatchers("/checkActivationCode").permitAll()
-                .antMatchers("//checkForgottenPasswor").permitAll()
+                .antMatchers("/api/users/forgottenpassword").permitAll()
+                .antMatchers("/api/users/checkActivationCode").permitAll()
+                .antMatchers("/api/users/checkForgottenPassword").permitAll()
+                .antMatchers("/api/users/loginCode").permitAll()
+
+                
+
 
                 .anyRequest().authenticated().and()
 
-              // .formLogin().loginPage("/login").permitAll().and()
+                //.formLogin().loginPage("/login").permitAll().and()
 
                 .logout().permitAll().and()
 
@@ -68,17 +74,27 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
                 .addFilterBefore(new TokenAuthenticationFilter(tokenUtils, jwtUserDetailsService), BasicAuthenticationFilter.class);
         http.csrf().disable();
+        
+        http
+        .headers()
+        .xssProtection()
+        .and()
+        .contentSecurityPolicy("script-src 'self'");
     }
+
+    //OVDE SE STAVLJA ONO ZA STA NE TREBA TOKEN, NE DODAVATI SVE MOGUCE RUTE!!!!!!!!!!!!!
     @Override
     public void configure(WebSecurity web) throws Exception {
         web.ignoring().antMatchers(HttpMethod.POST, "/api/users/login", "api/users/register");
-        web.ignoring().antMatchers(HttpMethod.GET, "/api/users/current");
         web.ignoring().antMatchers(HttpMethod.OPTIONS, "/**");
-        web.ignoring().antMatchers(HttpMethod.PUT, "/api/users");
         web.ignoring().antMatchers(HttpMethod.POST, "/api/follow/follower");
         web.ignoring().antMatchers(HttpMethod.POST, "/api/follow/accept");
         web.ignoring().antMatchers(HttpMethod.POST, "/api/follow/follower");
+        web.ignoring().antMatchers(HttpMethod.POST, "/api/users/checkActivationCode");
+        web.ignoring().antMatchers(HttpMethod.POST, "/api/users/checkForgottenPassword");
+        web.ignoring().antMatchers(HttpMethod.POST, "/api/users/forgottenpassword");
         web.ignoring().antMatchers(HttpMethod.POST, "/api/users/filterUsers");
+        web.ignoring().antMatchers(HttpMethod.POST, "/api/users/loginCode");
         web.ignoring().antMatchers(HttpMethod.GET, "/api/users/public");
         web.ignoring().antMatchers(HttpMethod.GET, "/api/follow/following/**");
         web.ignoring().antMatchers("/error/**");

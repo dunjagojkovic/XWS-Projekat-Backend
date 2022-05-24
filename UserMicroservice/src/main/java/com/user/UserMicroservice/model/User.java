@@ -23,7 +23,7 @@ public class User {
     private Boolean isPublic;
     private String biography;
     private String birthDate;
-    private String workExperience;
+    private String workExperience;  //entitet umesto stringa ime, id
     private String education;
     private String hobby;
     private String interest;
@@ -32,10 +32,28 @@ public class User {
     private LocalDateTime activationCodeValidity;
     private String passwordResetCode;
     private LocalDateTime passwordResetCodeValidity;
+    private String loginCode;
+    private LocalDateTime loginCodeValidity;
     
     
+    
+    public String getLoginCode() {
+		return loginCode;
+	}
 
-    public String getPasswordResetCode() {
+	public void setLoginCode(String loginCode) {
+		this.loginCode = loginCode;
+	}
+
+	public LocalDateTime getLoginCodeValidity() {
+		return loginCodeValidity;
+	}
+
+	public void setLoginCodeValidity(LocalDateTime loginCodeValidity) {
+		this.loginCodeValidity = loginCodeValidity;
+	}
+
+	public String getPasswordResetCode() {
 		return passwordResetCode;
 	}
 
@@ -54,6 +72,19 @@ public class User {
 	public LocalDateTime getActivationCodeValidity() {
 		return activationCodeValidity;
 	}
+    private String type;
+
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getRole() { return type.toString(); }
+
 
 	public void setActivationCodeValidity(LocalDateTime activationCodeValidity) {
 		this.activationCodeValidity = activationCodeValidity;

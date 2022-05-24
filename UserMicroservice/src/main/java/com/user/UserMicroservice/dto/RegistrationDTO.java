@@ -1,16 +1,29 @@
 package com.user.UserMicroservice.dto;
 
+import com.user.UserMicroservice.validation.ValidPassword;
+
 public class RegistrationDTO {
 
     private String name;
     private String surname;
     private String email;
     private String username;
+    @ValidPassword
     private String password;
     private String phoneNumber;
     private String gender;
     private Boolean isPublic;
     private String birthDate;
+
+    private String type;
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
 
     public String getName() {
         return name;

@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,19 +24,22 @@ public class FollowController {
 	@Autowired
     private FollowService followService;
 
-	@PostMapping(path = "/follower") 
+	@PostMapping(path = "/follower")
+    @PreAuthorize("hasAuthority('User')")
     public ResponseEntity<?> follow(@RequestBody FollowDTO dto) {
 		followService.follow(dto);
     	return new ResponseEntity<>(HttpStatus.OK);
     }
 	
-	@PostMapping(path = "/accept") 
+	@PostMapping(path = "/accept")
+    @PreAuthorize("hasAuthority('User')")
     public ResponseEntity<?> accept(@RequestBody FollowDTO dto) {
 		followService.accept(dto);
     	return new ResponseEntity<>(HttpStatus.OK);
     }
 	
 	@GetMapping(value = "/following/{username}")
+    @PreAuthorize("hasAuthority('User')")
     public ResponseEntity<?> getFollowingUsers(@PathVariable String username) {
 
     	List<String> users = followService.getFollowing(username);

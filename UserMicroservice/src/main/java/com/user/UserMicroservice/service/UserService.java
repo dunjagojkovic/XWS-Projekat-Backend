@@ -3,6 +3,7 @@ package com.user.UserMicroservice.service;
 import com.user.UserMicroservice.config.SecurityUtils;
 import com.user.UserMicroservice.dto.ChangePasswordDTO;
 import com.user.UserMicroservice.dto.RegistrationDTO;
+import com.user.UserMicroservice.dto.ResetPasswordDTO;
 import com.user.UserMicroservice.dto.UserDTO;
 import com.user.UserMicroservice.model.User;
 import com.user.UserMicroservice.repository.UserRepository;
@@ -62,6 +63,7 @@ public class UserService {
         user.setActivationCodeValidity(LocalDateTime.now().plusDays(5));
         
         mailService.sendUserRegistrationMail(user.getEmail(), activationCode, getSiteURL(request));
+        user.setType("User");
 
         return userRepository.save(user);
     }
@@ -79,9 +81,11 @@ public class UserService {
 
     public User edit(UserDTO userDTO) {
 
-        Optional<User> optionalUser = userRepository.findByUsername(userDTO.getUsername());
+        //Optional<User> optionalUser = userRepository.findByUsername(userDTO.getUsername());
+        Optional<User> optionalUser = userRepository.findById(getCurrentUser().getId());
 
-            if (userDTO.getName() != null && !userDTO.getName().equals("")){
+
+        if (userDTO.getName() != null && !userDTO.getName().equals("")){
                 optionalUser.get().setName(userDTO.getName());
             }
             if (userDTO.getEmail() != null && !userDTO.getEmail().equals("")) {
@@ -104,9 +108,6 @@ public class UserService {
             }
             if (userDTO.getEducation() != null && !userDTO.getEducation().equals("")) {
                 optionalUser.get().setEducation(userDTO.getEducation());
-            }
-            if (userDTO.getPassword() != null && !userDTO.getPassword().equals("")) {
-                optionalUser.get().setPassword(userDTO.getPassword());
             }
             if (userDTO.getHobby() != null && !userDTO.getHobby().equals("")) {
                 optionalUser.get().setHobby(userDTO.getHobby());
@@ -188,12 +189,14 @@ public class UserService {
 	}
 
 	public boolean userAlreadyActivated(String code) {
-		return userRepository.findByActivationCodeAndActivatedTrue(bCryptPasswordEncoder.encode(code))!=null;
+		User user = findByActivation(code);
+		System.out.println("Found user= "+user);
+		return user!=null && user.isActivated();
 	}
 
 	public boolean checkActivationCode(String code) {
 		System.out.println("akt kod koji se trazi "+ code);
-    	User u = userRepository.findByActivationCode(bCryptPasswordEncoder.encode(code)).get();
+    	User u = findByActivation(code);
     	 if(u!=null && LocalDateTime.now().isBefore(u.getActivationCodeValidity())) {
     		 u.setActivated(true);
     		 userRepository.save(u);
@@ -201,17 +204,43 @@ public class UserService {
     	 }
 		return false;
 	}
-
-	public boolean resetCodeExists(String code) {
-		return userRepository.findByPasswordResetCode(bCryptPasswordEncoder.encode(code))!=null;
+	
+	public User findByPasswordResetCode(String code) {
+		List<User> allUsers = userRepository.findAll();
+		User foundUser = null;
+		for(User u : allUsers) {
+			if(bCryptPasswordEncoder.matches(code, u.getPasswordResetCode())) {
+				System.out.println("Maching!");
+				foundUser = u;
+			}
+		}
+		return foundUser;
+	}
+	
+	private User findByActivation(String code) {
+		List<User> allUsers = userRepository.findAll();
+		User foundUser = null;
+		for(User u : allUsers) {
+			if(bCryptPasswordEncoder.matches(code, u.getActivationCode())) {
+				System.out.println("Maching!");
+				foundUser = u;
+			}
+		}
+		return foundUser;
 	}
 
-	public boolean checkPasswordResetCode(String code) {
-		System.out.println("akt kod koji se trazi "+ code);
-    	User u = userRepository.findByPasswordResetCode(bCryptPasswordEncoder.encode(code)).get();
+	public boolean resetCodeExists(String code) {
+		User u = findByPasswordResetCode(code);
+		return u!=null;
+	}
+
+	public boolean checkPasswordResetCode(ResetPasswordDTO dto) {
+		System.out.println("akt kod koji se trazi "+ dto.getCode());
+    	User u = findByPasswordResetCode(dto.getCode());
     	 if(u!=null && LocalDateTime.now().isBefore(u.getPasswordResetCodeValidity())) {
     		 u.setPasswordResetCode(null);
     		 u.setPasswordResetCodeValidity(null);
+    		 u.setPassword(bCryptPasswordEncoder.encode(dto.getNewPassword()));
     		 userRepository.save(u);
     		 return true;
     	 }
@@ -220,5 +249,14 @@ public class UserService {
 	
 	private String getSiteURL(HttpServletRequest request) {
 		return request.getHeader("origin");
+	}
+
+	public void getLoginCode(User user, HttpServletRequest request) {
+		String loginCode = codeService.generateLoginCode(user);
+		mailService.sendCodetToEmail(user.getEmail(), loginCode, getSiteURL(request));
+		user.setLoginCode(bCryptPasswordEncoder.encode(loginCode));
+		user.setLoginCodeValidity(LocalDateTime.now().plusMinutes(5));
+		userRepository.save(user);
+		
 	}
 }
