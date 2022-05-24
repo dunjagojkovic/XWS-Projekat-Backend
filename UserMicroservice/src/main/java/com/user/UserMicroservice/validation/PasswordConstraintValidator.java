@@ -31,7 +31,7 @@ public class PasswordConstraintValidator implements ConstraintValidator<ValidPas
             new LengthRule(8, 30), 
             new CharacterRule(EnglishCharacterData.UpperCase, 1),
             new CharacterRule(EnglishCharacterData.Digit, 1),
-            new CharacterRule(EnglishCharacterData.Special, 1), 
+            //new CharacterRule(EnglishCharacterData.Special, 1), 
             new IllegalSequenceRule(EnglishSequenceData.Alphabetical, 5, false),
             new IllegalSequenceRule(EnglishSequenceData.Numerical, 5, false),
             new IllegalSequenceRule(EnglishSequenceData.USQwerty, 5, false),
