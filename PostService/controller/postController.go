@@ -35,6 +35,10 @@ func NewPostController(service *service.PostService) *PostController {
 
 }
 
+func enableCors(w *http.ResponseWriter) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+}
+
 func renderJSON(w http.ResponseWriter, v interface{}) {
 
 	js, err := json.Marshal(v)
@@ -92,12 +96,13 @@ func decodeLikeBody(r io.Reader) (*User, error) {
 
 func (pc *PostController) GetAllHandler(w http.ResponseWriter, req *http.Request) {
 
+	enableCors(&w)
 	posts, _ := pc.service.GetAll()
 	renderJSON(w, posts)
 }
 
 func (pc *PostController) GetPostCommentsHandler(w http.ResponseWriter, req *http.Request) {
-
+	enableCors(&w)
 	id, _ := (mux.Vars(req)["id"])
 	_id, _ := primitive.ObjectIDFromHex(id)
 	comments, _ := pc.service.GetPostComments(_id)
@@ -106,6 +111,7 @@ func (pc *PostController) GetPostCommentsHandler(w http.ResponseWriter, req *htt
 
 func (pc *PostController) GetUserPostsHandler(w http.ResponseWriter, req *http.Request) {
 
+	enableCors(&w)
 	username, _ := (mux.Vars(req)["username"])
 	posts, _ := pc.service.GetUserPosts(username)
 	renderJSON(w, posts)
@@ -217,6 +223,7 @@ func (pc *PostController) CreatePostDislikeHandler(w http.ResponseWriter, req *h
 
 func (pc *PostController) GetPostLikesHandler(w http.ResponseWriter, req *http.Request) {
 
+	enableCors(&w)
 	id, _ := (mux.Vars(req)["id"])
 	_id, _ := primitive.ObjectIDFromHex(id)
 	likes, _ := pc.service.GetPostLikes(_id)
@@ -225,6 +232,7 @@ func (pc *PostController) GetPostLikesHandler(w http.ResponseWriter, req *http.R
 
 func (pc *PostController) GetPostDislikesHandler(w http.ResponseWriter, req *http.Request) {
 
+	enableCors(&w)
 	id, _ := (mux.Vars(req)["id"])
 	_id, _ := primitive.ObjectIDFromHex(id)
 	dislikes, _ := pc.service.GetPostDislikes(_id)
