@@ -28,15 +28,15 @@ func main() {
 
 	postController := controller.NewPostController(service)
 	router.HandleFunc("/post", postController.CreatePostHandler).Methods("POST")
-	router.HandleFunc("/post/", postController.GetAllHandler).Methods("GET")
-	router.HandleFunc("/post/{id}/comment/", postController.CreatePostCommentHandler).Methods("POST")
+	router.HandleFunc("/post", postController.GetAllHandler).Methods("GET")
+	router.HandleFunc("/post/{id}/comment", postController.CreatePostCommentHandler).Methods("POST")
 	router.HandleFunc("/post/{id}/comments", postController.GetPostCommentsHandler).Methods("GET")
-	router.HandleFunc("/post/{id}/like/", postController.CreatePostLikeHandler).Methods("POST")
+	router.HandleFunc("/post/{id}/like", postController.CreatePostLikeHandler).Methods("POST")
 	router.HandleFunc("/post/{id}/likes", postController.GetPostLikesHandler).Methods("GET")
-	router.HandleFunc("/post/{id}/dislike/", postController.CreatePostDislikeHandler).Methods("POST")
+	router.HandleFunc("/post/{id}/dislike", postController.CreatePostDislikeHandler).Methods("POST")
 	router.HandleFunc("/post/{id}/dislikes", postController.GetPostDislikesHandler).Methods("GET")
 	router.HandleFunc("/profile/posts/{username}", postController.GetUserPostsHandler).Methods("GET")
-	router.HandleFunc("/following/posts/", postController.GetFollowingPostsHandler).Methods("POST")
+	router.HandleFunc("/following/posts", postController.GetFollowingPostsHandler).Methods("POST")
 
 	// start server
 	srv := &http.Server{Addr: "0.0.0.0:8000", Handler: router}
