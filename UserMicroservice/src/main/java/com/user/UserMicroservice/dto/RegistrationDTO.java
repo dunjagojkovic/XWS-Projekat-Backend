@@ -1,11 +1,18 @@
 package com.user.UserMicroservice.dto;
 
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
+
 import com.user.UserMicroservice.validation.ValidPassword;
 
 public class RegistrationDTO {
 
     private String name;
     private String surname;
+    @NotBlank
+	@Size(max = 50)
+	@Email
     private String email;
     private String username;
     @ValidPassword

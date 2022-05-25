@@ -1,8 +1,11 @@
 package com.user.UserMicroservice.dto;
 
+import com.user.UserMicroservice.validation.ValidPassword;
+
 public class ChangePasswordDTO {
 
     private String oldPassword;
+    @ValidPassword
     private String newPassword;
 
     public String getOldPassword() { return oldPassword; }

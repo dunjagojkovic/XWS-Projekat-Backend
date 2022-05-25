@@ -27,14 +27,6 @@ public class UserDTO {
         this.email = email;
     }
 
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
     public String getPhoneNumber() {
         return phoneNumber;
     }
@@ -118,8 +110,6 @@ public class UserDTO {
     private String name;
     private String surname;
     private String email;
-    @ValidPassword
-    private String password;
     private String phoneNumber;
     private String gender;
     private String username;

@@ -3,28 +3,43 @@ package com.user.UserMicroservice.service;
 import com.user.UserMicroservice.config.SecurityUtils;
 import com.user.UserMicroservice.dto.ChangePasswordDTO;
 import com.user.UserMicroservice.dto.RegistrationDTO;
+import com.user.UserMicroservice.dto.ResetPasswordDTO;
 import com.user.UserMicroservice.dto.UserDTO;
 import com.user.UserMicroservice.model.User;
 import com.user.UserMicroservice.repository.UserRepository;
+
+import ch.qos.logback.core.net.server.Client;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import javax.servlet.http.HttpServletRequest;
 
 @Service
 public class UserService {
 
     @Autowired
     UserRepository userRepository;
-
+    
     @Autowired
-    PasswordEncoder encoder;
+    BCryptPasswordEncoder bCryptPasswordEncoder;
+    
+    @Autowired
+    CodeService codeService;
+    
+    @Autowired
+    MailService<String> mailService;
+   
 
 
-    public User userRegistration(RegistrationDTO registrationDTO) {
+    public User userRegistration(RegistrationDTO registrationDTO, HttpServletRequest request) {
 
         Optional<User> optionalUser = userRepository.findByUsername(registrationDTO.getUsername());
 
@@ -34,7 +49,7 @@ public class UserService {
 
         User user = new User();
         user.setUsername(registrationDTO.getUsername());
-        user.setPassword(encoder.encode(registrationDTO.getPassword()));
+        user.setPassword(bCryptPasswordEncoder.encode(registrationDTO.getPassword()));
         user.setEmail(registrationDTO.getEmail());
         user.setName(registrationDTO.getName());
         user.setSurname(registrationDTO.getSurname());
@@ -42,9 +57,19 @@ public class UserService {
         user.setGender(registrationDTO.getGender());
         user.setPublic(true);
         user.setBirthDate(registrationDTO.getBirthDate());
+        String activationCode = codeService.generateActivationCodeForUSer(user);
+        user.setActivationCode(bCryptPasswordEncoder.encode(activationCode));
+        user.setActivated(false);
+        user.setActivationCodeValidity(LocalDateTime.now().plusDays(5));
+        
+        mailService.sendUserRegistrationMail(user.getEmail(), activationCode, getSiteURL(request));
         user.setType("User");
 
         return userRepository.save(user);
+    }
+    
+    public User getByUsername(String username) {
+    	return userRepository.findByUsername(username).orElse(null);
     }
 
     public User getCurrentUser() {
@@ -107,11 +132,11 @@ public class UserService {
 
         User user = getCurrentUser();
 
-        if(!encoder.matches(changePasswordDTO.getOldPassword(), user.getPassword())) {
+        if(!bCryptPasswordEncoder.matches(changePasswordDTO.getOldPassword(), user.getPassword())) {
             return null;
         }
 
-        user.setPassword(encoder.encode(changePasswordDTO.getNewPassword()));
+        user.setPassword(bCryptPasswordEncoder.encode(changePasswordDTO.getNewPassword()));
 
         return userRepository.save(user);
     }
@@ -153,4 +178,85 @@ public class UserService {
     	return usernames;
     	
     }
+
+	public void forgottenPassword(User user, HttpServletRequest request) {
+		String resetCode = codeService.generatePasswordResetCode(user);
+		mailService.sendLinkToResetPassword(user.getEmail(), resetCode, getSiteURL(request));
+		user.setPasswordResetCode(bCryptPasswordEncoder.encode(resetCode));
+		user.setPasswordResetCodeValidity(LocalDateTime.now().plusMinutes(5));
+		userRepository.save(user);
+		
+	}
+
+	public boolean userAlreadyActivated(String code) {
+		User user = findByActivation(code);
+		System.out.println("Found user= "+user);
+		return user!=null && user.isActivated();
+	}
+
+	public boolean checkActivationCode(String code) {
+		System.out.println("akt kod koji se trazi "+ code);
+    	User u = findByActivation(code);
+    	 if(u!=null && LocalDateTime.now().isBefore(u.getActivationCodeValidity())) {
+    		 u.setActivated(true);
+    		 userRepository.save(u);
+    		 return true;
+    	 }
+		return false;
+	}
+	
+	public User findByPasswordResetCode(String code) {
+		List<User> allUsers = userRepository.findAll();
+		User foundUser = null;
+		for(User u : allUsers) {
+			if(bCryptPasswordEncoder.matches(code, u.getPasswordResetCode())) {
+				System.out.println("Maching!");
+				foundUser = u;
+			}
+		}
+		return foundUser;
+	}
+	
+	private User findByActivation(String code) {
+		List<User> allUsers = userRepository.findAll();
+		User foundUser = null;
+		for(User u : allUsers) {
+			if(bCryptPasswordEncoder.matches(code, u.getActivationCode())) {
+				System.out.println("Maching!");
+				foundUser = u;
+			}
+		}
+		return foundUser;
+	}
+
+	public boolean resetCodeExists(String code) {
+		User u = findByPasswordResetCode(code);
+		return u!=null;
+	}
+
+	public boolean checkPasswordResetCode(ResetPasswordDTO dto) {
+		System.out.println("akt kod koji se trazi "+ dto.getCode());
+    	User u = findByPasswordResetCode(dto.getCode());
+    	 if(u!=null && LocalDateTime.now().isBefore(u.getPasswordResetCodeValidity())) {
+    		 u.setPasswordResetCode(null);
+    		 u.setPasswordResetCodeValidity(null);
+    		 u.setPassword(bCryptPasswordEncoder.encode(dto.getNewPassword()));
+    		 userRepository.save(u);
+    		 return true;
+    	 }
+		return false;
+	}
+	
+	private String getSiteURL(HttpServletRequest request) {
+		return request.getHeader("origin");
+	}
+
+	public void getLoginCode(User user, HttpServletRequest request) {
+		String loginCode = codeService.generateLoginCode(user);
+		mailService.sendCodetToEmail(user.getEmail(), loginCode, getSiteURL(request));
+		user.setLoginCode(bCryptPasswordEncoder.encode(loginCode));
+		user.setLoginCodeValidity(LocalDateTime.now().plusMinutes(5));
+		userRepository.save(user);
+		
+	}
 }
