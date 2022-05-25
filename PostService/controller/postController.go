@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"mime"
 	"net/http"
 	"postservice/model"
 	"postservice/service"
@@ -148,8 +147,9 @@ func (pc *PostController) CreatePostHandler(w http.ResponseWriter, req *http.Req
 
 func (pc *PostController) CreatePostCommentHandler(w http.ResponseWriter, req *http.Request) {
 
+	enableCors(&w)
 	// Enforce a JSON Content-Type.
-	contentType := req.Header.Get("Content-Type")
+	/*contentType := req.Header.Get("Content-Type")
 	mediatype, _, err := mime.ParseMediaType(contentType)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -158,25 +158,29 @@ func (pc *PostController) CreatePostCommentHandler(w http.ResponseWriter, req *h
 	if mediatype != "application/json" {
 		http.Error(w, "expect application/json Content-Type", http.StatusUnsupportedMediaType)
 		return
-	}
+	}*/
 
-	rt, err := decodeCommentBody(req.Body)
+	/*rt, err := decodeCommentBody(req.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
-	}
+	}*/
+
+	var comment model.Comment
+	_ = json.NewDecoder(req.Body).Decode(&comment)
 
 	id, _ := (mux.Vars(req)["id"])
 	_id, _ := primitive.ObjectIDFromHex(id)
 
-	idR, _ := pc.service.InsertComment(_id, rt)
-	renderJSON(w, ResponseId{Id: idR})
+	idR, _ := pc.service.InsertComment(_id, &comment)
+	json.NewEncoder(w).Encode(idR)
 }
 
 func (pc *PostController) CreatePostLikeHandler(w http.ResponseWriter, req *http.Request) {
 
+	enableCors(&w)
 	// Enforce a JSON Content-Type.
-	contentType := req.Header.Get("Content-Type")
+	/*contentType := req.Header.Get("Content-Type")
 	mediatype, _, err := mime.ParseMediaType(contentType)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -191,19 +195,22 @@ func (pc *PostController) CreatePostLikeHandler(w http.ResponseWriter, req *http
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
-	}
+	}*/
 
+	var user User
+	_ = json.NewDecoder(req.Body).Decode(&user)
 	id, _ := (mux.Vars(req)["id"])
 	_id, _ := primitive.ObjectIDFromHex(id)
 
-	idI, _ := pc.service.InsertPostLike(_id, rt.Username)
-	renderJSON(w, ResponseId{Id: idI})
+	idI, _ := pc.service.InsertPostLike(_id, user.Username)
+	json.NewEncoder(w).Encode(idI)
 }
 
 func (pc *PostController) CreatePostDislikeHandler(w http.ResponseWriter, req *http.Request) {
 
+	enableCors(&w)
 	// Enforce a JSON Content-Type.
-	contentType := req.Header.Get("Content-Type")
+	/*contentType := req.Header.Get("Content-Type")
 	mediatype, _, err := mime.ParseMediaType(contentType)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -218,13 +225,14 @@ func (pc *PostController) CreatePostDislikeHandler(w http.ResponseWriter, req *h
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
-	}
-
+	}*/
+	var user User
+	_ = json.NewDecoder(req.Body).Decode(&user)
 	id, _ := (mux.Vars(req)["id"])
 	_id, _ := primitive.ObjectIDFromHex(id)
 
-	idI, _ := pc.service.InsertPostDislike(_id, rt.Username)
-	renderJSON(w, ResponseId{Id: idI})
+	idI, _ := pc.service.InsertPostDislike(_id, user.Username)
+	json.NewEncoder(w).Encode(idI)
 }
 
 func (pc *PostController) GetPostLikesHandler(w http.ResponseWriter, req *http.Request) {
@@ -247,8 +255,9 @@ func (pc *PostController) GetPostDislikesHandler(w http.ResponseWriter, req *htt
 
 func (pc *PostController) GetFollowingPostsHandler(w http.ResponseWriter, req *http.Request) {
 
+	enableCors(&w)
 	// Enforce a JSON Content-Type.
-	contentType := req.Header.Get("Content-Type")
+	/*contentType := req.Header.Get("Content-Type")
 	mediatype, _, err := mime.ParseMediaType(contentType)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -257,14 +266,17 @@ func (pc *PostController) GetFollowingPostsHandler(w http.ResponseWriter, req *h
 	if mediatype != "application/json" {
 		http.Error(w, "expect application/json Content-Type", http.StatusUnsupportedMediaType)
 		return
-	}
+	}*/
 
-	rt, err := decodeFollowingBody(req.Body)
+	var following Following
+	_ = json.NewDecoder(req.Body).Decode(&following)
+
+	/*rt, err := decodeFollowingBody(req.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
-	}
+	}*/
 
-	posts, _ := pc.service.GetFollowingPosts(rt.Users)
-	renderJSON(w, posts)
+	posts, _ := pc.service.GetFollowingPosts(following.Users)
+	json.NewEncoder(w).Encode(posts)
 }
