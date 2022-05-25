@@ -2,6 +2,7 @@ package controller
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"mime"
 	"net/http"
@@ -119,8 +120,9 @@ func (pc *PostController) GetUserPostsHandler(w http.ResponseWriter, req *http.R
 
 func (pc *PostController) CreatePostHandler(w http.ResponseWriter, req *http.Request) {
 
+	enableCors(&w)
 	// Enforce a JSON Content-Type.
-	contentType := req.Header.Get("Content-Type")
+	/*contentType := req.Header.Get("Content-Type")
 	mediatype, _, err := mime.ParseMediaType(contentType)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -130,14 +132,18 @@ func (pc *PostController) CreatePostHandler(w http.ResponseWriter, req *http.Req
 		http.Error(w, "expect application/json Content-Type", http.StatusUnsupportedMediaType)
 		return
 	}
+	*/
+	var post model.Post
+	_ = json.NewDecoder(req.Body).Decode(&post)
 
-	rt, err := decodePostBody(req.Body)
+	/*rt, err := decodePostBody(req.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
-	}
-	id, _ := pc.service.Insert(rt)
-	renderJSON(w, ResponseId{Id: id})
+	}*/
+	id, _ := pc.service.Insert(&post)
+	fmt.Println(id)
+	json.NewEncoder(w).Encode(post)
 }
 
 func (pc *PostController) CreatePostCommentHandler(w http.ResponseWriter, req *http.Request) {

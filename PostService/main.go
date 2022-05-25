@@ -27,7 +27,7 @@ func main() {
 	service := service.NewPostService(store)
 
 	postController := controller.NewPostController(service)
-	router.HandleFunc("/post/", postController.CreatePostHandler).Methods("POST")
+	router.HandleFunc("/post", postController.CreatePostHandler).Methods("POST")
 	router.HandleFunc("/post/", postController.GetAllHandler).Methods("GET")
 	router.HandleFunc("/post/{id}/comment/", postController.CreatePostCommentHandler).Methods("POST")
 	router.HandleFunc("/post/{id}/comments", postController.GetPostCommentsHandler).Methods("GET")
