@@ -71,12 +71,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     public void configure(WebSecurity web) throws Exception {
         web.ignoring().antMatchers(HttpMethod.POST, "/api/users/login", "api/users/register");
         web.ignoring().antMatchers(HttpMethod.OPTIONS, "/**");
-        web.ignoring().antMatchers(HttpMethod.POST, "/api/follow/follower");
-        web.ignoring().antMatchers(HttpMethod.POST, "/api/follow/accept");
-        web.ignoring().antMatchers(HttpMethod.POST, "/api/follow/follower");
-        web.ignoring().antMatchers(HttpMethod.POST, "/api/users/filterUsers");
-        web.ignoring().antMatchers(HttpMethod.GET, "/api/users/public");
-        web.ignoring().antMatchers(HttpMethod.GET, "/api/follow/following/**");
         web.ignoring().antMatchers("/error/**");
     }
 }
