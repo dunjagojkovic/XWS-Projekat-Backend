@@ -1,0 +1,175 @@
+syntax = "proto3";
+
+option go_package = "common/post";
+
+package post;
+
+import "google/api/annotations.proto";
+
+service PostService{
+        rpc Get(GetRequest) returns(GetResponse) {
+        	option (google.api.http) = {
+			get: "/post/{id}"
+		};
+        }
+        rpc GetAll(GetAllRequest) returns(GetAllResponse) {
+        	option (google.api.http) = {
+			get: "/posts"
+		};
+        }
+
+        rpc GetUserPosts(GetUserPostsRequest) returns(GetAllResponse) {
+        	option (google.api.http) = {
+			get: "/posts/{username}"
+		};
+        }
+
+        rpc CreatePost(CreatePostRequest) returns(CreatePostResponse) {
+                option (google.api.http) = {
+                        post: "/post"
+                        body: "post"
+                };
+
+        }
+
+        rpc GetPostComments(GetRequest) returns(GetPostCommentsResponse) {
+        	option (google.api.http) = {
+			get: "/post/{id}/comments"
+		};
+        }
+
+        rpc GetPostLikes(GetRequest) returns(GetPostLikesResponse) {
+        	option (google.api.http) = {
+			get: "/post/{id}/likes"
+		};
+        }
+
+        rpc GetPostDislikes(GetRequest) returns(GetPostLikesResponse) {
+        	option (google.api.http) = {
+			get: "/post/{id}/dislikes"
+		};
+        }
+
+        rpc CommentPost(CommentPostRequest) returns(CreatePostResponse) {
+                option (google.api.http) = {
+                        post: "/post/comment"
+                        body: "comment"
+                };
+
+        }
+
+        rpc LikePost(LikeDislikePostRequest) returns(CreatePostResponse) {
+                option (google.api.http) = {
+                        post: "/post/like"
+                        body: "likeDislike"
+                };
+
+        }
+
+        rpc DislikePost(LikeDislikePostRequest) returns(CreatePostResponse) {
+                option (google.api.http) = {
+                        post: "/post/dislike"
+                        body: "likeDislike"
+                };
+
+        }
+
+        rpc GetFollowingPosts(GetFollowingPostsRequest) returns(GetAllResponse) {
+                option (google.api.http) = {
+                        post: "/following/posts"
+                        body: "following"
+                };
+
+        }
+}
+
+message GetFollowingPostsRequest {
+        Following following = 1;
+}
+
+message Following {
+        repeated string users = 1;
+}
+
+message LikeDislikePostRequest {
+        LikeDislikePost likeDislike = 1;
+}
+
+message LikeDislikePost {
+        string idPost = 1;
+        string username = 2;
+}
+
+message CommentPostRequest {
+       PostComment comment = 1;
+}
+
+message PostComment {
+        string idPost = 1;
+        string user = 2;
+        string content = 3;  
+}
+
+message GetPostLikesResponse {
+        repeated string likes = 1;
+}
+
+message GetPostCommentsResponse{
+        repeated Comment comments = 1;
+}
+
+message CreatePostResponse {
+        string id = 1;
+}
+
+message CreatePostRequest {
+        CreatePost post = 1;
+}
+
+message CreatePost {
+        string user = 2;
+        string image = 3;
+        string description = 4;
+        string link = 5;
+        repeated string likeList = 6;
+        repeated string dislikeList = 7;     
+        repeated Comment commentList = 8; 
+}
+
+message GetRequest {
+        string id = 1;
+}
+
+message GetUserPostsRequest {
+        string username = 1;
+}
+
+message GetResponse {
+        Post post = 1;
+}
+
+message GetAllRequest {
+}
+
+message GetAllResponse {
+        repeated Post posts = 1;
+}
+
+message Post {
+        string id = 1;
+        string user = 2;
+        string image = 3;
+        string description = 4;
+        string link = 5;
+        repeated string likeList = 6;
+        repeated string dislikeList = 7;     
+        repeated Comment commentList = 8;
+}
+
+message Comment {
+        string id = 1;
+        string user = 2;
+        string content = 3;
+}
+
+
