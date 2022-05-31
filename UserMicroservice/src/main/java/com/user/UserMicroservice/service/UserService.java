@@ -140,17 +140,19 @@ public class UserService {
         return false;
     }
     
-    public List<String> getPublicProfile() {
+    public List<User> getPublicProfile() {
     	
     	List<User> users = userRepository.findAllByIsPublic(true);
-    	
-    	List<String> usernames = new ArrayList<>();
+        List<User> results = new ArrayList<>();
+//    	List<String> usernames = new ArrayList<>();
     	
     	for(User user: users) {
-    		usernames.add(user.getUsername());
+//            usernames.add(user.getUsername());
+    		results.add(user);
     	}
-    	
-    	return usernames;
+
+//        return usernames;
+    	return results;
     	
     }
 }
