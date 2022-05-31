@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @CrossOrigin(origins = "http://localhost:4200")
 @RequestMapping("api/companies")
@@ -22,6 +24,12 @@ public class CompanyController {
         Company company  = companyService.add(dto);
 
         return new ResponseEntity<>(CompanyConverters.modelToDTO(company), HttpStatus.OK);
+    }
+
+    @GetMapping(path = "/allCompanies")
+    public ResponseEntity<?> getAll() {
+        List<Company> companies = companyService.getAll();
+        return new ResponseEntity<>(CompanyConverters.modelsToDTOs(companies), HttpStatus.OK);
     }
 
 }

@@ -6,6 +6,8 @@ import com.agent.repository.CompanyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class CompanyService {
 
@@ -30,5 +32,10 @@ public class CompanyService {
         company.setStatus("Pending");
 
         return  companyRepository.save(company);
+    }
+
+    public List<Company> getAll() {
+
+            return companyRepository.findAll();
     }
 }
