@@ -92,7 +92,7 @@ public class UserController {
     @GetMapping(path = "/public")
     public ResponseEntity<?> getPublicProfile() {
 
-    	List<String> users = userService.getPublicProfile();
+    	List<User> users = userService.getPublicProfile();
     	
         if(users.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);

@@ -65,12 +65,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .addFilterBefore(new TokenAuthenticationFilter(tokenUtils, jwtUserDetailsService), BasicAuthenticationFilter.class);
         http.csrf().disable();
     }
-
-    //OVDE SE STAVLJA ONO ZA STA NE TREBA TOKEN, NE DODAVATI SVE MOGUCE RUTE!!!!!!!!!!!!!
+    
     @Override
     public void configure(WebSecurity web) throws Exception {
         web.ignoring().antMatchers(HttpMethod.POST, "/api/users/login", "api/users/register");
         web.ignoring().antMatchers(HttpMethod.OPTIONS, "/**");
+        web.ignoring().antMatchers(HttpMethod.GET, "/api/users/public");
         web.ignoring().antMatchers("/error/**");
     }
 }
