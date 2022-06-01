@@ -129,6 +129,25 @@ public class UserService {
         }
         return results;
     }
+    
+    public List<User> users() {
+        List<User> users = userRepository.findAll();
+        List<User> result = new ArrayList<>();
+        
+        User user = getCurrentUser();
+        
+        for(User u: users) {
+        	
+        	if(!u.getUsername().equals(user.getUsername())) {
+        		result.add(u);
+        	}
+        	
+        }
+        
+        return result;
+    }
+    
+    
 
     public boolean userExists(User user, List<User> users) {
 
@@ -153,6 +172,15 @@ public class UserService {
 
 //        return usernames;
     	return results;
+    	
+    }
+    
+    public User getUser(String username) {
+    	
+    	User user = userRepository.findByUsername(username).get();
+    	System.out.println(username);
+        
+    	return user;
     	
     }
 }
