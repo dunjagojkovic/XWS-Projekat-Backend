@@ -60,6 +60,7 @@ message CreateJobOffer {
         string description = 2;
         string dailyActivities = 3;
         string precondition = 4;
+        string user = 5;
 }
 
 message JobOffer {
@@ -68,6 +69,7 @@ message JobOffer {
         string description = 3;
         string dailyActivities = 4;
         string precondition = 5;
+        string user = 6;
 }
 
 

@@ -77,6 +77,7 @@ func mapNewJob(jobPb *pb.CreateJobOffer) *model.JobOffer {
 		Description:     jobPb.Description,
 		DailyActivities: jobPb.DailyActivities,
 		Precondition:    jobPb.Precondition,
+		User:            jobPb.User,
 	}
 
 	return job
@@ -89,6 +90,7 @@ func mapJob(job *model.JobOffer) *pb.JobOffer {
 		Description:     job.Description,
 		DailyActivities: job.DailyActivities,
 		Precondition:    job.Precondition,
+		User:            job.User,
 	}
 
 	return jobPb

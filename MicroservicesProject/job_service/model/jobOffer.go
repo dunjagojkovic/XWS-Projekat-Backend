@@ -8,4 +8,5 @@ type JobOffer struct {
 	Description     string             `bson:"description"`
 	DailyActivities string             `bson:"daily_activities"`
 	Precondition    string             `bson:"precondition"`
+	User            string             `bson:"user"`
 }
