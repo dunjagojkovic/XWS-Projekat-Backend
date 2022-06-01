@@ -63,6 +63,22 @@ public class FollowService {
 		}	
 	}
 	
+	public List<String> getRequests(String username) {
+		
+		List<Request> requests = requestRepository.findAll();
+		List<String> requested = new ArrayList<>();
+		
+		for(Request request: requests) {
+			
+			if(request.getFollower().equals(username)) {
+				requested.add(request.getFollowing());
+			}
+			
+		}
+		
+		return requested;
+	}
+	
 	public List<String> getFollowing(String username) {
 		
 		List<Follow> follows = followRepository.findAll();

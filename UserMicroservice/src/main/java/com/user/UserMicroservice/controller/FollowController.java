@@ -51,4 +51,16 @@ public class FollowController {
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
 	
+	@GetMapping(value = "/requested/{username}")
+    @PreAuthorize("hasAuthority('User')")
+    public ResponseEntity<?> getRequestedUsers(@PathVariable String username) {
+
+    	List<String> users = followService.getRequests(username);
+    	
+        if(users.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        return new ResponseEntity<>(users, HttpStatus.OK);
+    }
 }

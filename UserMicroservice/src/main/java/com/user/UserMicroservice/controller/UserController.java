@@ -89,6 +89,12 @@ public class UserController {
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
     
+    @GetMapping(path = "/users")
+    public ResponseEntity<?> users(){
+        List<User> users = userService.users();
+        return new ResponseEntity<>(users, HttpStatus.OK);
+    }
+    
     @GetMapping(path = "/public")
     public ResponseEntity<?> getPublicProfile() {
 
