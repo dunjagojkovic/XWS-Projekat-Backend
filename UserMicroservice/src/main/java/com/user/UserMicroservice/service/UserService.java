@@ -174,4 +174,13 @@ public class UserService {
     	return results;
     	
     }
+    
+    public User getUser(String username) {
+    	
+    	User user = userRepository.findByUsername(username).get();
+    	System.out.println(username);
+        
+    	return user;
+    	
+    }
 }

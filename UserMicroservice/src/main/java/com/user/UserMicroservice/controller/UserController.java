@@ -106,4 +106,17 @@ public class UserController {
 
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
+    
+    @GetMapping(path = "/user/{username}")
+    @PreAuthorize("hasAuthority('User')")
+    public ResponseEntity<?> getUser(@PathVariable String username) {
+
+    	User user = userService.getUser(username);
+    	
+        if(user == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        return new ResponseEntity<>(user, HttpStatus.OK);
+    }
 }
