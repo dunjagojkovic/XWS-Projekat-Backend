@@ -9,6 +9,8 @@ import (
 	"log"
 	"net/http"
 
+	jobGw "common/proto/job_service"
+
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -34,6 +36,11 @@ func (server *Server) initHandlers() {
 	err := postGw.RegisterPostServiceHandlerFromEndpoint(context.TODO(), server.mux, postEmdpoint, opts)
 	if err != nil {
 		panic(err)
+	}
+	jobEmdpoint := fmt.Sprintf("%s:%s", server.config.JobHost, server.config.JobPort)
+	errJ := jobGw.RegisterJobServiceHandlerFromEndpoint(context.TODO(), server.mux, jobEmdpoint, opts)
+	if errJ != nil {
+		panic(errJ)
 	}
 
 }
