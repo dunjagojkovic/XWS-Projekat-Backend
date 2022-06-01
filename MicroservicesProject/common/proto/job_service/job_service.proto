@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+option go_package = "common/job";
+
+package job;
+
+import "google/api/annotations.proto";
+
+service JobService{
+
+    
+        rpc GetAll(GetAllRequest) returns(GetAllResponse) {
+        	option (google.api.http) = {
+			get: "/jobs"
+		};
+        }
+
+        rpc CreateJobOffer(CreateJobOfferRequest) returns(CreateJobOfferResponse) {
+                option (google.api.http) = {
+                        post: "/job"
+                        body: "job"
+                };
+
+        }
+
+        rpc JobOfferSearch(JobOfferSearchRequest) returns(GetAllResponse) {
+                option (google.api.http) = {
+                        post: "/jobs/search"
+                        body: "search"
+                };
+
+        }
+}
+
+message JobOfferSearchRequest {
+        Search search = 1;
+}
+
+message Search {
+        string position = 1;
+}
+
+message GetAllRequest {
+}
+
+message GetAllResponse {
+        repeated JobOffer offers = 1;
+}
+
+message CreateJobOfferRequest {
+        CreateJobOffer job = 1;
+}
+
+message CreateJobOfferResponse {
+        string id = 1;
+}
+
+message CreateJobOffer {
+        string position = 1;
+        string description = 2;
+        string dailyActivities = 3;
+        string precondition = 4;
+}
+
+message JobOffer {
+        string id = 1;
+        string position = 2;
+        string description = 3;
+        string dailyActivities = 4;
+        string precondition = 5;
+}
+
+
