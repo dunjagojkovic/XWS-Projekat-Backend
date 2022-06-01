@@ -38,16 +38,19 @@ public class FollowController {
     	return new ResponseEntity<>(HttpStatus.OK);
     }
 	
+	@PostMapping(path = "/deny")
+    @PreAuthorize("hasAuthority('User')")
+    public ResponseEntity<?> deny(@RequestBody FollowDTO dto) {
+		followService.deny(dto);
+    	return new ResponseEntity<>(HttpStatus.OK);
+    }
+	
 	@GetMapping(value = "/following/{username}")
     @PreAuthorize("hasAuthority('User')")
     public ResponseEntity<?> getFollowingUsers(@PathVariable String username) {
 
     	List<String> users = followService.getFollowing(username);
     	
-        if(users.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
 	
@@ -57,10 +60,15 @@ public class FollowController {
 
     	List<String> users = followService.getRequests(username);
     	
-        if(users.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+        return new ResponseEntity<>(users, HttpStatus.OK);
+    }
+	
+	@GetMapping(value = "/requests/{username}")
+    @PreAuthorize("hasAuthority('User')")
+    public ResponseEntity<?> getRequests(@PathVariable String username) {
 
+    	List<String> users = followService.getSentRequests(username);
+    
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
 }

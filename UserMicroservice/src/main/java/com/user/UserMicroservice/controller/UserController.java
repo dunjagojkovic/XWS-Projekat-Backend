@@ -90,6 +90,7 @@ public class UserController {
     }
     
     @GetMapping(path = "/users")
+    @PreAuthorize("hasAuthority('User')")
     public ResponseEntity<?> users(){
         List<User> users = userService.users();
         return new ResponseEntity<>(users, HttpStatus.OK);
