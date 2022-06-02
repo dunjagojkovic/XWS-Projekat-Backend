@@ -3,15 +3,6 @@ package com.agent.dto;
 public class CompanyDTO {
 
     private Long id;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     private String name;
     private String state;
     private String city;
@@ -21,6 +12,15 @@ public class CompanyDTO {
     private String description;
     private Long ownerId;
     private String status;
+
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public String getStatus() {
         return status;

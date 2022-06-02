@@ -50,7 +50,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
 
-                .authorizeRequests().antMatchers("/api/users/register").permitAll()
+                .authorizeRequests().antMatchers("/api/users/registerUser").permitAll()
 
                 .anyRequest().authenticated().and()
 
@@ -68,7 +68,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     public void configure(WebSecurity web) throws Exception {
-        web.ignoring().antMatchers(HttpMethod.POST, "/api/users/login", "api/users/register");
+        web.ignoring().antMatchers(HttpMethod.POST, "/api/users/login", "api/users/registerUser");
         web.ignoring().antMatchers(HttpMethod.OPTIONS, "/**");
     }
 }

@@ -34,7 +34,7 @@ public class UserController {
     private CustomUserDetailsService customUserService;
 
 
-    @PostMapping(consumes = "application/json", path = "/register")
+    @PostMapping(consumes = "application/json", path = "/registerUser")
     public ResponseEntity<?> registerUser(@RequestBody RegistrationDTO registrationDTO) {
 
         User user = userService.userRegistration(registrationDTO);

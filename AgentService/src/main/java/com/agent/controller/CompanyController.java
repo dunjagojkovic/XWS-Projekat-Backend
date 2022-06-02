@@ -19,7 +19,7 @@ public class CompanyController {
     @Autowired
     CompanyService companyService;
 
-    @PostMapping()
+    @PostMapping(consumes = "application/json", path = "/registerCompany")
     public ResponseEntity<?> add(@RequestBody CompanyDTO dto) {
         Company company  = companyService.add(dto);
 

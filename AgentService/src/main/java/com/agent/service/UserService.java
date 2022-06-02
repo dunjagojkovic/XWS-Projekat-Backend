@@ -39,7 +39,7 @@ public class UserService {
         user.setPhoneNumber(registrationDTO.getPhoneNumber());
         user.setGender(registrationDTO.getGender());
         user.setBirthDate(registrationDTO.getBirthDate());
-        user.setType("User");
+        user.setType(registrationDTO.getType());
 
         return userRepository.save(user);
     }
@@ -47,7 +47,6 @@ public class UserService {
     public User getCurrentUser() {
 
         String username = SecurityUtils.getCurrentUserLogin().get();
-        System.out.println(username);
         return userRepository.findByUsername(username).get();
     }
 
