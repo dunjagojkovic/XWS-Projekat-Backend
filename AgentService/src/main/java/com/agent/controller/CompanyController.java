@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "*")
 @RequestMapping("api/companies")
 public class CompanyController {
 
@@ -26,10 +26,24 @@ public class CompanyController {
         return new ResponseEntity<>(CompanyConverters.modelToDTO(company), HttpStatus.OK);
     }
 
-    @GetMapping(path = "/allCompanies")
+    @GetMapping(path = "/allPendingCompanies")
     public ResponseEntity<?> getAll() {
-        List<Company> companies = companyService.getAll();
+        List<Company> companies = companyService.getAllCompaniesForApproving();
         return new ResponseEntity<>(CompanyConverters.modelsToDTOs(companies), HttpStatus.OK);
+    }
+
+
+    @PutMapping(path = "/approveCompanyRequest")
+    public ResponseEntity<?> approveRequest(@RequestBody CompanyDTO dto){
+        companyService.approveCompanyRegistration(dto);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PutMapping(path = "/declineCompanyRequest")
+    public ResponseEntity<?> declineCompanyRequest( @RequestBody CompanyDTO companyDTO) {
+        Company company = companyService.declineCompanyRegistration(companyDTO);
+
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
 }

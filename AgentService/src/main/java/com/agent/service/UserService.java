@@ -60,4 +60,14 @@ public class UserService {
         return false;
     }
 
+    public User updateUserRole(Long id){
+
+        Optional<User> owner = userRepository.findById(id);
+        owner.get().setType("CompanyOwner");
+
+        return userRepository.save(owner.get());
+
+
+    }
+
 }
