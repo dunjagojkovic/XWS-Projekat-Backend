@@ -1,5 +1,6 @@
 package com.agent.service;
 
+import com.agent.dto.CompanyDTO;
 import com.agent.dto.JobOfferDTO;
 import com.agent.model.Company;
 import com.agent.model.JobOffer;
@@ -31,4 +32,6 @@ public class JobOfferService {
 
         return jobOfferRepository.save(jobOffer);
     }
+
+
 }

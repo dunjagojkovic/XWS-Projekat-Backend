@@ -51,4 +51,11 @@ public class CompanyController {
         return new ResponseEntity<>(CompanyConverters.modelsToDTOs(companies), HttpStatus.OK);
     }
 
+    @PutMapping(path = "/editCompanyInfo")
+    public ResponseEntity<?> editCompanyInfo(@RequestBody CompanyDTO dto) {
+        Company company = companyService.editCompanyInfo(dto);
+
+        return new ResponseEntity<>(company, HttpStatus.OK);
+    }
+
 }

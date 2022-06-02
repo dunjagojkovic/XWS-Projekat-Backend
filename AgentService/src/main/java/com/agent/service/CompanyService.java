@@ -68,5 +68,34 @@ public class CompanyService {
         return companyRepository.findAllByOwnerIdAndStatus(userService.getCurrentUser().getId(), "Approved");
     }
 
+    public Company editCompanyInfo(CompanyDTO companyDTO) {
+        Company company = companyRepository.getById(companyDTO.getId());
+
+        if (companyDTO.getName() != null && !companyDTO.getName().equals("")){
+            company.setName(companyDTO.getName());
+        }
+        if (companyDTO.getAddress() != null && !companyDTO.getAddress().equals("")){
+            company.setAddress(companyDTO.getAddress());
+        }
+        if (companyDTO.getCity() != null && !companyDTO.getCity().equals("")){
+            company.setCity(companyDTO.getCity());
+        }
+        if (companyDTO.getContact() != null && !companyDTO.getContact().equals("")){
+            company.setContact(companyDTO.getContact());
+        }
+        if (companyDTO.getDescription() != null && !companyDTO.getDescription().equals("")){
+            company.setDescription(companyDTO.getDescription());
+        }
+        if (companyDTO.getEmail() != null && !companyDTO.getEmail().equals("")){
+            company.setEmail(companyDTO.getEmail());
+        }
+        if (companyDTO.getState() != null && !companyDTO.getState().equals("")){
+            company.setState(companyDTO.getState());
+        }
+
+        return companyRepository.save(company);
+
+    }
+
 
 }
