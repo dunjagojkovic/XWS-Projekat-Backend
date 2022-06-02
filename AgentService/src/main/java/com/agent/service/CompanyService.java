@@ -65,7 +65,7 @@ public class CompanyService {
 
 
     public List<Company> getAllCompaniesForOwner(){
-        return companyRepository.findAllByOwnerId(userService.getCurrentUser().getId());
+        return companyRepository.findAllByOwnerIdAndStatus(userService.getCurrentUser().getId(), "Approved");
     }
 
 
