@@ -13,4 +13,5 @@ public class JobOfferDTO {
     private String responsibilities;
     private String requirements;
     private String benefit;
+    private Long companyId;
 }
