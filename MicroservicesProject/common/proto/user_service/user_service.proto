@@ -1,0 +1,227 @@
+syntax = "proto3";
+
+option go_package = "common/user";
+
+package user;
+
+import "google/api/annotations.proto";
+
+service UserService{
+
+    rpc getUser(GetUserRequest) returns(GetUserResponse) {
+        option (google.api.http) = {
+			get: "/api/users/user/{username}"
+		};
+    }
+
+    rpc getPublicProfile(GetRequest) returns(GetResponse){
+        option (google.api.http) = {
+			get: "/api/users/public"
+		};
+    }
+
+    rpc users(GetRequest) returns(GetResponse){
+        option (google.api.http) = {
+			get: "/api/users/users"
+		};
+    }
+
+    rpc getCurrentUser(GetRequest) returns(GetResponse){
+        option (google.api.http) = {
+			get: "/api/users/current"
+		};
+    }
+
+    rpc registerUser(RegisterUserRequest) returns(RegisterUserResponse){
+        option (google.api.http) = {
+			post: "/api/users/register"
+            body: "user"
+		};
+    }
+
+    rpc login(LoginRequest) returns(LoginResponse){
+        option (google.api.http) = {
+			post: "/api/users/login"
+            body: "user"
+		};
+    }
+
+    rpc edit(EditRequest) returns(RegisterUserResponse){
+        option (google.api.http) = {
+			post: "/api/users"
+            body: "user"
+		};
+    }
+
+    rpc changePassword(ChangePasswordRequest) returns(ChangePasswordResponse){
+        option (google.api.http) = {
+			post: "/api/users/changePassword"
+            body: "password"
+		};
+    }
+
+    rpc filterUsers(EditRequest) returns(FilterResponse){
+           option (google.api.http) = {
+			post: "/api/users/filterUsers"
+            body: "user"
+		};
+    }
+
+    rpc getRequests(GetUserRequest) returns(GetResponse){
+        option (google.api.http) = {
+			get: "/api/follow/requests/{username}"
+		};
+    }
+
+    rpc getRequestedUsers(GetUserRequest) returns(GetResponse){
+        option (google.api.http) = {
+			get: "/api/follow/requested/{username}"
+		};
+    }
+
+    rpc getFollowingUsers(GetUserRequest) returns(GetResponse){
+        option (google.api.http) = {
+			get: "/api/follow/following/{username}"
+		};
+    }
+
+     rpc follow(FollowRequest) returns(FollowResponse){
+           option (google.api.http) = {
+			post: "/api/follow/follower"
+            body: "follow"
+		};
+    }
+
+     rpc accept(FollowRequest) returns(FollowResponse){
+           option (google.api.http) = {
+			post: "/api/follow/accept"
+            body: "follow"
+		};
+    }
+
+     rpc deny(FollowRequest) returns(FollowResponse){
+           option (google.api.http) = {
+			post: "/api/follow/deny"
+            body: "follow"
+		};
+    }
+}
+
+message GetUserRequest {
+    string username = 1;
+}
+
+message GetUserResponse {
+    User user = 1;
+}
+
+message GetRequest {
+}
+
+message GetResponse {
+    repeated User users = 1;
+}
+
+message User {
+    string id = 1;
+    string name = 2;
+    string surname = 3;
+    string email = 4;
+    string password = 5;
+    string phoneNumber = 6;
+    string gender = 7;
+    string username = 8;
+    boolean isPublic = 9;
+    string biography = 10;
+    string birthDate = 11;
+    string workExperience = 12;
+    string education = 13;
+    string hobby = 14;
+    string interest = 15;
+}
+
+message RegisterUserResponse {
+    string id = 1;
+}
+
+message RegisterUserRequest {
+    RegisterUser user = 1;
+}
+
+message RegisterUser {
+    string name = 1;
+    string surname = 2;
+    string email = 3;
+    string username = 4;
+    string password = 5;
+    string phoneNumber = 6;
+    string gender = 7;
+    boolean isPublic = 8;
+    string birthDate = 9;
+    string type = 10;
+}
+
+message EditRequest {
+    EditUser user = 1;
+}
+
+message EditUser {
+    string name = 1;
+    string surname = 2;
+    string email = 3;
+    string password = 4;
+    string phoneNumber = 5;
+    string gender = 6;
+    string username = 7;
+    boolean isPublic = 8;
+    string biography = 9;
+    string birthDate = 10;
+    string workExperience = 11;
+    string education = 12;
+    string hobby = 13;
+    string interests = 14;
+    string searchTerm = 15;
+}
+
+message EditResponse {
+    string id = 1;
+}
+
+message LoginRequest {
+    LoginUser user = 1;
+}
+
+message LoginUser {
+    string username = 1;
+    string password = 2;
+}
+
+message LoginResponse {
+    string id = 1;
+}
+
+message ChangePasswordRequest {
+    ChangePassword password = 1;
+}
+
+message ChangePassword {
+    string oldPassword = 1;
+    string newPpassword = 2;
+}
+
+message ChangePasswordResponse {
+    string id = 1;
+}
+
+message FollowRequest {
+    Follow follow = 1;
+}
+
+message FollowResponse {
+    string id = 1;
+}
+
+message Follow {
+    string follower = 1;
+    string following =2;
+}
