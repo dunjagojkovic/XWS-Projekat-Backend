@@ -50,24 +50,5 @@ public class UserService {
         return userRepository.findByUsername(username).get();
     }
 
-    public boolean userExists(User user, List<User> users) {
-
-        for(User u: users){
-            if(u.getId().equals(user.getId())){
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public User updateUserRole(Long id){
-
-        Optional<User> owner = userRepository.findById(id);
-        owner.get().setType("CompanyOwner");
-
-        return userRepository.save(owner.get());
-
-
-    }
 
 }

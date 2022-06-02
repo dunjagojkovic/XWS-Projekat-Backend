@@ -35,15 +35,20 @@ public class CompanyController {
 
     @PutMapping(path = "/approveCompanyRequest")
     public ResponseEntity<?> approveRequest(@RequestBody CompanyDTO dto){
-        companyService.approveCompanyRegistration(dto);
-        return new ResponseEntity<>(HttpStatus.OK);
+       Company company =  companyService.approveCompanyRegistration(dto);
+        return new ResponseEntity<>(company, HttpStatus.OK);
     }
 
     @PutMapping(path = "/declineCompanyRequest")
     public ResponseEntity<?> declineCompanyRequest( @RequestBody CompanyDTO companyDTO) {
         Company company = companyService.declineCompanyRegistration(companyDTO);
+        return new ResponseEntity<>(company, HttpStatus.OK);
+    }
 
-        return new ResponseEntity<>(HttpStatus.OK);
+    @GetMapping(path = "/myCompanies")
+    public ResponseEntity<?> getMyCompanies() {
+        List<Company> companies = companyService.getAllCompaniesForOwner();
+        return new ResponseEntity<>(CompanyConverters.modelsToDTOs(companies), HttpStatus.OK);
     }
 
 }

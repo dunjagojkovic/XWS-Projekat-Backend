@@ -37,13 +37,12 @@ public class CompanyService {
         company.setOwner(userService.getCurrentUser());
         company.setStatus("Pending");
 
-
         return  companyRepository.save(company);
     }
 
     public List<Company> getAllCompaniesForApproving() {
 
-            return companyRepository.findAllByStatus("Pending");
+        return companyRepository.findAllByStatus("Pending");
     }
 
     public Company approveCompanyRegistration(CompanyDTO dto){
@@ -64,6 +63,10 @@ public class CompanyService {
         return companyRepository.save(companyToDecline);
     }
 
+
+    public List<Company> getAllCompaniesForOwner(){
+        return companyRepository.findAllByOwnerId(userService.getCurrentUser().getId());
+    }
 
 
 }
