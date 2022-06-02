@@ -34,7 +34,7 @@ public class CompanyService {
         company.setState(companyDTO.getState());
         company.setContact(companyDTO.getContact());
         company.setDescription(companyDTO.getDescription());
-        company.setOwnerId(userService.getCurrentUser().getId());
+        company.setOwner(userService.getCurrentUser());
         company.setStatus("Pending");
 
 
@@ -49,13 +49,10 @@ public class CompanyService {
     public Company approveCompanyRegistration(CompanyDTO dto){
 
         Company companyToApprove = companyRepository.getById(dto.getId());
-        Optional<User> potentialOwner = userRepository.findById(dto.getOwnerId());
 
         companyToApprove.setStatus("Approved");
-        potentialOwner.get().setType("Company owner");
-        userRepository.save(potentialOwner.get());
-
-
+        companyToApprove.getOwner().setType("Company owner");
+        userRepository.save(companyToApprove.getOwner());
         return  companyRepository.save(companyToApprove);
     }
 

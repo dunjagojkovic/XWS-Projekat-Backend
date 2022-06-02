@@ -18,7 +18,7 @@ public class CompanyConverters {
         dto.setContact(company.getContact());
         dto.setDescription(company.getDescription());
         dto.setState(company.getState());
-        dto.setOwnerId(company.getOwnerId());
+        dto.setOwnerId(company.getOwner().getId());
         dto.setStatus(company.getStatus());
         dto.setId(company.getId());
 

@@ -23,7 +23,9 @@ public class Company {
     private String contact;
     private String email;
     private String description;
-    private Long ownerId;
+
+    @ManyToOne
+    private User owner;
     private String status;
 
 
