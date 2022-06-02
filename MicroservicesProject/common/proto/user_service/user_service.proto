@@ -26,7 +26,7 @@ service UserService{
 		};
     }
 
-    rpc getCurrentUser(GetRequest) returns(GetResponse){
+    rpc getCurrentUser(GetRequest) returns(GetUserResponse){
         option (google.api.http) = {
 			get: "/api/users/current"
 		};
@@ -60,7 +60,7 @@ service UserService{
 		};
     }
 
-    rpc filterUsers(EditRequest) returns(FilterResponse){
+    rpc filterUsers(EditRequest) returns(GetResponse){
            option (google.api.http) = {
 			post: "/api/users/filterUsers"
             body: "user"
@@ -131,7 +131,7 @@ message User {
     string phoneNumber = 6;
     string gender = 7;
     string username = 8;
-    boolean isPublic = 9;
+    bool isPublic = 9;
     string biography = 10;
     string birthDate = 11;
     string workExperience = 12;
@@ -156,7 +156,7 @@ message RegisterUser {
     string password = 5;
     string phoneNumber = 6;
     string gender = 7;
-    boolean isPublic = 8;
+    bool isPublic = 8;
     string birthDate = 9;
     string type = 10;
 }
@@ -173,7 +173,7 @@ message EditUser {
     string phoneNumber = 5;
     string gender = 6;
     string username = 7;
-    boolean isPublic = 8;
+    bool isPublic = 8;
     string biography = 9;
     string birthDate = 10;
     string workExperience = 11;
@@ -225,3 +225,4 @@ message Follow {
     string follower = 1;
     string following =2;
 }
+
