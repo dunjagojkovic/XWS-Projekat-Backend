@@ -11,6 +11,7 @@ import (
 
 	jobGw "common/proto/job_service"
 
+	userGw "common/proto/user_service"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -41,6 +42,11 @@ func (server *Server) initHandlers() {
 	errJ := jobGw.RegisterJobServiceHandlerFromEndpoint(context.TODO(), server.mux, jobEmdpoint, opts)
 	if errJ != nil {
 		panic(errJ)
+	}
+	userEndpoint := fmt.Sprintf("%s:%s", server.config.UserHost, server.config.UserPort)
+	errU := userGw.RegisterUserServiceHandlerFromEndpoint(context.TODO(), server.mux, userEndpoint , opts)
+	if errU != nil {
+		panic(errU)
 	}
 
 }
