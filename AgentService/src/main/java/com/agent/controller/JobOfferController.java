@@ -1,6 +1,7 @@
 package com.agent.controller;
 
 import com.agent.dto.CommentDTO;
+import com.agent.dto.CompanyOfferDTO;
 import com.agent.dto.JobOfferDTO;
 import com.agent.dto.SalaryDTO;
 import com.agent.dto.SurveyDTO;
@@ -47,7 +48,7 @@ public class JobOfferController {
     
     @GetMapping(value = "/offers")
     public ResponseEntity<?> getJobOffers() {
-        List<JobOffer> jobOffers = jobOfferService.getJobOffers();
+        List<CompanyOfferDTO> jobOffers = jobOfferService.getJobOffers();
         return new ResponseEntity<>(jobOffers, HttpStatus.OK);
     }
     

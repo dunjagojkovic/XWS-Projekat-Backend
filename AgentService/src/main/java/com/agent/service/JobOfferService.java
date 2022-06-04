@@ -2,6 +2,7 @@ package com.agent.service;
 
 import com.agent.dto.CommentDTO;
 import com.agent.dto.CompanyDTO;
+import com.agent.dto.CompanyOfferDTO;
 import com.agent.dto.JobOfferDTO;
 import com.agent.dto.SalaryDTO;
 import com.agent.dto.SurveyDTO;
@@ -144,15 +145,25 @@ public class JobOfferService {
     	
     }
     
-    public List<JobOffer> getJobOffers(){
+    public List<CompanyOfferDTO> getJobOffers(){
     	
     	List<JobOffer> offers = new ArrayList<>();
     	offers = jobOfferRepository.findAll();
     	
+    	List<CompanyOfferDTO> offersDTO = new ArrayList<>();
     	for(JobOffer offer: offers) {
-    		System.out.println(offer.getCompany().getName());
+    		CompanyOfferDTO dto = new CompanyOfferDTO();
+    		dto.setId(offer.getId());
+    		dto.setPosition(offer.getPosition());
+    		dto.setSalary(offer.getSalary());
+    		dto.setResponsibilities(offer.getResponsibilities());
+    		dto.setRequirements(offer.getRequirements());
+    		dto.setBenefit(offer.getBenefit());
+    		dto.setCompany(offer.getCompany());
+    		
+    		offersDTO.add(dto);
     	}
-    	return offers;
+    	return offersDTO;
     }
 
 
