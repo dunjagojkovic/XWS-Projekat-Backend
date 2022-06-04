@@ -50,5 +50,17 @@ public class UserService {
         return userRepository.findByUsername(username).get();
     }
 
+    
+    public List<String> companyOwners() {
+    	List<String> owners = new ArrayList<>();
+    	List<User> users = new ArrayList<>(); 
+    	
+    	users = userRepository.findByType("Company owner");
+    	for(User user : users) {
+    		owners.add(user.getUsername());
+    	}
+    	
+    	return owners;
+    }
 
 }
