@@ -28,3 +28,7 @@ func (service *JobService) CreateJobOffer(job *model.JobOffer) (primitive.Object
 func (service *JobService) JobOfferSearch(position string) ([]model.JobOffer, error) {
 	return service.store.JobOfferSearch(position)
 }
+
+func (service *JobService) GetOwnerJobOffers(usernames []string) ([]model.JobOffer, error) {
+	return service.store.GetOwnerJobOffers(usernames)
+}

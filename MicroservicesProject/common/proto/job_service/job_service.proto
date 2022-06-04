@@ -30,6 +30,25 @@ service JobService{
                 };
 
         }
+
+        rpc OwnerJobOffers(OwnerJobOffersRequest) returns(GetAllResponse) {
+        	option (google.api.http) = {
+			post: "/owner/jobs"
+                        body: "owners"
+		};
+        }
+
+        
+}
+
+message JobOwner {
+        repeated string companyOwners = 1;
+}
+
+
+
+message OwnerJobOffersRequest {
+        JobOwner owners = 1;
 }
 
 message JobOfferSearchRequest {
