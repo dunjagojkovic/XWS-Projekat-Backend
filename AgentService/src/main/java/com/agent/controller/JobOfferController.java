@@ -45,6 +45,12 @@ public class JobOfferController {
         return new ResponseEntity<>(comments, HttpStatus.OK);
     }
     
+    @GetMapping(value = "/offers")
+    public ResponseEntity<?> getJobOffers() {
+        List<JobOffer> jobOffers = jobOfferService.getJobOffers();
+        return new ResponseEntity<>(jobOffers, HttpStatus.OK);
+    }
+    
     @PostMapping(path = "/salary")
     ResponseEntity<?> addSalary(@RequestBody SalaryDTO salaryDTO){
         Salary salary = jobOfferService.addSalary(salaryDTO);

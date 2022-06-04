@@ -143,6 +143,17 @@ public class JobOfferService {
     	return jobOfferSurveys;
     	
     }
+    
+    public List<JobOffer> getJobOffers(){
+    	
+    	List<JobOffer> offers = new ArrayList<>();
+    	offers = jobOfferRepository.findAll();
+    	
+    	for(JobOffer offer: offers) {
+    		System.out.println(offer.getCompany().getName());
+    	}
+    	return offers;
+    }
 
 
 }
