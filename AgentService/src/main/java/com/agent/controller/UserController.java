@@ -65,5 +65,11 @@ public class UserController {
 
         return new ResponseEntity<>(userService.getCurrentUser(), HttpStatus.OK);
     }
+    
+    @GetMapping(path = "/owners")
+    public ResponseEntity<?> getCompanyOwners() {
+
+        return new ResponseEntity<>(userService.companyOwners(), HttpStatus.OK);
+    }
 
 }

@@ -10,4 +10,5 @@ type JobStoreI interface {
 	GetAll() ([]*model.JobOffer, error)
 	CreateJobOffer(job *model.JobOffer) (primitive.ObjectID, error)
 	JobOfferSearch(position string) ([]model.JobOffer, error)
+	GetOwnerJobOffers(usernames []string) ([]model.JobOffer, error)
 }

@@ -87,6 +87,39 @@ func (store *JobStore) JobOfferSearch(position string) ([]model.JobOffer, error)
 	return foundJobs, nil
 }
 
+func (store *JobStore) GetOwnerJobOffers(usernames []string) ([]model.JobOffer, error) {
+
+	cur, err := store.jobs.Find(context.TODO(), bson.D{{}})
+	if err != nil {
+		return nil, err
+	}
+
+	var jobs []model.JobOffer
+
+	// Iterate through the cursor
+	for cur.Next(context.TODO()) {
+		var job model.JobOffer
+		err := cur.Decode(&job)
+		if err != nil {
+			return nil, err
+		}
+
+		jobs = append(jobs, job)
+	}
+
+	var ownerJobs []model.JobOffer
+
+	for _, job := range jobs {
+		for _, username := range usernames {
+			if job.User == username {
+				ownerJobs = append(ownerJobs, job)
+			}
+		}
+	}
+
+	return ownerJobs, nil
+}
+
 func decode(cursor *mongo.Cursor) (jobs []*model.JobOffer, err error) {
 	for cursor.Next(context.TODO()) {
 		var job model.JobOffer

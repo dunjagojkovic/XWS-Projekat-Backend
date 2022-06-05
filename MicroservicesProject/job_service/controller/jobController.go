@@ -23,7 +23,6 @@ func NewJobController(service *service.JobService) *JobController {
 }
 
 func (jc *JobController) GetAll(ctx context.Context, request *pb.GetAllRequest) (*pb.GetAllResponse, error) {
-	fmt.Println("usla")
 	jobs, err := jc.service.GetAll()
 	if err != nil {
 		return nil, err
@@ -33,6 +32,25 @@ func (jc *JobController) GetAll(ctx context.Context, request *pb.GetAllRequest) 
 	}
 	for _, job := range jobs {
 		current := mapJob(job)
+		response.Offers = append(response.Offers, current)
+	}
+	return response, nil
+}
+
+func (jc *JobController) OwnerJobOffers(ctx context.Context, request *pb.OwnerJobOffersRequest) (*pb.GetAllResponse, error) {
+
+	usernames := request.Owners.CompanyOwners
+	fmt.Println(usernames)
+	jobs, err := jc.service.GetOwnerJobOffers(usernames)
+	fmt.Println(jobs)
+	if err != nil {
+		return nil, err
+	}
+	response := &pb.GetAllResponse{
+		Offers: []*pb.JobOffer{},
+	}
+	for _, job := range jobs {
+		current := mapJob(&job)
 		response.Offers = append(response.Offers, current)
 	}
 	return response, nil
