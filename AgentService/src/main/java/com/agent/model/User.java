@@ -28,6 +28,7 @@ public class User {
     private String birthDate;
     private String type;
 
+
     public String getRole() { return type.toString(); }
 
 

@@ -29,6 +29,10 @@ func (service *JobService) JobOfferSearch(position string) ([]model.JobOffer, er
 	return service.store.JobOfferSearch(position)
 }
 
-func (service *JobService) GetOwnerJobOffers(usernames []string) ([]model.JobOffer, error) {
-	return service.store.GetOwnerJobOffers(usernames)
+func (service *JobService) GetOwnerJobOffers(key string) ([]model.JobOffer, error) {
+	return service.store.GetOwnerJobOffers(key)
+}
+
+func (service *JobService) InsertKey(username string, key string) (primitive.ObjectID, error) {
+	return service.store.InsertKey(username, key)
 }

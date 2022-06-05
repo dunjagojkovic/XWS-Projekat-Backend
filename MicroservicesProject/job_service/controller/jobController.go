@@ -3,7 +3,6 @@ package controller
 import (
 	pb "common/proto/job_service"
 	"context"
-	"fmt"
 	"jobS/model"
 	"jobS/service"
 
@@ -39,10 +38,9 @@ func (jc *JobController) GetAll(ctx context.Context, request *pb.GetAllRequest) 
 
 func (jc *JobController) OwnerJobOffers(ctx context.Context, request *pb.OwnerJobOffersRequest) (*pb.GetAllResponse, error) {
 
-	usernames := request.Owners.CompanyOwners
-	fmt.Println(usernames)
-	jobs, err := jc.service.GetOwnerJobOffers(usernames)
-	fmt.Println(jobs)
+	key := request.Key.OwnerKey
+
+	jobs, err := jc.service.GetOwnerJobOffers(key)
 	if err != nil {
 		return nil, err
 	}
@@ -66,6 +64,18 @@ func (jc *JobController) CreateJobOffer(ctx context.Context, request *pb.CreateJ
 	return &pb.CreateJobOfferResponse{
 		Id: id.Hex(),
 	}, nil
+
+}
+
+func (jc *JobController) AddKey(ctx context.Context, request *pb.AddKeyRequest) (*pb.GetAllRequest, error) {
+
+	username := request.OfferKey.Username
+	key := request.OfferKey.Key
+	_, err := jc.service.InsertKey(username, key)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.GetAllRequest{}, nil
 
 }
 
@@ -109,6 +119,7 @@ func mapJob(job *model.JobOffer) *pb.JobOffer {
 		DailyActivities: job.DailyActivities,
 		Precondition:    job.Precondition,
 		User:            job.User,
+		Key:             job.Key,
 	}
 
 	return jobPb
