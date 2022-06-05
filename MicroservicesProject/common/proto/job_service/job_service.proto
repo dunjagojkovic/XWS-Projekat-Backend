@@ -31,25 +31,56 @@ service JobService{
 
         }
 
-        rpc OwnerJobOffers(OwnerJobOffersRequest) returns(GetAllResponse) {
+        /*rpc OwnerJobOffers(OwnerJobOffersRequest) returns(GetAllResponse) {
         	option (google.api.http) = {
 			post: "/owner/jobs"
                         body: "owners"
 		};
+        }*/
+
+        rpc OwnerJobOffers(OwnerJobOffersRequest) returns(GetAllResponse) {
+        	option (google.api.http) = {
+			post: "/owner/jobs"
+                        body: "key"
+		};
+        }
+
+        rpc AddKey(AddKeyRequest) returns(GetAllRequest) {
+                option (google.api.http) = {
+                        post: "/jobs/key"
+                        body: "offerKey"
+                };
+
         }
 
         
 }
 
-message JobOwner {
+message OwnerJob {
+        string ownerKey = 1;
+}
+
+message OwnerJobOffersRequest {
+        OwnerJob key = 1;
+}
+
+message AddKeyJobOffer {
+        string key = 1;
+        string username = 2;
+}
+
+message AddKeyRequest {
+
+        AddKeyJobOffer offerKey = 1;
+}
+
+/*message JobOwner {
         repeated string companyOwners = 1;
 }
 
-
-
 message OwnerJobOffersRequest {
         JobOwner owners = 1;
-}
+}*/
 
 message JobOfferSearchRequest {
         Search search = 1;
@@ -80,6 +111,7 @@ message CreateJobOffer {
         string dailyActivities = 3;
         string precondition = 4;
         string user = 5;
+        
 }
 
 message JobOffer {
@@ -89,6 +121,7 @@ message JobOffer {
         string dailyActivities = 4;
         string precondition = 5;
         string user = 6;
+        string key = 7;
 }
 
 

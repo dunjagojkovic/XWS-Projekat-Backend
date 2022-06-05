@@ -87,7 +87,7 @@ func (store *JobStore) JobOfferSearch(position string) ([]model.JobOffer, error)
 	return foundJobs, nil
 }
 
-func (store *JobStore) GetOwnerJobOffers(usernames []string) ([]model.JobOffer, error) {
+func (store *JobStore) GetOwnerJobOffers(key string) ([]model.JobOffer, error) {
 
 	cur, err := store.jobs.Find(context.TODO(), bson.D{{}})
 	if err != nil {
@@ -110,14 +110,31 @@ func (store *JobStore) GetOwnerJobOffers(usernames []string) ([]model.JobOffer, 
 	var ownerJobs []model.JobOffer
 
 	for _, job := range jobs {
-		for _, username := range usernames {
-			if job.User == username {
-				ownerJobs = append(ownerJobs, job)
-			}
+		if job.Key == key {
+			ownerJobs = append(ownerJobs, job)
 		}
+
 	}
 
 	return ownerJobs, nil
+}
+
+func (store *JobStore) InsertKey(username string, key string) (primitive.ObjectID, error) {
+
+	filter := bson.D{{"user", username}}
+
+	update := bson.D{
+		{"$set", bson.D{
+			{"key", key},
+		}},
+	}
+
+	_, err := store.jobs.UpdateMany(context.TODO(), filter, update)
+	if err != nil {
+		return primitive.NilObjectID, err
+	}
+
+	return primitive.NewObjectID(), nil
 }
 
 func decode(cursor *mongo.Cursor) (jobs []*model.JobOffer, err error) {
