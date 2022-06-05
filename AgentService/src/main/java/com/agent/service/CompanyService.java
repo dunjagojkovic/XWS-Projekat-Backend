@@ -97,5 +97,9 @@ public class CompanyService {
 
     }
 
+    public Company getCompanyInfo(Long id){
+        return companyRepository.getById(id);
+    }
+
 
 }
