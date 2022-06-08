@@ -1,0 +1,102 @@
+version: "3.8"
+
+services:
+  post_service:
+    image: post_service
+    container_name: post_service
+    build:
+      context: .
+      dockerfile: ./post_service/Dockerfile
+    restart: on-failure
+    environment:
+      POST_DB_HOST: ${POST_DB_HOST}
+      POST_DB_PORT: ${POST_DB_PORT}
+      POST_SERVICE_PORT: ${POST_SERVICE_PORT}
+    depends_on:
+      - post_db
+    networks:
+      - network
+
+  job_service:
+    image: job_service
+    container_name: job_service
+    build:
+      context: .
+      dockerfile: ./job_service/Dockerfile
+    restart: on-failure
+    environment:
+      JOB_DB_HOST: ${JOB_DB_HOST}
+      JOB_DB_PORT: ${JOB_DB_PORT}
+      JOB_SERVICE_PORT: ${JOB_SERVICE_PORT}
+    depends_on:
+      - job_db
+    networks:
+      - network
+
+  gateway:
+    image: gateway
+    container_name: gateway
+    build:
+      context: .
+      dockerfile: ./gateway/Dockerfile
+    restart: on-failure
+    ports:
+      - ${GATEWAY_PORT}:${GATEWAY_PORT}
+    environment:
+      GATEWAY_PORT: ${GATEWAY_PORT}
+      POST_SERVICE_HOST: ${POST_SERVICE_HOST}
+      POST_SERVICE_PORT: ${POST_SERVICE_PORT}
+      JOB_SERVICE_HOST: ${JOB_SERVICE_HOST}
+      JOB_SERVICE_PORT: ${JOB_SERVICE_PORT}
+    networks:
+      - network
+
+  post_db:
+    image: mongo
+    container_name: post_db
+    restart: on-failure
+    ports:
+      - 27017:27017
+    networks:
+      - network
+
+  job_db:
+    image: mongo
+    container_name: job_db
+    restart: on-failure
+    #ports:
+     # - 27018:27017
+    networks:
+      - network
+
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://post_db:27017
+    networks:
+      - network
+    volumes:
+      - ./mongo_post_db:/data/db
+
+  mongo-express_job:
+    image: mongo-express
+    restart: always
+    ports:
+      - 8082:8081
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://job_db:27017
+    networks:
+      - network
+    volumes:
+      - ./mongo_job_db:/data/db
+
+networks:
+  network:
+    driver: bridge
+
+volumes:
+   mongo_post_db:
+   mongo_job_db:

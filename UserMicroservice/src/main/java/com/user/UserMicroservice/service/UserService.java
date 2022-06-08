@@ -154,6 +154,25 @@ public class UserService {
         }
         return results;
     }
+    
+    public List<User> users() {
+        List<User> users = userRepository.findAll();
+        List<User> result = new ArrayList<>();
+        
+        User user = getCurrentUser();
+        
+        for(User u: users) {
+        	
+        	if(!u.getUsername().equals(user.getUsername())) {
+        		result.add(u);
+        	}
+        	
+        }
+        
+        return result;
+    }
+    
+    
 
     public boolean userExists(User user, List<User> users) {
 
@@ -165,17 +184,28 @@ public class UserService {
         return false;
     }
     
-    public List<String> getPublicProfile() {
+    public List<User> getPublicProfile() {
     	
     	List<User> users = userRepository.findAllByIsPublic(true);
-    	
-    	List<String> usernames = new ArrayList<>();
+        List<User> results = new ArrayList<>();
+//    	List<String> usernames = new ArrayList<>();
     	
     	for(User user: users) {
-    		usernames.add(user.getUsername());
+//            usernames.add(user.getUsername());
+    		results.add(user);
     	}
+
+//        return usernames;
+    	return results;
     	
-    	return usernames;
+    }
+    
+    public User getUser(String username) {
+    	
+    	User user = userRepository.findByUsername(username).get();
+    	System.out.println(username);
+        
+    	return user;
     	
     }
 

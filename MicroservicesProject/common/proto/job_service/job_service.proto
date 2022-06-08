@@ -1,0 +1,127 @@
+syntax = "proto3";
+
+option go_package = "common/job";
+
+package job;
+
+import "google/api/annotations.proto";
+
+service JobService{
+
+    
+        rpc GetAll(GetAllRequest) returns(GetAllResponse) {
+        	option (google.api.http) = {
+			get: "/jobs"
+		};
+        }
+
+        rpc CreateJobOffer(CreateJobOfferRequest) returns(CreateJobOfferResponse) {
+                option (google.api.http) = {
+                        post: "/job"
+                        body: "job"
+                };
+
+        }
+
+        rpc JobOfferSearch(JobOfferSearchRequest) returns(GetAllResponse) {
+                option (google.api.http) = {
+                        post: "/jobs/search"
+                        body: "search"
+                };
+
+        }
+
+        /*rpc OwnerJobOffers(OwnerJobOffersRequest) returns(GetAllResponse) {
+        	option (google.api.http) = {
+			post: "/owner/jobs"
+                        body: "owners"
+		};
+        }*/
+
+        rpc OwnerJobOffers(OwnerJobOffersRequest) returns(GetAllResponse) {
+        	option (google.api.http) = {
+			post: "/owner/jobs"
+                        body: "key"
+		};
+        }
+
+        rpc AddKey(AddKeyRequest) returns(GetAllRequest) {
+                option (google.api.http) = {
+                        post: "/jobs/key"
+                        body: "offerKey"
+                };
+
+        }
+
+        
+}
+
+message OwnerJob {
+        string ownerKey = 1;
+}
+
+message OwnerJobOffersRequest {
+        OwnerJob key = 1;
+}
+
+message AddKeyJobOffer {
+        string key = 1;
+        string username = 2;
+}
+
+message AddKeyRequest {
+
+        AddKeyJobOffer offerKey = 1;
+}
+
+/*message JobOwner {
+        repeated string companyOwners = 1;
+}
+
+message OwnerJobOffersRequest {
+        JobOwner owners = 1;
+}*/
+
+message JobOfferSearchRequest {
+        Search search = 1;
+}
+
+message Search {
+        string position = 1;
+}
+
+message GetAllRequest {
+}
+
+message GetAllResponse {
+        repeated JobOffer offers = 1;
+}
+
+message CreateJobOfferRequest {
+        CreateJobOffer job = 1;
+}
+
+message CreateJobOfferResponse {
+        string id = 1;
+}
+
+message CreateJobOffer {
+        string position = 1;
+        string description = 2;
+        string dailyActivities = 3;
+        string precondition = 4;
+        string user = 5;
+        
+}
+
+message JobOffer {
+        string id = 1;
+        string position = 2;
+        string description = 3;
+        string dailyActivities = 4;
+        string precondition = 5;
+        string user = 6;
+        string key = 7;
+}
+
+
