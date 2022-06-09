@@ -8,7 +8,7 @@ import lombok.Setter;
 @Setter
 public class SurveyDTO {
 	
-	private Long jobOfferId;
+	private Long companyId;
 	private String workEnvironment;
 	private String opportunities;
 	private String benefits;

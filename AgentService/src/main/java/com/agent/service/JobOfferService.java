@@ -34,9 +34,6 @@ public class JobOfferService {
     CompanyRepository companyRepository;
     
     @Autowired
-    CommentRepository commentRepository;
-    
-    @Autowired
     SalaryRepository salaryRepository;
     
     @Autowired
@@ -57,33 +54,7 @@ public class JobOfferService {
         return jobOfferRepository.save(jobOffer);
     }
     
-    public Comment comment(CommentDTO commentDTO){
-
-        JobOffer jobOffer = jobOfferRepository.getById(commentDTO.getJobOfferId());
-
-        Comment comment  = new Comment();
-        comment.setUsername(commentDTO.getUsername());
-        comment.setContent(commentDTO.getContent());
-        comment.setOffer(jobOffer);
-
-        return commentRepository.save(comment);
-    }
-    
-    
-    public List<Comment> getJobOfferComments(Long id){
-    	
-    	List<Comment> jobOfferComments = new ArrayList<>();
-    	List<Comment> comments = commentRepository.findAll();
-    
-    	for(Comment comment: comments) {
-    		if(comment.getOffer().getId() == id) {
-    			jobOfferComments.add(comment);
-    		}
-    	}
-    	
-    	return jobOfferComments;
-    	
-    }
+ 
     
     public Salary addSalary(SalaryDTO salaryDTO){
 
@@ -112,43 +83,11 @@ public class JobOfferService {
     	
     }
     
-    public Survey survey(SurveyDTO surveyDTO){
-
-        JobOffer jobOffer = jobOfferRepository.getById(surveyDTO.getJobOfferId());
-
-        Survey survey = new Survey();
-        survey.setWorkEnvironment(surveyDTO.getWorkEnvironment());
-        survey.setOpportunities(surveyDTO.getOpportunities());
-        survey.setBenefits(surveyDTO.getBenefits());
-        survey.setSalary(surveyDTO.getSalary());
-        survey.setCommunication(surveyDTO.getCommunication());
-        survey.setColleagues(surveyDTO.getColleagues());
-        survey.setSupervision(surveyDTO.getSupervision());
-        survey.setUsername(surveyDTO.getUsername());
-        survey.setOffer(jobOffer);
-
-        return surveyRepository.save(survey);
-    }
     
-    public List<Survey> getJobOfferSurveys(Long id){
-    	
-    	List<Survey> jobOfferSurveys = new ArrayList<>();
-    	List<Survey> surveys = surveyRepository.findAll();
-    
-    	for(Survey survey: surveys) {
-    		if(survey.getOffer().getId() == id) {
-    			jobOfferSurveys.add(survey);
-    		}
-    	}
-    	
-    	return jobOfferSurveys;
-    	
-    }
-    
-    public List<CompanyOfferDTO> getJobOffers(){
+    public List<CompanyOfferDTO> getJobOffers(Long id){
     	
     	List<JobOffer> offers = new ArrayList<>();
-    	offers = jobOfferRepository.findAll();
+    	offers = jobOfferRepository.findAllByCompanyId(id);
     	
     	List<CompanyOfferDTO> offersDTO = new ArrayList<>();
     	for(JobOffer offer: offers) {

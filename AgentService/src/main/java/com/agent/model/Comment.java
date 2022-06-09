@@ -25,7 +25,7 @@ public class Comment {
 	
 	 @JsonBackReference
 	 @ManyToOne
-	 private JobOffer offer;
+	 private Company company;
 	
 
 }

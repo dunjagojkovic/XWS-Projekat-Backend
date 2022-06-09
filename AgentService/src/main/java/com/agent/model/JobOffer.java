@@ -31,18 +31,11 @@ public class JobOffer {
     @JsonBackReference
     @ManyToOne
     private Company company;
-
-    @JsonManagedReference
-    @OneToMany(mappedBy = "offer", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private Set<Comment> comments = new HashSet<>();
     
     @JsonManagedReference
     @OneToMany(mappedBy = "offer", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<Salary> salaries = new HashSet<>();
     
-    @JsonManagedReference
-    @OneToMany(mappedBy = "offer", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private Set<Survey> surveys = new HashSet<>();
     
     
 
