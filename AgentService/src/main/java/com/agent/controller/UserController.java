@@ -56,38 +56,48 @@ public class UserController {
     public ResponseEntity<?> login(@RequestBody LoginDTO loginDTO) {
 
         User user = customUserService.findUserByUsername(loginDTO.getUsername());
-
+        System.out.println("Nalazim se ovde 1");
         if (user == null || !loginDTO.getUsername().equals(user.getUsername())
         || !user.isActivated()) {
+            System.out.println("Nalazim se ovde 2");
+
             return  new ResponseEntity<>("User does not exist or not activated!", HttpStatus.OK);
         }
         else if(loginDTO.getPassword()!=null && loginDTO.getPassword().length()>1
                 && !bCryptPasswordEncoder.matches(loginDTO.getPassword(), user.getPassword()) ) {
+            System.out.println("Nalazim se ovde 3");
+
             System.out.println("Wrong password!");
             return new ResponseEntity<>("Wrong password!", HttpStatus.OK);
         }
         else if(loginDTO.getCode()!=null
                 && ((!bCryptPasswordEncoder.matches(loginDTO.getCode(), user.getLoginCode()))
                 || LocalDateTime.now().isAfter(user.getLoginCodeValidity()))){
+            System.out.println("Nalazim se ovde 4");
+
             System.out.println("Login code is not valid!");
             return  ResponseEntity.ok(HttpStatus.UNAUTHORIZED);
         }
+        System.out.println("Nalazim se ovde 5");
 
         user.setLoginCode(null);
         user.setLoginCodeValidity(null);
         customUserService.saveUser(user);
+        System.out.println("Nalazim se ovde 6");
 
         String token = tokenUtils.generateToken(user.getUsername());
         LoginResponseDTO responseDTO = new LoginResponseDTO();
         responseDTO.setToken(token);
         String key = UUID.randomUUID().toString();
         responseDTO.setKey(key);
+        System.out.println("Nalazim se ovde 7");
 
-        return new ResponseEntity<>("Successful login!", HttpStatus.OK);
+
+        return new ResponseEntity<>(responseDTO, HttpStatus.OK);
     }
     @GetMapping(path = "/current")
     public ResponseEntity<?> getCurrentUser() {
-
+        System.out.println("Nalazim se ovde 8");
         return new ResponseEntity<>(userService.getCurrentUser(), HttpStatus.OK);
     }
     
