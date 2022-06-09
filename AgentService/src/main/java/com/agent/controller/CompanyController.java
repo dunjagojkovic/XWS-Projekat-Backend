@@ -1,8 +1,12 @@
 package com.agent.controller;
 
+import com.agent.dto.CommentDTO;
 import com.agent.dto.CompanyDTO;
+import com.agent.dto.SurveyDTO;
 import com.agent.dto.converters.CompanyConverters;
+import com.agent.model.Comment;
 import com.agent.model.Company;
+import com.agent.model.Survey;
 import com.agent.service.CompanyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -32,6 +36,11 @@ public class CompanyController {
         return new ResponseEntity<>(CompanyConverters.modelsToDTOs(companies), HttpStatus.OK);
     }
 
+    @GetMapping(path = "/approvedCompanies")
+    public ResponseEntity<?> getAcceptedCompanies() {
+        List<Company> companies = companyService.getApprovedCompanies();
+        return new ResponseEntity<>(companies, HttpStatus.OK);
+    }
 
     @PutMapping(path = "/approveCompanyRequest")
     public ResponseEntity<?> approveRequest(@RequestBody CompanyDTO dto){
@@ -69,6 +78,30 @@ public class CompanyController {
         }
 
         return new ResponseEntity<>(company, HttpStatus.OK);
+    }
+    
+    @PostMapping(path = "/comment")
+    ResponseEntity<?> comment(@RequestBody CommentDTO commentDTO){
+        Comment comment = companyService.comment(commentDTO);
+        return new ResponseEntity<>(comment, HttpStatus.OK);
+    }
+    
+    @GetMapping(value = "/comments/{id}")
+    public ResponseEntity<?> getJobOfferComments(@PathVariable Long id) {
+        List<Comment> comments = companyService.getComments(id);
+        return new ResponseEntity<>(comments, HttpStatus.OK);
+    }
+    
+    @PostMapping(path = "/survey")
+    ResponseEntity<?> survey(@RequestBody SurveyDTO surveyDTO){
+        Survey survey = companyService.survey(surveyDTO);
+        return new ResponseEntity<>(survey, HttpStatus.OK);
+    }
+    
+    @GetMapping(value = "/surveys/{id}")
+    public ResponseEntity<?> getJobOfferSurveys(@PathVariable Long id) {
+        List<Survey> surveys = companyService.getCompanySurveys(id);
+        return new ResponseEntity<>(surveys, HttpStatus.OK);
     }
 
 }

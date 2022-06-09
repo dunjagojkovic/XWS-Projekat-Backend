@@ -32,7 +32,7 @@ public class Survey {
 	
 	@JsonBackReference
 	@ManyToOne
-	private JobOffer offer;
+	private Company company;
 	
 
 }

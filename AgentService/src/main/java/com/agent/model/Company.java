@@ -36,6 +36,15 @@ public class Company {
     @JsonManagedReference
     @OneToMany(mappedBy = "company", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private Set<JobOffer> positions = new HashSet<>();
+    
+    @JsonManagedReference
+    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Set<Comment> comments = new HashSet<>();
+    
+    
+    @JsonManagedReference
+    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Set<Survey> surveys = new HashSet<>();
 
 
 }
