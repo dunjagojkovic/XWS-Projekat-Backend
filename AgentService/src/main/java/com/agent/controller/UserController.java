@@ -1,19 +1,22 @@
 package com.agent.controller;
 
 import com.agent.config.CustomUserDetailsService;
-import com.agent.dto.LoginDTO;
-import com.agent.dto.LoginResponseDTO;
-import com.agent.dto.RegistrationDTO;
+import com.agent.dto.*;
 import com.agent.model.User;
 import com.agent.security.TokenUtil;
 import com.agent.service.UserService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,6 +31,8 @@ public class UserController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    private BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+
     @Autowired
     private TokenUtil tokenUtils;
 
@@ -36,9 +41,9 @@ public class UserController {
 
 
     @PostMapping(consumes = "application/json", path = "/registerUser")
-    public ResponseEntity<?> registerUser(@RequestBody RegistrationDTO registrationDTO) {
+    public ResponseEntity<?> registerUser(HttpServletRequest request, @RequestBody RegistrationDTO registrationDTO) {
 
-        User user = userService.userRegistration(registrationDTO);
+        User user = userService.userRegistration(registrationDTO, request);
 
         if(user == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -52,9 +57,25 @@ public class UserController {
 
         User user = customUserService.findUserByUsername(loginDTO.getUsername());
 
-        if (user == null || !passwordEncoder.matches(loginDTO.getPassword(), user.getPassword()) || !loginDTO.getUsername().equals(user.getUsername())) {
+        if (user == null || !loginDTO.getUsername().equals(user.getUsername())
+        || !user.isActivated()) {
+            return  new ResponseEntity<>("User does not exist or not activated!", HttpStatus.OK);
+        }
+        else if(loginDTO.getPassword()!=null && loginDTO.getPassword().length()>1
+                && !bCryptPasswordEncoder.matches(loginDTO.getPassword(), user.getPassword()) ) {
+            System.out.println("Wrong password!");
+            return new ResponseEntity<>("Wrong password!", HttpStatus.OK);
+        }
+        else if(loginDTO.getCode()!=null
+                && ((!bCryptPasswordEncoder.matches(loginDTO.getCode(), user.getLoginCode()))
+                || LocalDateTime.now().isAfter(user.getLoginCodeValidity()))){
+            System.out.println("Login code is not valid!");
             return  ResponseEntity.ok(HttpStatus.UNAUTHORIZED);
         }
+
+        user.setLoginCode(null);
+        user.setLoginCodeValidity(null);
+        customUserService.saveUser(user);
 
         String token = tokenUtils.generateToken(user.getUsername());
         LoginResponseDTO responseDTO = new LoginResponseDTO();
@@ -62,7 +83,7 @@ public class UserController {
         String key = UUID.randomUUID().toString();
         responseDTO.setKey(key);
 
-        return ResponseEntity.ok(responseDTO);
+        return new ResponseEntity<>("Successful login!", HttpStatus.OK);
     }
     @GetMapping(path = "/current")
     public ResponseEntity<?> getCurrentUser() {
@@ -76,4 +97,67 @@ public class UserController {
         return new ResponseEntity<>(userService.companyOwners(), HttpStatus.OK);
     }
 
+    @PostMapping(path = "/forgottenpassword")
+    public ResponseEntity<?> forgottenPassword(HttpServletRequest request, @RequestBody ForgottenPasswordDTO dto){
+        User user = customUserService.findUserByUsername(dto.getUsername());
+        if(user == null) {
+            return ResponseEntity.ok(HttpStatus.BAD_REQUEST);
+        }
+        userService.forgottenPassword(user, request);
+        return ResponseEntity.ok(HttpStatus.OK);
+    }
+
+    @PostMapping(path = "/loginCode")
+    public ResponseEntity<?> getLoginCode(HttpServletRequest request, @RequestBody ForgottenPasswordDTO dto  )
+    {
+        User user = customUserService.findUserByUsername(dto.getUsername());
+        if(user == null) {
+            return ResponseEntity.ok(HttpStatus.BAD_REQUEST);
+        }
+        userService.getLoginCode(user, request);
+        return new ResponseEntity<String>("Code is sent to your email address!", HttpStatus.OK);
+    }
+
+    @RequestMapping(method = RequestMethod.POST, value = "/checkActivationCode",consumes = "text/plain",produces = MediaType.APPLICATION_JSON_VALUE)
+    @CrossOrigin(origins = "*")
+    public ResponseEntity<String> checkActivationCode(@RequestBody String c) throws JsonProcessingException{
+        System.out.println("Activation code "+c);
+        String code = c;
+        if(userService.userAlreadyActivated(code)) {
+            System.out.println("Already validated!");
+            return ResponseEntity.ok("already validated");
+        }
+
+        boolean valid = userService.checkActivationCode(code);
+
+        if(valid) {
+            System.out.println("Valid!");
+            return new ResponseEntity<String>("Valid", HttpStatus.OK);
+        }
+
+        else {
+            System.out.println("Acivation code expired!");
+            return ResponseEntity.ok("Acivation code expired!");
+        }
+    }
+
+    @RequestMapping(method = RequestMethod.POST, value = "/checkForgottenPassword",consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @CrossOrigin(origins = "*")
+    public ResponseEntity<?> resetPassword( @RequestBody ResetPasswordDTO dto) throws JsonProcessingException {
+        System.out.println("Password reset code "+dto.getCode());
+        String code = dto.getCode();
+
+        if(!userService.resetCodeExists(code))
+            return new ResponseEntity<String>(HttpStatus.NOT_FOUND);
+        User user = userService.findByPasswordResetCode(code);
+
+
+        boolean valid = userService.checkPasswordResetCode(dto);
+
+        if(valid) return new ResponseEntity<String>(HttpStatus.OK);
+        else {
+            System.out.println("Expired!");
+            return new ResponseEntity<String>(HttpStatus.GATEWAY_TIMEOUT);
+        }
+    }
 }

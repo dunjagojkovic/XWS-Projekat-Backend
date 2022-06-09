@@ -34,8 +34,7 @@ public class UserController {
     @Autowired
     private TokenUtil tokenUtils;
     
-    @Autowired
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
+    private BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
 
     @Autowired
     private CustomUserDetailsService customUserService;
@@ -62,14 +61,14 @@ public class UserController {
         User user = customUserService.findUserByUsername(loginDTO.getUsername());
 
         if (user == null || !user.isActivated() 
-        		|| !loginDTO.getUsername().equals(user.getUsername())
-        		){
+        		|| !loginDTO.getUsername().equals(user.getUsername())){
         	System.out.println(bCryptPasswordEncoder.matches(loginDTO.getPassword(), user.getPassword()));
         	System.out.println("Bcripted pass"+bCryptPasswordEncoder.encode(loginDTO.getPassword()));
         	System.out.println(user.getPassword());
             return  ResponseEntity.ok(HttpStatus.UNAUTHORIZED);
         }
-        else if(loginDTO.getPassword()!=null && loginDTO.getPassword().length()>1 && !bCryptPasswordEncoder.matches(loginDTO.getPassword(), user.getPassword()) ) {
+        else if(loginDTO.getPassword()!=null && loginDTO.getPassword().length()>1
+                && !bCryptPasswordEncoder.matches(loginDTO.getPassword(), user.getPassword()) ) {
         	System.out.println("Wrong password");
         	return  ResponseEntity.ok(HttpStatus.UNAUTHORIZED);
         	
@@ -80,6 +79,10 @@ public class UserController {
         }
 
         String token = tokenUtils.generateToken(user.getUsername());
+        user.setLoginCode(null);
+        user.setLoginCodeValidity(null);
+        customUserService.saveUser(user);
+
         LoginResponseDTO responseDTO = new LoginResponseDTO();
         responseDTO.setToken(token);
         return ResponseEntity.ok(responseDTO);
