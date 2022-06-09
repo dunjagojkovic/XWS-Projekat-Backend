@@ -63,6 +63,49 @@ public class FollowService {
 		}	
 	}
 	
+	public void deny(FollowDTO followDTO) {
+		
+		List<Request> requests = requestRepository.findAll();
+		
+		for(Request r : requests) {
+			if(r.getFollower().equals(followDTO.getFollower()) && r.getFollowing().equals(followDTO.getFollowing())) {
+				requestRepository.deleteById(r.getId());
+			}	
+		}	
+	}
+	
+	public List<String> getRequests(String username) {
+		
+		List<Request> requests = requestRepository.findAll();
+		List<String> requested = new ArrayList<>();
+		
+		for(Request request: requests) {
+			
+			if(request.getFollower().equals(username)) {
+				requested.add(request.getFollowing());
+			}
+			
+		}
+		
+		return requested;
+	}
+	
+	public List<String> getSentRequests(String username) {
+		
+		List<Request> requests = requestRepository.findAll();
+		List<String> sentRequests = new ArrayList<>();
+		
+		for(Request request: requests) {
+			
+			if(request.getFollowing().equals(username)) {
+				sentRequests.add(request.getFollower());
+			}
+			
+		}
+		
+		return sentRequests;
+	}
+	
 	public List<String> getFollowing(String username) {
 		
 		List<Follow> follows = followRepository.findAll();

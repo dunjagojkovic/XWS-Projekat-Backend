@@ -100,7 +100,7 @@ public class UserController {
     }
 
     @PostMapping(path = "/changePassword")
-    @PreAuthorize("hasAuthority('User')")
+    @PreAuthorize("hasAuthority('User') and hasPermission('hasAccess', 'WRITE')")
     public ResponseEntity<?> changePassword(@RequestBody ChangePasswordDTO changePasswordDTO) {
         User user = userService.changePassword(changePasswordDTO);
 
@@ -138,10 +138,17 @@ public class UserController {
     	return new ResponseEntity<String>("Code is sent to your email address!", HttpStatus.OK);
     }
     
+    @GetMapping(path = "/users")
+    @PreAuthorize("hasAuthority('User')")
+    public ResponseEntity<?> users(){
+        List<User> users = userService.users();
+        return new ResponseEntity<>(users, HttpStatus.OK);
+    }
+    
     @GetMapping(path = "/public")
     public ResponseEntity<?> getPublicProfile() {
 
-    	List<String> users = userService.getPublicProfile();
+    	List<User> users = userService.getPublicProfile();
     	
         if(users.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -197,4 +204,16 @@ public class UserController {
 	
     
     
+    @GetMapping(path = "/user/{username}")
+    @PreAuthorize("hasAuthority('User')")
+    public ResponseEntity<?> getUser(@PathVariable String username) {
+
+    	User user = userService.getUser(username);
+    	
+        if(user == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        return new ResponseEntity<>(user, HttpStatus.OK);
+    }
 }
