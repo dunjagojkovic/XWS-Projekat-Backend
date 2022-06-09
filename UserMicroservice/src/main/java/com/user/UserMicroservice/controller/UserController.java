@@ -24,7 +24,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "*")
 @RequestMapping("api/users")
 public class UserController {
 
@@ -150,7 +150,7 @@ public class UserController {
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
     
-	@RequestMapping(method = RequestMethod.POST, value = "/checkActivationCode",consumes = "application/json",produces = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(method = RequestMethod.POST, value = "/checkActivationCode",consumes = "text/plain",produces = MediaType.APPLICATION_JSON_VALUE)
 	@CrossOrigin(origins = "*")
 	public ResponseEntity<String> checkActivationCode(@RequestBody String c) throws JsonProcessingException{
 		System.out.println("Activation code "+c);
