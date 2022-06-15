@@ -56,7 +56,11 @@ public class UserController {
         	System.out.println("Created user is null!");
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        System.out.println("User created!");
+        try {
+			loggingService.log(LogEntryType.NOTIFICATION, "DATA_NU", request.getRemoteAddr(), user.getEmail());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
@@ -91,6 +95,11 @@ public class UserController {
 
         LoginResponseDTO responseDTO = new LoginResponseDTO();
         responseDTO.setToken(token);
+        try {
+			loggingService.log(LogEntryType.NOTIFICATION, "AUTH_SL", request.getRemoteAddr(), user.getEmail());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
         return ResponseEntity.ok(responseDTO);
     }
     
@@ -102,9 +111,13 @@ public class UserController {
 
     @PutMapping()
     @PreAuthorize("hasAuthority('User')")
-    public ResponseEntity<?> edit(@RequestBody UserDTO dto) {
+    public ResponseEntity<?> edit(@RequestBody UserDTO dto, HttpServletRequest request) {
         User user = userService.edit(dto);
-
+        try {
+			loggingService.log(LogEntryType.NOTIFICATION, "DATA_EU", request.getRemoteAddr(), user.getEmail());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
