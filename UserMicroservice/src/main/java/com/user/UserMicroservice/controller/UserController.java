@@ -3,8 +3,10 @@ package com.user.UserMicroservice.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.user.UserMicroservice.config.CustomUserDetailsService;
 import com.user.UserMicroservice.dto.*;
+import com.user.UserMicroservice.enums.LogEntryType;
 import com.user.UserMicroservice.model.User;
 import com.user.UserMicroservice.security.TokenUtil;
+import com.user.UserMicroservice.service.LoggingService;
 import com.user.UserMicroservice.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,6 +19,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -38,6 +41,9 @@ public class UserController {
 
     @Autowired
     private CustomUserDetailsService customUserService;
+    
+    @Autowired
+    LoggingService loggingService;
 
     @PostMapping(consumes = "application/json", path = "/register")
     public ResponseEntity<?> registerClient(HttpServletRequest request, @RequestBody RegistrationDTO registrationDTO, BindingResult result) { 	
@@ -50,13 +56,16 @@ public class UserController {
         	System.out.println("Created user is null!");
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        System.out.println("User created!");
+        try {
+			loggingService.log(LogEntryType.NOTIFICATION, "DATA_NU", request.getRemoteAddr(), user.getEmail());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @PostMapping(path = "/login")
-    public ResponseEntity<?> login(@RequestBody LoginDTO loginDTO) {
-    	System.out.println("Login dto"+loginDTO);
+    public ResponseEntity<?> login(@RequestBody LoginDTO loginDTO, HttpServletRequest request) {
 
         User user = customUserService.findUserByUsername(loginDTO.getUsername());
 
@@ -66,7 +75,11 @@ public class UserController {
         }
         else if(loginDTO.getPassword()!=null && loginDTO.getPassword().length()>1
                 && !bCryptPasswordEncoder.matches(loginDTO.getPassword(), user.getPassword()) ) {
-        	System.out.println("Wrong password");
+        	try {
+    			loggingService.log(LogEntryType.WARNING, "AUTH_FL", request.getRemoteAddr(), user.getEmail());
+    		} catch (IOException e) {
+    			e.printStackTrace();
+    		}
         	return  ResponseEntity.ok(HttpStatus.UNAUTHORIZED);
         	
         }
@@ -82,6 +95,11 @@ public class UserController {
 
         LoginResponseDTO responseDTO = new LoginResponseDTO();
         responseDTO.setToken(token);
+        try {
+			loggingService.log(LogEntryType.NOTIFICATION, "AUTH_SL", request.getRemoteAddr(), user.getEmail());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
         return ResponseEntity.ok(responseDTO);
     }
     
@@ -93,9 +111,13 @@ public class UserController {
 
     @PutMapping()
     @PreAuthorize("hasAuthority('User')")
-    public ResponseEntity<?> edit(@RequestBody UserDTO dto) {
+    public ResponseEntity<?> edit(@RequestBody UserDTO dto, HttpServletRequest request) {
         User user = userService.edit(dto);
-
+        try {
+			loggingService.log(LogEntryType.NOTIFICATION, "DATA_EU", request.getRemoteAddr(), user.getEmail());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
