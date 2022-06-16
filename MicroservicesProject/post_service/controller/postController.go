@@ -2,13 +2,36 @@ package controller
 
 import (
 	"context"
+	"log"
+	"os"
 	"postS/model"
 	"postS/service"
+	"time"
+
+	"google.golang.org/grpc/peer"
 
 	pb "common/proto/post_service"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
+
+func logEntry(logEntryType string, code string, ip string, user string) {
+	f, err := os.OpenFile("logs//"+logEntryType+".log",
+		os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer f.Close()
+
+	currentTime := time.Now()
+	_, err2 := f.WriteString("[" + currentTime.String() + "] " + code + " | " + ip + " | " + user + " \n")
+
+	if err2 != nil {
+		log.Fatal(err2)
+	}
+}
 
 type PostController struct {
 	pb.UnimplementedPostServiceServer
@@ -44,7 +67,6 @@ func mapNewPost(postPb *pb.CreatePost) *model.Post {
 		}
 		post.CommentList = append(post.CommentList, comment)
 	}
-
 	return post
 }
 
@@ -153,6 +175,8 @@ func (pc *PostController) CreatePost(ctx context.Context, request *pb.CreatePost
 	if err != nil {
 		return nil, err
 	}
+	p, _ := peer.FromContext(ctx)
+	logEntry("notification", "DATA_NP", p.Addr.String(), request.Post.User)
 	return &pb.CreatePostResponse{
 		Id: id.Hex(),
 	}, nil
