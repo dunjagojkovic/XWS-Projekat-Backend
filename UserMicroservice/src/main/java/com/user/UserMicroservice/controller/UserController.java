@@ -102,7 +102,7 @@ public class UserController {
     }
 
     @PutMapping()
-    @PreAuthorize("hasAuthority('User')")
+    @PreAuthorize("hasAuthority('editInfo') and hasAuthority('User')")
     public ResponseEntity<?> edit(@RequestBody UserDTO dto) {
         User user = userService.edit(dto);
 
@@ -110,7 +110,7 @@ public class UserController {
     }
 
     @PostMapping(path = "/changePassword")
-    @PreAuthorize("hasAuthority('WRITE') and hasAuthority('User')")
+    @PreAuthorize("hasAuthority('changePassword') and hasAuthority('User')")
     public ResponseEntity<?> changePassword(@RequestBody ChangePasswordDTO changePasswordDTO) {
         User user = userService.changePassword(changePasswordDTO);
 
@@ -149,7 +149,6 @@ public class UserController {
     }
     
     @GetMapping(path = "/users")
-    @PreAuthorize("hasAuthority('User')")
     public ResponseEntity<?> users(){
         List<User> users = userService.users();
         return new ResponseEntity<>(users, HttpStatus.OK);
@@ -185,8 +184,8 @@ public class UserController {
 		}
 		
 		else {
-			System.out.println("Acivation code expired!");
-			return ResponseEntity.ok("Acivation code expired!");
+			System.out.println("Activation code expired!");
+			return ResponseEntity.ok("Activation code expired!");
 		}
 	}
 	
@@ -210,12 +209,10 @@ public class UserController {
 			return new ResponseEntity<String>(HttpStatus.GATEWAY_TIMEOUT);
 		}
 	}
-	
-	
     
     
     @GetMapping(path = "/user/{username}")
-    @PreAuthorize("hasAuthority('User')")
+    @PreAuthorize("hasAuthority('getUserInfo') and hasAuthority('User')")
     public ResponseEntity<?> getUser(@PathVariable String username) {
 
     	User user = userService.getUser(username);

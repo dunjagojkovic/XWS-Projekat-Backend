@@ -52,14 +52,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
 
                 .authorizeRequests().antMatchers("/api/users/register").permitAll()
-                .antMatchers("/error").permitAll()
-                .antMatchers("/error/**").permitAll()
-                .antMatchers("/your Urls that dosen't need security/**").permitAll()
                 .antMatchers("/api/users/forgottenpassword").permitAll()
                 .antMatchers("/api/users/checkActivationCode").permitAll()
                 .antMatchers("/api/users/checkForgottenPassword").permitAll()
                 .antMatchers("/api/users/loginCode").permitAll()
-
 
                 .anyRequest().authenticated().and()
 
@@ -83,7 +79,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     public void configure(WebSecurity web) throws Exception {
         web.ignoring().antMatchers(HttpMethod.POST, "/api/users/login", "/api/users/register", "/api/users/filterUsers");
         web.ignoring().antMatchers(HttpMethod.OPTIONS, "/**");
-             web.ignoring().antMatchers(HttpMethod.POST, "/api/users/checkActivationCode");
+        web.ignoring().antMatchers(HttpMethod.POST, "/api/users/checkActivationCode");
         web.ignoring().antMatchers(HttpMethod.POST, "/api/users/checkForgottenPassword");
         web.ignoring().antMatchers(HttpMethod.POST, "/api/users/forgottenpassword");
         web.ignoring().antMatchers(HttpMethod.POST, "/api/users/filterUsers");

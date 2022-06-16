@@ -1,14 +1,15 @@
-package com.user.UserMicroservice.security;
+package com.agent.security;
 
+import com.agent.model.User;
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.user.UserMicroservice.model.User;
 import org.springframework.security.core.GrantedAuthority;
 
 import javax.persistence.*;
 
 @Entity
 @Table(name = "permission")
-public class Permission implements  GrantedAuthority{
+public class Permission implements GrantedAuthority {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
