@@ -1,14 +1,11 @@
 package com.user.UserMicroservice.config;
 
-import com.user.UserMicroservice.security.CustomPermissionEvaluator;
 import com.user.UserMicroservice.security.TokenAuthenticationFilter;
 import com.user.UserMicroservice.security.TokenUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
-import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -34,8 +31,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private CustomUserDetailsService jwtUserDetailsService;
 
-    @Autowired
-    private CustomPermissionEvaluator permissionEvaluator;
 
     @Bean
     @Override
@@ -48,12 +43,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         auth.userDetailsService(jwtUserDetailsService).passwordEncoder(passwordEncoder());
     }
 
-    /*@Autowired
-    public MethodSecurityExpressionHandler methodSecurityExpressionHandler() {
-        DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
-        handler.setPermissionEvaluator(permissionEvaluator);
-        return handler;
-    }*/
     @Autowired
     private TokenUtil tokenUtils;
 
@@ -73,8 +62,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 
                 .anyRequest().authenticated().and()
-
-                //.formLogin().loginPage("/login").permitAll().and()
 
                 .logout().permitAll().and()
 
@@ -96,15 +83,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     public void configure(WebSecurity web) throws Exception {
         web.ignoring().antMatchers(HttpMethod.POST, "/api/users/login", "/api/users/register", "/api/users/filterUsers");
         web.ignoring().antMatchers(HttpMethod.OPTIONS, "/**");
-        web.ignoring().antMatchers(HttpMethod.POST, "/api/follow/follower");
-        web.ignoring().antMatchers(HttpMethod.POST, "/api/follow/accept");
-        web.ignoring().antMatchers(HttpMethod.POST, "/api/follow/follower");
-        web.ignoring().antMatchers(HttpMethod.POST, "/api/users/checkActivationCode");
+             web.ignoring().antMatchers(HttpMethod.POST, "/api/users/checkActivationCode");
         web.ignoring().antMatchers(HttpMethod.POST, "/api/users/checkForgottenPassword");
         web.ignoring().antMatchers(HttpMethod.POST, "/api/users/forgottenpassword");
         web.ignoring().antMatchers(HttpMethod.POST, "/api/users/filterUsers");
         web.ignoring().antMatchers(HttpMethod.POST, "/api/users/loginCode");
         web.ignoring().antMatchers(HttpMethod.GET, "/api/users/public");
-        web.ignoring().antMatchers("/error/**");
     }
 }
