@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
+	"os"
 	"postservice/model"
 	"postservice/service"
 
@@ -26,6 +28,24 @@ type Following struct {
 
 type PostController struct {
 	service *service.PostService
+}
+
+func logEntry(logEntryType string, code string, ip string, user string) {
+	f, err := os.Create(logEntryType + ".log")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer f.Close()
+
+	_, err2 := f.WriteString("old falcon\n")
+
+	if err2 != nil {
+		log.Fatal(err2)
+	}
+
+	fmt.Println("done")
 }
 
 func NewPostController(service *service.PostService) *PostController {
@@ -143,6 +163,7 @@ func (pc *PostController) CreatePostHandler(w http.ResponseWriter, req *http.Req
 	id, _ := pc.service.Insert(&post)
 	fmt.Println(id)
 	json.NewEncoder(w).Encode(post)
+	logEntry("warning", "test", req.RemoteAddr, "user")
 }
 
 func (pc *PostController) CreatePostCommentHandler(w http.ResponseWriter, req *http.Request) {
