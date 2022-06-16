@@ -1,7 +1,9 @@
 package controller
 
 import (
+	"archive/zip"
 	"context"
+	"io"
 	"log"
 	"os"
 	"postS/model"
@@ -26,10 +28,46 @@ func logEntry(logEntryType string, code string, ip string, user string) {
 	defer f.Close()
 
 	currentTime := time.Now()
-	_, err2 := f.WriteString("[" + currentTime.String() + "] " + code + " | " + ip + " | " + user + " \n")
-
+	_, err2 := f.WriteString("[" + currentTime.Format("2006-01-02T15:04:05.000000000") + "] " + code + " | " + ip + " | " + user + " \n")
+	fi, err := f.Stat()
+	if err != nil {
+		log.Fatal(err)
+	}
+	if fi.Size() >= 500 {
+		archiveLog(logEntryType)
+	}
 	if err2 != nil {
 		log.Fatal(err2)
+	}
+}
+
+func archiveLog(archiveName string) {
+	currentTime := time.Now()
+	archive, err := os.Create("logs//" + archiveName + currentTime.Format("2006_01_02T15_04_05_000000000") + ".zip")
+	if err != nil {
+		panic(err)
+	}
+	defer archive.Close()
+	zipWriter := zip.NewWriter(archive)
+
+	f1, err := os.Open("logs//" + archiveName + ".log")
+	if err != nil {
+		panic(err)
+	}
+	defer f1.Close()
+
+	w1, err := zipWriter.Create(archiveName + ".log")
+	if err != nil {
+		panic(err)
+	}
+	if _, err := io.Copy(w1, f1); err != nil {
+		panic(err)
+	}
+
+	zipWriter.Close()
+	e := os.Remove("logs//" + archiveName + ".log")
+	if e != nil {
+		log.Fatal(e)
 	}
 }
 
