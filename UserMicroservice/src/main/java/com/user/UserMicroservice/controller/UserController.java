@@ -62,9 +62,6 @@ public class UserController {
 
         if (user == null || !user.isActivated() 
         		|| !loginDTO.getUsername().equals(user.getUsername())){
-        	System.out.println(bCryptPasswordEncoder.matches(loginDTO.getPassword(), user.getPassword()));
-        	System.out.println("Bcripted pass"+bCryptPasswordEncoder.encode(loginDTO.getPassword()));
-        	System.out.println(user.getPassword());
             return  ResponseEntity.ok(HttpStatus.UNAUTHORIZED);
         }
         else if(loginDTO.getPassword()!=null && loginDTO.getPassword().length()>1

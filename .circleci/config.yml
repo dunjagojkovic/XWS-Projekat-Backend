@@ -1,0 +1,23 @@
+version: 2.1
+
+jobs:
+  build-agent-service:
+    docker:
+      - image: 'circleci/openjdk:11-jdk'
+    working_directory: ~/XWS-Projekat-Backend/AgentService
+    steps:
+      - checkout
+      - run:
+          name: Analyze on SonarCloud AgentService
+          command: mvn verify sonar:sonar -Dsonar.projectKey=dunjagojkovic_XWS-Projekat-Backend
+
+    orbs:
+      sonarcloud: sonarsource/sonarcloud@1.0.3
+
+    jobs:
+      - build-agent-service:
+          context: SonarCloud
+          filters:
+            branches:
+              only:
+                - security
