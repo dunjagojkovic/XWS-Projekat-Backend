@@ -7,9 +7,14 @@ jobs:
     working_directory: ~/XWS-Projekat-Backend/AgentService
     steps:
       - checkout
-      - run:
-          name: Analyze on SonarCloud
-          command: mvn verify sonar:sonar -Dsonar.projectKey=dunjagojkovic_XWS-Projekat-Backend
+      - when:
+          condition:
+            equal: [ security, << pipeline.git.branch >> ]
+          steps:
+            - run: echo "I am on security"
+            - run:
+                name: Analyze on SonarCloud
+                command: mvn verify sonar:sonar -Dsonar.projectKey=dunjagojkovic_XWS-Projekat-Backend
 
 workflows:
   main:
