@@ -1,11 +1,14 @@
 package com.user.UserMicroservice.config;
 
+import com.user.UserMicroservice.security.CustomPermissionEvaluator;
 import com.user.UserMicroservice.security.TokenAuthenticationFilter;
 import com.user.UserMicroservice.security.TokenUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -31,6 +34,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private CustomUserDetailsService jwtUserDetailsService;
 
+    @Autowired
+    private CustomPermissionEvaluator permissionEvaluator;
+
     @Bean
     @Override
     public AuthenticationManager authenticationManagerBean() throws Exception {
@@ -42,6 +48,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         auth.userDetailsService(jwtUserDetailsService).passwordEncoder(passwordEncoder());
     }
 
+    /*@Autowired
+    public MethodSecurityExpressionHandler methodSecurityExpressionHandler() {
+        DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
+        handler.setPermissionEvaluator(permissionEvaluator);
+        return handler;
+    }*/
     @Autowired
     private TokenUtil tokenUtils;
 
@@ -58,8 +70,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/users/checkActivationCode").permitAll()
                 .antMatchers("/api/users/checkForgottenPassword").permitAll()
                 .antMatchers("/api/users/loginCode").permitAll()
-
-                
 
 
                 .anyRequest().authenticated().and()

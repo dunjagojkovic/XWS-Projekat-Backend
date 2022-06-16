@@ -110,7 +110,7 @@ public class UserController {
     }
 
     @PostMapping(path = "/changePassword")
-    //@PreAuthorize("hasAuthority('User') hasPermission('hasAccess','WRITE')")
+    @PreAuthorize("hasAuthority('WRITE') and hasAuthority('User')")
     public ResponseEntity<?> changePassword(@RequestBody ChangePasswordDTO changePasswordDTO) {
         User user = userService.changePassword(changePasswordDTO);
 
