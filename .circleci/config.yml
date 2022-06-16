@@ -4,10 +4,10 @@ jobs:
   build:
     docker:
       - image: 'circleci/openjdk:11-jdk'
-    working_directory: ~XWS-Projekat-Backend/AgentService
+    working_directory: ~/XWS-Projekat-Backend/AgentService
     steps:
       - checkout
-        path: ~XWS-Projekat-Backend
+        path: ~/XWS-Projekat-Backend
       - run:
           name: Analyze on SonarCloud
           command: mvn verify sonar:sonar -Dsonar.projectKey=dunjagojkovic_XWS-Projekat-Backend
