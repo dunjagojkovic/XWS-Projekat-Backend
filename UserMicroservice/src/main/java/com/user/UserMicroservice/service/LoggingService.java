@@ -23,18 +23,20 @@ public class LoggingService {
 	private String dataSeparator = " | ";
 	
 	public void log(LogEntryType type, String code, String ip, String user) throws IOException {
-		boolean logLimitReached = false;
-	    BufferedWriter writer = new BufferedWriter(new FileWriter(getFormattedFileName(type), !logLimitReached));
-	    String logEntry = "[" + LocalDateTime.now() + "] " + code + dataSeparator + ip + dataSeparator + user + " ;";
-	    writer.append(logEntry);
-	    writer.newLine();
-	    writer.close();
-	    
-	    File file = new File(getFormattedFileName(type));
-	    if(file.exists() && file.length() >= 4000) {
-	    	archiveLog(type.toString().toLowerCase());
-	    	file.delete();
-	    }
+		if(enabled) {
+			boolean logLimitReached = false;
+		    BufferedWriter writer = new BufferedWriter(new FileWriter(getFormattedFileName(type), !logLimitReached));
+		    String logEntry = "[" + LocalDateTime.now() + "] " + code + dataSeparator + ip + dataSeparator + user + " ;";
+		    writer.append(logEntry);
+		    writer.newLine();
+		    writer.close();
+		    
+		    File file = new File(getFormattedFileName(type));
+		    if(file.exists() && file.length() >= 4000) {
+		    	archiveLog(type.toString().toLowerCase());
+		    	file.delete();
+		    }
+		}
 	}
 	
 	public void log(LogEntryType type, String code, String ip) throws IOException {
