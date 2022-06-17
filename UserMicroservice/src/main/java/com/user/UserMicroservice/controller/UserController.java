@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -88,7 +89,7 @@ public class UserController {
         	return  ResponseEntity.ok(HttpStatus.UNAUTHORIZED);
         }
 
-        String token = tokenUtils.generateToken(user.getUsername());
+        String token = tokenUtils.generateToken(user.getUsername(), user.getType());
         user.setLoginCode(null);
         user.setLoginCodeValidity(null);
         customUserService.saveUser(user);
@@ -110,7 +111,7 @@ public class UserController {
     }
 
     @PutMapping()
-    @PreAuthorize("hasAuthority('User')")
+    @PreAuthorize("hasAuthority('editInfo')")
     public ResponseEntity<?> edit(@RequestBody UserDTO dto, HttpServletRequest request) {
         User user = userService.edit(dto);
         try {
@@ -122,7 +123,7 @@ public class UserController {
     }
 
     @PostMapping(path = "/changePassword")
-    @PreAuthorize("hasAuthority('User') and hasPermission('hasAccess', 'WRITE')")
+    @PreAuthorize("hasAuthority('changePassword')")
     public ResponseEntity<?> changePassword(@RequestBody ChangePasswordDTO changePasswordDTO) {
         User user = userService.changePassword(changePasswordDTO);
 
@@ -161,7 +162,6 @@ public class UserController {
     }
     
     @GetMapping(path = "/users")
-    @PreAuthorize("hasAuthority('User')")
     public ResponseEntity<?> users(){
         List<User> users = userService.users();
         return new ResponseEntity<>(users, HttpStatus.OK);
@@ -197,8 +197,8 @@ public class UserController {
 		}
 		
 		else {
-			System.out.println("Acivation code expired!");
-			return ResponseEntity.ok("Acivation code expired!");
+			System.out.println("Activation code expired!");
+			return ResponseEntity.ok("Activation code expired!");
 		}
 	}
 	
@@ -222,12 +222,10 @@ public class UserController {
 			return new ResponseEntity<String>(HttpStatus.GATEWAY_TIMEOUT);
 		}
 	}
-	
-	
     
     
     @GetMapping(path = "/user/{username}")
-    @PreAuthorize("hasAuthority('User')")
+    @PreAuthorize("hasAuthority('getUserInfo')")
     public ResponseEntity<?> getUser(@PathVariable String username) {
 
     	User user = userService.getUser(username);

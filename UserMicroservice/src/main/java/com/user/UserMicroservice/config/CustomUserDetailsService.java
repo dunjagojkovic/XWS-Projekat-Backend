@@ -3,8 +3,10 @@ package com.user.UserMicroservice.config;
 import com.user.UserMicroservice.model.User;
 import com.user.UserMicroservice.repository.UserRepository;
 import com.user.UserMicroservice.security.Authority;
+import com.user.UserMicroservice.security.Permission;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -37,8 +39,6 @@ public class CustomUserDetailsService implements UserDetailsService {
         builder.password(password);
         builder.authorities(user.get().getRole().toString());
 
-
-
         return builder.build();
     }
 
@@ -56,7 +56,14 @@ public class CustomUserDetailsService implements UserDetailsService {
         authority.setName(user.get().getRole().toString());
         authorities.add(authority);
 
+        for (Permission p : user.get().getPermissions()) {
+            Authority a1 = new Authority();
+            a1.setName(p.getName());
+            authorities.add(a1);
+        }
+
         return authorities;
+
     }
 
     public User findUserByUsername(String username) { return userRepository.findByUsername(username).orElse(null); }
@@ -64,5 +71,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     public User saveUser(User user){
         return userRepository.save(user);
     }
+
+
 
 }

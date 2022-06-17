@@ -31,6 +31,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private CustomUserDetailsService jwtUserDetailsService;
 
+
     @Bean
     @Override
     public AuthenticationManager authenticationManagerBean() throws Exception {
@@ -51,20 +52,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
 
                 .authorizeRequests().antMatchers("/api/users/register").permitAll()
-                .antMatchers("/error").permitAll()
-                .antMatchers("/error/**").permitAll()
-                .antMatchers("/your Urls that dosen't need security/**").permitAll()
                 .antMatchers("/api/users/forgottenpassword").permitAll()
                 .antMatchers("/api/users/checkActivationCode").permitAll()
                 .antMatchers("/api/users/checkForgottenPassword").permitAll()
                 .antMatchers("/api/users/loginCode").permitAll()
-
-                
+                .antMatchers("/api/users").hasAuthority("User")
+                .antMatchers("/api/users/changePassword").hasAuthority("User")
+                .antMatchers("/api/users/user/{username}").hasAuthority("User")
+                .antMatchers("/api/follow/**").hasAuthority("User")
 
 
                 .anyRequest().authenticated().and()
-
-                //.formLogin().loginPage("/login").permitAll().and()
 
                 .logout().permitAll().and()
 
@@ -86,15 +84,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     public void configure(WebSecurity web) throws Exception {
         web.ignoring().antMatchers(HttpMethod.POST, "/api/users/login", "/api/users/register", "/api/users/filterUsers");
         web.ignoring().antMatchers(HttpMethod.OPTIONS, "/**");
-        web.ignoring().antMatchers(HttpMethod.POST, "/api/follow/follower");
-        web.ignoring().antMatchers(HttpMethod.POST, "/api/follow/accept");
-        web.ignoring().antMatchers(HttpMethod.POST, "/api/follow/follower");
         web.ignoring().antMatchers(HttpMethod.POST, "/api/users/checkActivationCode");
         web.ignoring().antMatchers(HttpMethod.POST, "/api/users/checkForgottenPassword");
         web.ignoring().antMatchers(HttpMethod.POST, "/api/users/forgottenpassword");
         web.ignoring().antMatchers(HttpMethod.POST, "/api/users/filterUsers");
         web.ignoring().antMatchers(HttpMethod.POST, "/api/users/loginCode");
         web.ignoring().antMatchers(HttpMethod.GET, "/api/users/public");
-        web.ignoring().antMatchers("/error/**");
     }
 }

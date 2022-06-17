@@ -7,6 +7,7 @@ import com.agent.service.CompanyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +21,7 @@ public class CompanyController {
     CompanyService companyService;
 
     @PostMapping(consumes = "application/json", path = "/registerCompany")
+    @PreAuthorize("hasAuthority('registerCompany')")
     public ResponseEntity<?> add(@RequestBody CompanyDTO dto) {
         Company company  = companyService.add(dto);
 
@@ -27,31 +29,43 @@ public class CompanyController {
     }
 
     @GetMapping(path = "/allPendingCompanies")
+    @PreAuthorize("hasAuthority('getAllCompanyRequests')")
     public ResponseEntity<?> getAll() {
         List<Company> companies = companyService.getAllCompaniesForApproving();
         return new ResponseEntity<>(CompanyConverters.modelsToDTOs(companies), HttpStatus.OK);
     }
 
+    @GetMapping(path = "/allApprovedCompanies")
+    @PreAuthorize("hasAuthority('getAllApprovedCompanies')")
+    public ResponseEntity<?> getAllApproved() {
+        List<Company> companies = companyService.getAllApprovedCompanies() ;
+        return new ResponseEntity<>(CompanyConverters.modelsToDTOs(companies), HttpStatus.OK);
+    }
+
 
     @PutMapping(path = "/approveCompanyRequest")
+    @PreAuthorize("hasAuthority('approveCompanyRequest')")
     public ResponseEntity<?> approveRequest(@RequestBody CompanyDTO dto){
        Company company =  companyService.approveCompanyRegistration(dto);
         return new ResponseEntity<>(company, HttpStatus.OK);
     }
 
     @PutMapping(path = "/declineCompanyRequest")
+    @PreAuthorize("hasAuthority('declineCompanyRequest')")
     public ResponseEntity<?> declineCompanyRequest( @RequestBody CompanyDTO companyDTO) {
         Company company = companyService.declineCompanyRegistration(companyDTO);
         return new ResponseEntity<>(company, HttpStatus.OK);
     }
 
     @GetMapping(path = "/myCompanies")
+    @PreAuthorize("hasAuthority('getMyCompanies')")
     public ResponseEntity<?> getMyCompanies() {
         List<Company> companies = companyService.getAllCompaniesForOwner();
         return new ResponseEntity<>(CompanyConverters.modelsToDTOs(companies), HttpStatus.OK);
     }
 
     @PutMapping(path = "/editCompanyInfo")
+    @PreAuthorize("hasAuthority('editCompanyInfo')")
     public ResponseEntity<?> editCompanyInfo(@RequestBody CompanyDTO dto) {
         Company company = companyService.editCompanyInfo(dto);
 
