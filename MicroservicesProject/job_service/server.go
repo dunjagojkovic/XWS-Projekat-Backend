@@ -20,6 +20,24 @@ type Server struct {
 	config *Config
 }
 
+func accessibleRoles() map[string][]string {
+	const servicePath = "/job.JobService/"
+	return map[string][]string{
+		/*servicePath + "GetAll":         {"GetAll"},
+		servicePath + "OwnerJobOffers": {"OwnerJobOffers"},
+		servicePath + "CreateJobOffer": {"CreateJobOffer"},
+		servicePath + "AddKey":         {"AddKey"},
+		servicePath + "JobOfferSearch": {"JobOfferSearch"},*/
+	}
+}
+
+func permissionsOfRoles() map[string][]string {
+	return map[string][]string{
+		"user":  {"GetAll", "OwnerJobOffers", "CreateJobOffer", "AddKey", "JobOfferSearch"},
+		"admin": {},
+	}
+}
+
 func NewServer(config *Config) *Server {
 	return &Server{
 		config: config,
@@ -50,7 +68,11 @@ func (server *Server) startGrpcServer(jobController *controller.JobController) {
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	grpcServer := grpc.NewServer()
+	interceptor := NewAuthInterceptor(accessibleRoles(), permissionsOfRoles())
+	grpcServer := grpc.NewServer(
+		grpc.UnaryInterceptor(interceptor.Unary()),
+		grpc.StreamInterceptor(interceptor.Stream()),
+	)
 	jobGW.RegisterJobServiceServer(grpcServer, jobController)
 	if err := grpcServer.Serve(listener); err != nil {
 		log.Fatalf("failed to serve: %s", err)
