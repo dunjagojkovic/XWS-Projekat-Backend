@@ -3,6 +3,7 @@ package com.agent.config;
 import com.agent.model.User;
 import com.agent.repository.UserRepository;
 import com.agent.security.Authority;
+import com.agent.security.Permission;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -55,6 +56,12 @@ public class CustomUserDetailsService implements UserDetailsService {
         Authority authority = new Authority();
         authority.setName(user.get().getRole().toString());
         authorities.add(authority);
+
+        for (Permission p : user.get().getPermissions()) {
+            Authority auth = new Authority();
+            auth.setName(p.getName());
+            authorities.add(auth);
+        }
 
         return authorities;
     }

@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -69,6 +70,13 @@ public class UserController {
 
         User user = customUserService.findUserByUsername(loginDTO.getUsername());
 
+        if(loggingService.containsPotentialSQLInjection(loginDTO.getUsername())) {
+        	try {
+    			loggingService.log(LogEntryType.ERROR, "DATA_SI", request.getRemoteAddr());
+    		} catch (IOException e) {
+    			e.printStackTrace();
+    		}
+        }
         if (user == null || !user.isActivated() 
         		|| !loginDTO.getUsername().equals(user.getUsername())){
             return  ResponseEntity.ok(HttpStatus.UNAUTHORIZED);
@@ -88,7 +96,7 @@ public class UserController {
         	return  ResponseEntity.ok(HttpStatus.UNAUTHORIZED);
         }
 
-        String token = tokenUtils.generateToken(user.getUsername());
+        String token = tokenUtils.generateToken(user.getUsername(), user.getType());
         user.setLoginCode(null);
         user.setLoginCodeValidity(null);
         customUserService.saveUser(user);
@@ -110,7 +118,7 @@ public class UserController {
     }
 
     @PutMapping()
-    @PreAuthorize("hasAuthority('User')")
+    @PreAuthorize("hasAuthority('editInfo')")
     public ResponseEntity<?> edit(@RequestBody UserDTO dto, HttpServletRequest request) {
         User user = userService.edit(dto);
         try {
@@ -122,11 +130,16 @@ public class UserController {
     }
 
     @PostMapping(path = "/changePassword")
-    @PreAuthorize("hasAuthority('User') and hasPermission('hasAccess', 'WRITE')")
-    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordDTO changePasswordDTO) {
+    @PreAuthorize("hasAuthority('changePassword')")
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordDTO changePasswordDTO, HttpServletRequest request) {
         User user = userService.changePassword(changePasswordDTO);
 
         if(user == null) {
+        	try {
+    			loggingService.log(LogEntryType.ERROR, "DATA_XU", request.getRemoteAddr());
+    		} catch (IOException e) {
+    			e.printStackTrace();
+    		}
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
@@ -143,9 +156,19 @@ public class UserController {
     public ResponseEntity<?> forgottenPassword(HttpServletRequest request, @RequestBody ForgottenPasswordDTO dto){
     	User user = customUserService.findUserByUsername(dto.getUsername());
     	if(user == null) {
+    		try {
+    			loggingService.log(LogEntryType.ERROR, "DATA_XU", request.getRemoteAddr());
+    		} catch (IOException e) {
+    			e.printStackTrace();
+    		}
     		return ResponseEntity.ok(HttpStatus.BAD_REQUEST);
     	}
     	userService.forgottenPassword(user, request);
+    	try {
+			loggingService.log(LogEntryType.NOTIFICATION, "DATA_PC", request.getRemoteAddr(), user.getEmail());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
     	return ResponseEntity.ok(HttpStatus.OK);
     }
     
@@ -161,7 +184,6 @@ public class UserController {
     }
     
     @GetMapping(path = "/users")
-    @PreAuthorize("hasAuthority('User')")
     public ResponseEntity<?> users(){
         List<User> users = userService.users();
         return new ResponseEntity<>(users, HttpStatus.OK);
@@ -197,8 +219,8 @@ public class UserController {
 		}
 		
 		else {
-			System.out.println("Acivation code expired!");
-			return ResponseEntity.ok("Acivation code expired!");
+			System.out.println("Activation code expired!");
+			return ResponseEntity.ok("Activation code expired!");
 		}
 	}
 	
@@ -222,12 +244,10 @@ public class UserController {
 			return new ResponseEntity<String>(HttpStatus.GATEWAY_TIMEOUT);
 		}
 	}
-	
-	
     
     
     @GetMapping(path = "/user/{username}")
-    @PreAuthorize("hasAuthority('User')")
+    @PreAuthorize("hasAuthority('getUserInfo')")
     public ResponseEntity<?> getUser(@PathVariable String username) {
 
     	User user = userService.getUser(username);

@@ -1,6 +1,12 @@
 package com.user.UserMicroservice.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.user.UserMicroservice.security.Permission;
+
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import javax.persistence.*;
 
@@ -33,10 +39,22 @@ public class User {
     private String passwordResetCode;
     private LocalDateTime passwordResetCodeValidity;
     private String loginCode;
+
+    public Set<Permission> getPermissions() {
+        return permissions;
+    }
+
+    public void setPermissions(Set<Permission> permissions) {
+        this.permissions = permissions;
+    }
+
     private LocalDateTime loginCodeValidity;
-    
-    
-    
+
+    @JsonManagedReference
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private Set<Permission> permissions = new HashSet<>();
+
+
     public String getLoginCode() {
 		return loginCode;
 	}

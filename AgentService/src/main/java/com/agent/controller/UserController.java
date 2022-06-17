@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -21,7 +22,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "*")
 @RequestMapping("api/users")
 public class UserController {
 
@@ -41,8 +42,10 @@ public class UserController {
 
 
     @PostMapping(consumes = "application/json", path = "/registerUser")
-    public ResponseEntity<?> registerUser(HttpServletRequest request, @RequestBody RegistrationDTO registrationDTO) {
-
+    public ResponseEntity<?> registerUser(HttpServletRequest request, @RequestBody RegistrationDTO registrationDTO, BindingResult result) {
+    	if (result.hasErrors()){
+    		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
         User user = userService.userRegistration(registrationDTO, request);
 
         if(user == null) {
@@ -56,54 +59,45 @@ public class UserController {
     public ResponseEntity<?> login(@RequestBody LoginDTO loginDTO) {
 
         User user = customUserService.findUserByUsername(loginDTO.getUsername());
-        System.out.println("Nalazim se ovde 1");
         if (user == null || !loginDTO.getUsername().equals(user.getUsername())
         || !user.isActivated()) {
-            System.out.println("Nalazim se ovde 2");
 
-            return  new ResponseEntity<>("User does not exist or not activated!", HttpStatus.OK);
+            return  new ResponseEntity<>("User does not exist or not activated!", HttpStatus.UNAUTHORIZED);
         }
         else if(loginDTO.getPassword()!=null && loginDTO.getPassword().length()>1
                 && !bCryptPasswordEncoder.matches(loginDTO.getPassword(), user.getPassword()) ) {
-            System.out.println("Nalazim se ovde 3");
 
             System.out.println("Wrong password!");
-            return new ResponseEntity<>("Wrong password!", HttpStatus.OK);
+            return new ResponseEntity<>("Wrong password!", HttpStatus.UNAUTHORIZED);
         }
         else if(loginDTO.getCode()!=null
                 && ((!bCryptPasswordEncoder.matches(loginDTO.getCode(), user.getLoginCode()))
                 || LocalDateTime.now().isAfter(user.getLoginCodeValidity()))){
-            System.out.println("Nalazim se ovde 4");
 
             System.out.println("Login code is not valid!");
             return  ResponseEntity.ok(HttpStatus.UNAUTHORIZED);
         }
-        System.out.println("Nalazim se ovde 5");
 
         user.setLoginCode(null);
         user.setLoginCodeValidity(null);
         customUserService.saveUser(user);
-        System.out.println("Nalazim se ovde 6");
 
-        String token = tokenUtils.generateToken(user.getUsername());
+        String token = tokenUtils.generateToken(user.getUsername(), user.getType());
         LoginResponseDTO responseDTO = new LoginResponseDTO();
         responseDTO.setToken(token);
         String key = UUID.randomUUID().toString();
         responseDTO.setKey(key);
-        System.out.println("Nalazim se ovde 7");
 
 
         return new ResponseEntity<>(responseDTO, HttpStatus.OK);
     }
     @GetMapping(path = "/current")
     public ResponseEntity<?> getCurrentUser() {
-        System.out.println("Nalazim se ovde 8");
         return new ResponseEntity<>(userService.getCurrentUser(), HttpStatus.OK);
     }
     
     @GetMapping(path = "/owners")
     public ResponseEntity<?> getCompanyOwners() {
-
         return new ResponseEntity<>(userService.companyOwners(), HttpStatus.OK);
     }
 
@@ -146,8 +140,8 @@ public class UserController {
         }
 
         else {
-            System.out.println("Acivation code expired!");
-            return ResponseEntity.ok("Acivation code expired!");
+            System.out.println("Activation code expired!");
+            return ResponseEntity.ok("Activation code expired!");
         }
     }
 
