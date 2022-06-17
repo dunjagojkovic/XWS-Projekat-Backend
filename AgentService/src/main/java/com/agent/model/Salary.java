@@ -30,6 +30,36 @@ public class Salary {
 	 @JsonBackReference
 	 @ManyToOne
 	 private JobOffer offer;
-	 
 
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	public Long getAmount() {
+		return amount;
+	}
+
+	public void setAmount(Long amount) {
+		this.amount = amount;
+	}
+
+	public JobOffer getOffer() {
+		return offer;
+	}
+
+	public void setOffer(JobOffer offer) {
+		this.offer = offer;
+	}
 }

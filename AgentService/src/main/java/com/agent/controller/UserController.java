@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -41,8 +42,10 @@ public class UserController {
 
 
     @PostMapping(consumes = "application/json", path = "/registerUser")
-    public ResponseEntity<?> registerUser(HttpServletRequest request, @RequestBody RegistrationDTO registrationDTO) {
-
+    public ResponseEntity<?> registerUser(HttpServletRequest request, @RequestBody RegistrationDTO registrationDTO, BindingResult result) {
+    	if (result.hasErrors()){
+    		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
         User user = userService.userRegistration(registrationDTO, request);
 
         if(user == null) {

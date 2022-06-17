@@ -65,10 +65,6 @@ func archiveLog(archiveName string) {
 	}
 
 	zipWriter.Close()
-	e := os.Remove("logs//" + archiveName + ".log")
-	if e != nil {
-		log.Fatal(e)
-	}
 }
 
 type PostController struct {
