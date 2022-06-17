@@ -56,9 +56,24 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/users/checkActivationCode").permitAll()
                 .antMatchers("/api/users/checkForgottenPassword").permitAll()
                 .antMatchers("/api/users/loginCode").permitAll()
+                .antMatchers("api/companies/registerCompany").hasAnyAuthority("User", "Company owner")
+                .antMatchers("api/companies/allPendingCompanies").hasAuthority("Admin")
+                .antMatchers("api/companies/allApprovedCompanies").hasAnyAuthority("User", "Company owner")
+                .antMatchers("api/companies/approveCompanyRequest").hasAuthority("Admin")
+                .antMatchers("api/companies/declineCompanyRequest").hasAuthority("Admin")
+                .antMatchers("api/companies/myCompanies").hasAnyAuthority("User", "Company owner")
+                .antMatchers("api/companies/editCompanyInfo").hasAuthority("Company owner")
+                .antMatchers("api/jobs/addOffer").hasAuthority("Company owner")
+                .antMatchers("api/jobs/comment").hasAuthority("User")
+                .antMatchers("api/jobs/comments/{id}").hasAuthority("User")
+                .antMatchers("api/jobs/offers").hasAuthority("User")
+                .antMatchers("api/jobs/addSalary").hasAuthority("Company owner")
+                .antMatchers("api/jobs/addSurvey").hasAuthority("User")
+                .antMatchers("api/jobs/surveys/{id}").hasAuthority("User")
+
+
                 .anyRequest().authenticated().and()
 
-                //.formLogin().loginPage("/login").permitAll().and()
 
                 .logout().permitAll().and()
 

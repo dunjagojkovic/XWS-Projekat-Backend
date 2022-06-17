@@ -45,6 +45,11 @@ public class CompanyService {
         return companyRepository.findAllByStatus("Pending");
     }
 
+    public List<Company> getAllApprovedCompanies() {
+
+        return companyRepository.findAllByStatus("Approved");
+    }
+
     public Company approveCompanyRegistration(CompanyDTO dto){
 
         Company companyToApprove = companyRepository.getById(dto.getId());
@@ -65,7 +70,7 @@ public class CompanyService {
 
 
     public List<Company> getAllCompaniesForOwner(){
-        return companyRepository.findAllByOwnerIdAndStatus(userService.getCurrentUser().getId(), "Approved");
+        return companyRepository.findAllByOwnerId(userService.getCurrentUser().getId());
     }
 
     public Company editCompanyInfo(CompanyDTO companyDTO) {

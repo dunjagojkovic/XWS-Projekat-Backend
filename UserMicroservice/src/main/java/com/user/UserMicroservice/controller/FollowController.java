@@ -21,28 +21,28 @@ public class FollowController {
     private FollowService followService;
 
 	@PostMapping(path = "/follower")
-    @PreAuthorize("hasAuthority('followRequest') and hasAuthority('User')")
+    @PreAuthorize("hasAuthority('followRequest')")
     public ResponseEntity<?> follow(@RequestBody FollowDTO dto) {
 		followService.follow(dto);
     	return new ResponseEntity<>(HttpStatus.OK);
     }
 	
 	@PostMapping(path = "/accept")
-    @PreAuthorize("hasAuthority('acceptFollowRequest') and hasAuthority('User')")
+    @PreAuthorize("hasAuthority('acceptFollowRequest')")
     public ResponseEntity<?> accept(@RequestBody FollowDTO dto) {
 		followService.accept(dto);
     	return new ResponseEntity<>(HttpStatus.OK);
     }
 	
 	@PostMapping(path = "/deny")
-    @PreAuthorize("hasAuthority('denyFollowRequest') and hasAuthority('User')")
+    @PreAuthorize("hasAuthority('denyFollowRequest')")
     public ResponseEntity<?> deny(@RequestBody FollowDTO dto) {
 		followService.deny(dto);
     	return new ResponseEntity<>(HttpStatus.OK);
     }
 	
 	@GetMapping(value = "/following/{username}")
-    @PreAuthorize("hasAuthority('getFollowingUsers') and hasAuthority('User')")
+    @PreAuthorize("hasAuthority('getFollowingUsers')")
     public ResponseEntity<?> getFollowingUsers(@PathVariable String username) {
 
     	List<String> users = followService.getFollowing(username);
@@ -51,7 +51,7 @@ public class FollowController {
     }
 	
 	@GetMapping(value = "/requested/{username}")
-    @PreAuthorize("hasAuthority('getRequestedUsers') and hasAuthority('User')")
+    @PreAuthorize("hasAuthority('getRequestedUsers')")
     public ResponseEntity<?> getRequestedUsers(@PathVariable String username) {
 
     	List<String> users = followService.getRequests(username);
@@ -60,7 +60,7 @@ public class FollowController {
     }
 	
 	@GetMapping(value = "/requests/{username}")
-    @PreAuthorize("hasAuthority('getRequests') and hasAuthority('User')")
+    @PreAuthorize("hasAuthority('getRequests')")
     public ResponseEntity<?> getRequests(@PathVariable String username) {
 
     	List<String> users = followService.getSentRequests(username);

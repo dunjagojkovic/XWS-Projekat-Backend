@@ -102,7 +102,7 @@ public class UserController {
     }
 
     @PutMapping()
-    @PreAuthorize("hasAuthority('editInfo') and hasAuthority('User')")
+    @PreAuthorize("hasAuthority('editInfo')")
     public ResponseEntity<?> edit(@RequestBody UserDTO dto) {
         User user = userService.edit(dto);
 
@@ -110,7 +110,7 @@ public class UserController {
     }
 
     @PostMapping(path = "/changePassword")
-    @PreAuthorize("hasAuthority('changePassword') and hasAuthority('User')")
+    @PreAuthorize("hasAuthority('changePassword')")
     public ResponseEntity<?> changePassword(@RequestBody ChangePasswordDTO changePasswordDTO) {
         User user = userService.changePassword(changePasswordDTO);
 
@@ -212,7 +212,7 @@ public class UserController {
     
     
     @GetMapping(path = "/user/{username}")
-    @PreAuthorize("hasAuthority('getUserInfo') and hasAuthority('User')")
+    @PreAuthorize("hasAuthority('getUserInfo')")
     public ResponseEntity<?> getUser(@PathVariable String username) {
 
     	User user = userService.getUser(username);

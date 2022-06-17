@@ -56,6 +56,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/users/checkActivationCode").permitAll()
                 .antMatchers("/api/users/checkForgottenPassword").permitAll()
                 .antMatchers("/api/users/loginCode").permitAll()
+                .antMatchers("/api/users").hasAuthority("User")
+                .antMatchers("/api/users/changePassword").hasAuthority("User")
+                .antMatchers("/api/users/user/{username}").hasAuthority("User")
+                .antMatchers("/api/follow/**").hasAuthority("User")
+
 
                 .anyRequest().authenticated().and()
 

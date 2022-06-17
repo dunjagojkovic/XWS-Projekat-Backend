@@ -30,56 +30,55 @@ public class JobOfferController {
     private JobOfferService jobOfferService;
 
     @PostMapping(path = "/addOffer")
-    @PreAuthorize("hasAuthority('addJobOffer') and hasAuthority('Company owner')")
+    @PreAuthorize("hasAuthority('addJobOffer')")
     ResponseEntity<?> add(@RequestBody JobOfferDTO jobOfferDTO){
         JobOffer jobOffer = jobOfferService.addJobOffer(jobOfferDTO);
         return new ResponseEntity<>(jobOffer, HttpStatus.OK);
     }
     
     @PostMapping(path = "/comment")
-    @PreAuthorize("hasAuthority('comment') and hasAuthority('User')")
+    @PreAuthorize("hasAuthority('comment')")
     ResponseEntity<?> comment(@RequestBody CommentDTO commentDTO){
         Comment comment = jobOfferService.comment(commentDTO);
         return new ResponseEntity<>(comment, HttpStatus.OK);
     }
     
     @GetMapping(value = "/comments/{id}")
-    @PreAuthorize("hasAuthority('getJobOfferComments') and hasAuthority('User')")
+    @PreAuthorize("hasAuthority('getJobOfferComments')")
     public ResponseEntity<?> getJobOfferComments(@PathVariable Long id) {
         List<Comment> comments = jobOfferService.getJobOfferComments(id);
         return new ResponseEntity<>(comments, HttpStatus.OK);
     }
     
     @GetMapping(value = "/offers")
-    @PreAuthorize("hasAuthority('getJobOffers') and hasAuthority('User')")
+    @PreAuthorize("hasAuthority('getJobOffers')")
     public ResponseEntity<?> getJobOffers() {
         List<CompanyOfferDTO> jobOffers = jobOfferService.getJobOffers();
         return new ResponseEntity<>(jobOffers, HttpStatus.OK);
     }
     
     @PostMapping(path = "/salary")
-    @PreAuthorize("hasAuthority('addSalary') and hasAuthority('Company owner')")
+    @PreAuthorize("hasAuthority('addSalary')")
     ResponseEntity<?> addSalary(@RequestBody SalaryDTO salaryDTO){
         Salary salary = jobOfferService.addSalary(salaryDTO);
         return new ResponseEntity<>(salary, HttpStatus.OK);
     }
     
     @GetMapping(value = "/salaries/{id}")
-    @PreAuthorize("hasAuthority('getJobOfferSalaries') and hasAuthority('User')")
     public ResponseEntity<?> getJobOfferSalaries(@PathVariable Long id) {
         List<Salary> salaries = jobOfferService.getJobOfferSalaries(id);
         return new ResponseEntity<>(salaries, HttpStatus.OK);
     }
     
     @PostMapping(path = "/survey")
-    @PreAuthorize("hasAuthority('addSurvey') and hasAuthority('User')")
+    @PreAuthorize("hasAuthority('addSurvey')")
     ResponseEntity<?> survey(@RequestBody SurveyDTO surveyDTO){
         Survey survey = jobOfferService.survey(surveyDTO);
         return new ResponseEntity<>(survey, HttpStatus.OK);
     }
     
     @GetMapping(value = "/surveys/{id}")
-    @PreAuthorize("hasAuthority('getJobOfferSurveys') and hasAuthority('User')")
+    @PreAuthorize("hasAuthority('getJobOfferSurveys')")
     public ResponseEntity<?> getJobOfferSurveys(@PathVariable Long id) {
         List<Survey> surveys = jobOfferService.getJobOfferSurveys(id);
         return new ResponseEntity<>(surveys, HttpStatus.OK);
