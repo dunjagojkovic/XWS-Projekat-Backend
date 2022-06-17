@@ -26,6 +26,29 @@ func NewServer(config *Config) *Server {
 	}
 }
 
+func accessibleRoles() map[string][]string {
+	const servicePath = "/post.PostService/"
+	return map[string][]string{
+		//servicePath + "GetAll":            {"user"},
+		//servicePath + "Get":               {"user"},
+		//servicePath + "GetPostLikes":      {"user"},
+		//servicePath + "GetPostDislikes":   {"user"},
+		//servicePath + "GetUserPosts":      {"GetUserPosts"},
+		servicePath + "CreatePost":        {"CreatePost"},
+		servicePath + "CommentPost":       {"CommentPost"},
+		servicePath + "LikePost":          {"LikePost"},
+		servicePath + "DislikePost":       {"DislikePost"},
+		servicePath + "GetFollowingPosts": {"GetFollowingPosts"},
+	}
+}
+
+func permissionsOfRoles() map[string][]string {
+	return map[string][]string{
+		"user":  {"CreatePost", "CommentPost", "LikePost", "DislikePost", "GetFollowingPosts", "GetUserPosts"},
+		"admin": {},
+	}
+}
+
 func (server *Server) Start() {
 
 	uri := fmt.Sprintf("mongodb://%s:%s", server.config.PostDBHost, server.config.PostDBPort)
@@ -50,7 +73,11 @@ func (server *Server) startGrpcServer(postController *controller.PostController)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	grpcServer := grpc.NewServer()
+	interceptor := NewAuthInterceptor(accessibleRoles(), permissionsOfRoles())
+	grpcServer := grpc.NewServer(
+		grpc.UnaryInterceptor(interceptor.Unary()),
+		grpc.StreamInterceptor(interceptor.Stream()),
+	)
 	postGW.RegisterPostServiceServer(grpcServer, postController)
 	if err := grpcServer.Serve(listener); err != nil {
 		log.Fatalf("failed to serve: %s", err)

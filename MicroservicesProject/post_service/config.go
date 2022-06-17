@@ -1,5 +1,7 @@
 package main
 
+import "os"
+
 /*import "os"*/
 
 type Config struct {
@@ -10,8 +12,8 @@ type Config struct {
 
 func NewConfig() *Config {
 	return &Config{
-		Port:  "8000",   /* os.Getenv("POST_SERVICE_PORT"),*/
-		PostDBHost:"localhost", /* os.Getenv("POST_DB_HOST"),*/
-		PostDBPort:"27017",    /* os.Getenv("POST_DB_PORT"),*/
+		Port:/*"8000", */ os.Getenv("POST_SERVICE_PORT"),
+		PostDBHost:/*"localhost", */ os.Getenv("POST_DB_HOST"),
+		PostDBPort:/*"27017", */ os.Getenv("POST_DB_PORT"),
 	}
 }
