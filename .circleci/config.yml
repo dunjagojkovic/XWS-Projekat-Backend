@@ -68,6 +68,28 @@ jobs:
           name: Install dependencies and build project
           command: go version
       - sonarcloud/scan
+  build3:
+    docker:
+      - image: cimg/go:1.18.3-node
+    working_directory: ~/XWS-Projekat-Backend/MicroservicesProject/job_service
+    steps:
+      - checkout:
+          path: ~/XWS-Projekat-Backend
+      - run:
+          name: Install dependencies and build project
+          command: go version
+      - sonarcloud/scan
+  build4:
+    docker:
+      - image: cimg/go:1.18.3-node
+    working_directory: ~/XWS-Projekat-Backend/MicroservicesProject/post_service
+    steps:
+      - checkout:
+          path: ~/XWS-Projekat-Backend
+      - run:
+          name: Install dependencies and build project
+          command: go version
+      - sonarcloud/scan
 
 orbs:
   sonarcloud: sonarsource/sonarcloud@1.0.3
@@ -92,4 +114,15 @@ workflows:
               only:
                 - security
           context: SonarCloud2
-
+      - build3:
+          filters:
+            branches:
+              only:
+                - security
+          context: SonarCloud3
+      - build4:
+          filters:
+            branches:
+              only:
+                - security
+          context: SonarCloud4
