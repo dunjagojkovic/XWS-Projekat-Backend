@@ -165,7 +165,7 @@ public class UserController {
     	}
     	userService.forgottenPassword(user, request);
     	try {
-			loggingService.log(LogEntryType.ERROR, "DATA_PC", request.getRemoteAddr(), user.getEmail());
+			loggingService.log(LogEntryType.NOTIFICATION, "DATA_PC", request.getRemoteAddr(), user.getEmail());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
