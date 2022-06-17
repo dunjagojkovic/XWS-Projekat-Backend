@@ -70,13 +70,13 @@ public class UserController {
 
         User user = customUserService.findUserByUsername(loginDTO.getUsername());
 
-        if(loggingService.containsPotentialSQLInjection(loginDTO.getUsername())) {
+        /*if(loggingService.containsPotentialSQLInjection(loginDTO.getUsername())) {
         	try {
     			loggingService.log(LogEntryType.ERROR, "DATA_SI", request.getRemoteAddr());
     		} catch (IOException e) {
     			e.printStackTrace();
     		}
-        }
+        }*/
         if (user == null || !user.isActivated() 
         		|| !loginDTO.getUsername().equals(user.getUsername())){
             return  ResponseEntity.ok(HttpStatus.UNAUTHORIZED);
@@ -135,11 +135,11 @@ public class UserController {
         User user = userService.changePassword(changePasswordDTO);
 
         if(user == null) {
-        	try {
+        	/*try {
     			loggingService.log(LogEntryType.ERROR, "DATA_XU", request.getRemoteAddr());
     		} catch (IOException e) {
     			e.printStackTrace();
-    		}
+    		}*/
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
@@ -156,11 +156,11 @@ public class UserController {
     public ResponseEntity<?> forgottenPassword(HttpServletRequest request, @RequestBody ForgottenPasswordDTO dto){
     	User user = customUserService.findUserByUsername(dto.getUsername());
     	if(user == null) {
-    		try {
+    		/*try {
     			loggingService.log(LogEntryType.ERROR, "DATA_XU", request.getRemoteAddr());
     		} catch (IOException e) {
     			e.printStackTrace();
-    		}
+    		}*/
     		return ResponseEntity.ok(HttpStatus.BAD_REQUEST);
     	}
     	userService.forgottenPassword(user, request);
