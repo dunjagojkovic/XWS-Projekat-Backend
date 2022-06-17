@@ -57,6 +57,17 @@ jobs:
       - run:
           name: Analyze on SonarCloud
           command: mvn verify sonar:sonar -Dsonar.projectKey=dunjagojkovic_XWS-Projekat-Backend_1
+  build2:
+    docker:
+      - image: cimg/go:1.18.3-node
+    working_directory: ~/XWS-Projekat-Backend/PostService
+    steps:
+      - checkout:
+          path: ~/XWS-Projekat-Backend
+      - run:
+          name: Install dependencies and build project
+          command: go version
+      - sonarcloud/scan
 
 orbs:
   sonarcloud: sonarsource/sonarcloud@1.0.3
@@ -75,4 +86,10 @@ workflows:
               only:
                 - security
           context: SonarCloud1
+      - build2:
+          filters:
+            branches:
+              only:
+                - security
+          context: SonarCloud2
 
