@@ -79,7 +79,7 @@ public class UserController {
         user.setLoginCodeValidity(null);
         customUserService.saveUser(user);
 
-        String token = tokenUtils.generateToken(user.getUsername());
+        String token = tokenUtils.generateToken(user.getUsername(), user.getType());
         LoginResponseDTO responseDTO = new LoginResponseDTO();
         responseDTO.setToken(token);
         String key = UUID.randomUUID().toString();
