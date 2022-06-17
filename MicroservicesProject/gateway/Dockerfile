@@ -29,6 +29,12 @@ WORKDIR /root/
 # Copy the Pre-built binary file from the previous stage
 COPY --from=builder /app/main .
 
+COPY ./gateway/startup/Gateway.crt .
+COPY ./gateway/startup/Gateway.key .
+COPY ./gateway/startup/ROOT.crt /usr/local/share/ca-certificates/ROOT.crt
+RUN apk update && apk add ca-certificates && rm -rf /var/cache/apk/*
+RUN update-ca-certificates
+
 # Expose port 8000 to the outside world
 EXPOSE 8000
 

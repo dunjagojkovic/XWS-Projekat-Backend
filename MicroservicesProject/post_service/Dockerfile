@@ -28,6 +28,11 @@ WORKDIR /root/
 
 # Copy the Pre-built binary file from the previous stage
 COPY --from=builder /app/main .
+COPY ./post_service/certificate/PostServiceBackend.crt .
+COPY ./post_service/certificate/PostServiceBackend.key .
+COPY ./post_service/certificate/ROOT.crt /usr/local/share/ca-certificates/ROOT.crt
+RUN apk update && apk add ca-certificates && rm -rf /var/cache/apk/*
+RUN update-ca-certificates
 
 # Expose port 8000 to the outside world
 EXPOSE 8000

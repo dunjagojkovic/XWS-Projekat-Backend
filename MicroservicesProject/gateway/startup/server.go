@@ -4,6 +4,7 @@ import (
 	//"context"
 	postGw "common/proto/post_service"
 	"context"
+	"crypto/tls"
 	"fmt"
 	cfg "gateway/startup/config"
 	"log"
@@ -13,7 +14,7 @@ import (
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/credentials"
 )
 
 type Server struct {
@@ -30,8 +31,33 @@ func NewServer(config *cfg.Config) *Server {
 	return server
 }
 
+func loadTLSCredentials() (credentials.TransportCredentials, error) {
+	serverCert, err := tls.LoadX509KeyPair("Gateway.crt", "Gateway.key")
+	if err != nil {
+		return nil, err
+	}
+
+	config := &tls.Config{
+		Certificates: []tls.Certificate{serverCert},
+		ClientAuth:   tls.NoClientCert,
+	}
+
+	return credentials.NewTLS(config), nil
+}
+
 func (server *Server) initHandlers() {
-	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
+	/*tlsCredentials, err1 := loadTLSCredentials()
+	if err1 != nil {
+		log.Fatal("cannot load TLS credentials")
+	}*/
+	/*tlsCreds, err2 := credentials.NewClientTLSFromFile("Gateway.crt", "")
+	if err2 != nil {
+		log.Fatalf("No cert found: %v", err2)
+	}*/
+	config := &tls.Config{
+		InsecureSkipVerify: true,
+	}
+	opts := []grpc.DialOption{grpc.WithTransportCredentials(credentials.NewTLS(config))}
 	postEmdpoint := fmt.Sprintf("%s:%s", server.config.PostHost, server.config.PostPort)
 	err := postGw.RegisterPostServiceHandlerFromEndpoint(context.TODO(), server.mux, postEmdpoint, opts)
 	if err != nil {
@@ -60,5 +86,5 @@ func cors(h http.Handler) http.Handler {
 }
 
 func (server *Server) Start() {
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", server.config.Port), cors(server.mux)))
+	log.Fatal(http.ListenAndServeTLS(fmt.Sprintf(":%s", server.config.Port), "Gateway.crt", "Gateway.key", cors(server.mux)))
 }

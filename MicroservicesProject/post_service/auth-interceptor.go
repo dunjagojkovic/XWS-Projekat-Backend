@@ -88,6 +88,7 @@ func (interceptor *AuthInterceptor) authorize(ctx context.Context, method string
 
 	accessToken := values[0]
 	words := strings.Fields(accessToken)
+	fmt.Println(words[1])
 	claims, err := interceptor.Verify(words[1])
 	if err != nil {
 		return status.Errorf(codes.Unauthenticated, "access token is invalid: %v", err)
