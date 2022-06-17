@@ -7,6 +7,8 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -67,5 +69,11 @@ public class LoggingService {
 	
 	private String getFormattedFileName(LogEntryType type) {
 		return "log//" + type.toString().toLowerCase() + ".log";
+	}
+	
+	public boolean containsPotentialSQLInjection(String text) {
+		Pattern pattern = Pattern.compile("\\b(ALTER|CREATE|DELETE|DROP|EXEC(UTE){0,1}|INSERT( +INTO){0,1}|MERGE|SELECT|UPDATE|UNION( +ALL){0,1})\\b", Pattern.CASE_INSENSITIVE);
+	    Matcher matcher = pattern.matcher(text);
+	    return matcher.find();
 	}
 }
