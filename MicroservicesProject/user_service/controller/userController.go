@@ -59,6 +59,17 @@ func (uc *UserController) Login(ctx context.Context, request *pb.LoginRequest) (
 
 }
 
+func (uc *UserController) EditPassword(ctx context.Context, request *pb.EditPasswordRequest) (*pb.User, error) {
+
+	user, err := uc.service.EditPassword(request.Password.NewPassword, request.Password.OldPassword, request.Password.Username)
+	if err != nil {
+		return nil, err
+	}
+	userPb := mapEditedUser(user)
+	return userPb, nil
+
+}
+
 func mapUser(user *model.User) *pb.User {
 
 	userPb := &pb.User{

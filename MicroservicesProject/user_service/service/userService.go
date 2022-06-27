@@ -85,3 +85,8 @@ func (service *UserService) EditUser(user *model.User, work *model.WorkExperienc
 	return service.store.EditUser(user, work)
 
 }
+
+func (service *UserService) EditPassword(newPassword, oldPassword, username string) (*model.User, error) {
+	return service.store.EditPassword(newPassword, oldPassword, username)
+
+}

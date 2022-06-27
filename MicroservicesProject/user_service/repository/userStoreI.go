@@ -11,4 +11,5 @@ type UserStoreI interface {
 	GetUsers() ([]*model.User, error)
 	GetPublicUsers() ([]*model.User, error)
 	EditUser(*model.User, *model.WorkExperience) (*model.User, error)
+	EditPassword(string, string, string) (*model.User, error)
 }

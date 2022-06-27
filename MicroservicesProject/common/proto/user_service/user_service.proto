@@ -21,7 +21,13 @@ service UserService{
                         post: "/login"
                         body: "user"
                 };
+        }
 
+        rpc EditPassword(EditPasswordRequest) returns(User) {
+                option (google.api.http) = {
+                        post: "/editPassword"
+                        body: "password"
+                };
         }
 
         rpc GetUsers(GetUsersRequest) returns(GetUsersResponse) {
@@ -41,7 +47,6 @@ service UserService{
                         put: "/edit"
                         body: "user"
                 };
-
         }
 
         rpc GetPublicUsers(GetUsersRequest) returns(GetUsersResponse) {
@@ -49,6 +54,17 @@ service UserService{
 			get: "/publicUsers"
 		};
         }
+
+}
+
+message EditPasswordRequest {
+        PasswordEdit password = 1;
+}
+
+message PasswordEdit {
+        string newPassword = 1;
+        string oldPassword = 2;
+        string username = 3;
 
 }
 
