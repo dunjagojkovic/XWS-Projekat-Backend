@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+option go_package = "common/user";
+
+package user;
+
+import "google/api/annotations.proto";
+
+service UserService{
+
+        rpc Registration(RegistrationRequest) returns(RegistrationResponse) {
+                option (google.api.http) = {
+                        post: "/register"
+                        body: "user"
+                };
+
+        }       
+}
+
+
+
+message RegistrationResponse {
+        string id = 1;
+        string name = 2;
+        string surname = 3;
+        string email = 4;
+        string username = 5;
+        string password = 6;
+        string phoneNumber = 7;
+        string gender = 8;
+        bool isPublic = 9;
+        string birthDate = 10;
+}
+
+message RegistrationRequest {
+        RegisterUser user = 1;
+}
+
+message RegisterUser {
+
+        string name = 1;
+        string surname = 2;
+        string email = 3;
+        string username = 4;
+        string password = 5;
+        string phoneNumber = 6;
+        string gender = 7;
+        bool isPublic = 8;
+        string birthDate = 9;
+}
+
+message User {
+
+    string id = 1;
+    string name = 2;
+    string surname = 3;
+    string email = 4;
+    string username = 5;
+    string password = 6;
+    string phoneNumber = 7;
+    string gender = 8;
+    bool isPublic = 9;
+    string birthDate = 10;
+    string biography = 11;
+    repeated WorkExperience workExperiences = 12;
+    string education = 13;
+    string hobby = 14;
+    string interest = 15;
+    
+}
+
+message WorkExperience {
+    string id = 1;
+    string description = 2;
+   
+}
+
+
+
+
+
+
+

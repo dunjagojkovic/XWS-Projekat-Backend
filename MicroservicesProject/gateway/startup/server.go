@@ -10,6 +10,7 @@ import (
 	"net/http"
 
 	jobGw "common/proto/job_service"
+	userGw "common/proto/user_service"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
@@ -41,6 +42,12 @@ func (server *Server) initHandlers() {
 	errJ := jobGw.RegisterJobServiceHandlerFromEndpoint(context.TODO(), server.mux, jobEmdpoint, opts)
 	if errJ != nil {
 		panic(errJ)
+	}
+
+	userEndpoint := fmt.Sprintf("%s:%s", server.config.UserHost, server.config.UserPort)
+	errUser := userGw.RegisterUserServiceHandlerFromEndpoint(context.TODO(), server.mux, userEndpoint, opts)
+	if errUser != nil {
+		panic(errUser)
 	}
 
 }
