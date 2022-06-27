@@ -110,30 +110,159 @@ func decode(cursor *mongo.Cursor) (users []*model.User, err error) {
 func (store *UserStore) EditUser(user *model.User, work *model.WorkExperience) (*model.User, error) {
 
 	filter := bson.D{{"username", user.Username}}
+	if user.Name != "" {
+		update := bson.D{
+			{"$set", bson.D{
+				{"name", user.Name},
+			},
+			},
+		}
 
-	update := bson.D{
-		{"$set", bson.D{
-			{"name", user.Name},
-			{"surname", user.Surname},
-			{"email", user.Email},
-			{"phone_number", user.PhoneNumber},
-			{"username", user.Username},
-			{"biography", user.Biography},
-			{"birth_date", user.BirthDate},
-			{"education", user.Education},
-			{"hobby", user.Hobby},
-			{"interest", user.Interest},
-			{"gender", user.Gender},
-		},
-		}, {"$push", bson.D{
-			{"work_experiences", work},
-		}},
+		_, err := store.users.UpdateOne(context.TODO(), filter, update)
+
+		if err != nil {
+			return nil, err
+		}
 	}
+	if user.Surname != "" {
+		update := bson.D{
+			{"$set", bson.D{
+				{"surname", user.Surname},
+			},
+			},
+		}
 
-	_, err := store.users.UpdateOne(context.TODO(), filter, update)
+		_, err := store.users.UpdateOne(context.TODO(), filter, update)
 
-	if err != nil {
-		return nil, err
+		if err != nil {
+			return nil, err
+		}
+	}
+	if user.Email != "" {
+		update := bson.D{
+			{"$set", bson.D{
+				{"email", user.Email},
+			},
+			},
+		}
+
+		_, err := store.users.UpdateOne(context.TODO(), filter, update)
+
+		if err != nil {
+			return nil, err
+		}
+	}
+	if user.Username != "" {
+		update := bson.D{
+			{"$set", bson.D{
+				{"username", user.Username},
+			},
+			},
+		}
+
+		_, err := store.users.UpdateOne(context.TODO(), filter, update)
+
+		if err != nil {
+			return nil, err
+		}
+	}
+	if user.PhoneNumber != "" {
+		update := bson.D{
+			{"$set", bson.D{
+				{"phone_number", user.PhoneNumber},
+			},
+			},
+		}
+
+		_, err := store.users.UpdateOne(context.TODO(), filter, update)
+
+		if err != nil {
+			return nil, err
+		}
+	}
+	if user.BirthDate != "" {
+		update := bson.D{
+			{"$set", bson.D{
+				{"birth_date", user.BirthDate},
+			},
+			},
+		}
+
+		_, err := store.users.UpdateOne(context.TODO(), filter, update)
+
+		if err != nil {
+			return nil, err
+		}
+	}
+	if user.Biography != "" {
+		update := bson.D{
+			{"$set", bson.D{
+				{"biography", user.Biography},
+			},
+			},
+		}
+
+		_, err := store.users.UpdateOne(context.TODO(), filter, update)
+
+		if err != nil {
+			return nil, err
+		}
+	}
+	if user.Education != "" {
+		update := bson.D{
+			{"$set", bson.D{
+				{"education", user.Education},
+			},
+			},
+		}
+
+		_, err := store.users.UpdateOne(context.TODO(), filter, update)
+
+		if err != nil {
+			return nil, err
+		}
+	}
+	if user.Hobby != "" {
+		update := bson.D{
+			{"$set", bson.D{
+				{"hobby", user.Hobby},
+			},
+			},
+		}
+
+		_, err := store.users.UpdateOne(context.TODO(), filter, update)
+
+		if err != nil {
+			return nil, err
+		}
+	}
+	if user.Interest != "" {
+		update := bson.D{
+			{"$set", bson.D{
+				{"interest", user.Interest},
+			},
+			},
+		}
+
+		_, err := store.users.UpdateOne(context.TODO(), filter, update)
+
+		if err != nil {
+			return nil, err
+		}
+	}
+	if user.Gender != "" {
+		update := bson.D{
+			{"$set", bson.D{
+				{"gender", user.Gender},
+			},
+			},
+		}
+
+		_, err := store.users.UpdateOne(context.TODO(), filter, update)
+
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	findFilter := bson.D{{"username", user.Username}}

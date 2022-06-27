@@ -46,10 +46,12 @@ func (uc *UserController) Registration(ctx context.Context, request *pb.Registra
 
 func (uc *UserController) Login(ctx context.Context, request *pb.LoginRequest) (*pb.LoginResponse, error) {
 
+	fmt.Println(request.User.Username)
 	token, key, err := uc.service.Login(request.User.Username, request.User.Password)
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println(token)
 	return &pb.LoginResponse{
 		Token: token,
 		Key:   key,
@@ -165,6 +167,7 @@ func (pc *UserController) GetPublicUsers(ctx context.Context, request *pb.GetUse
 
 func (uc *UserController) EditUser(ctx context.Context, request *pb.EditUserRequest) (*pb.User, error) {
 
+	fmt.Println(request.User.Username)
 	user := mapEditUser(request.User)
 	fmt.Println(user.Education)
 	fmt.Println(request.User.Education)
@@ -190,7 +193,7 @@ func mapNewUser(userPb *pb.RegisterUser) *model.User {
 		Password:       userPb.Password,
 		PhoneNumber:    userPb.PhoneNumber,
 		Gender:         userPb.Gender,
-		IsPublic:       userPb.IsPublic,
+		IsPublic:       true,
 		Biography:      "",
 		BirthDate:      userPb.BirthDate,
 		WorkExperience: make([]model.WorkExperience, 0),
