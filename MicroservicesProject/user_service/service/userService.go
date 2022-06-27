@@ -65,3 +65,23 @@ func (service *UserService) Login(username, password string) (string, string, er
 	return "", "", nil
 
 }
+
+func (service *UserService) CurrentUser(username string) (model.User, error) {
+	return service.store.CurrentUser(username)
+
+}
+
+func (service *UserService) GetUsers() ([]*model.User, error) {
+	return service.store.GetUsers()
+
+}
+
+func (service *UserService) GetPublicUsers() ([]*model.User, error) {
+	return service.store.GetPublicUsers()
+
+}
+
+func (service *UserService) EditUser(user *model.User, work *model.WorkExperience) (*model.User, error) {
+	return service.store.EditUser(user, work)
+
+}

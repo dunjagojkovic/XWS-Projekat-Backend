@@ -7,4 +7,8 @@ import (
 type UserStoreI interface {
 	RegisterUser(user *model.User) (*model.User, error)
 	Login(username, password string) (bool, error)
+	CurrentUser(username string) (model.User, error)
+	GetUsers() ([]*model.User, error)
+	GetPublicUsers() ([]*model.User, error)
+	EditUser(*model.User, *model.WorkExperience) (*model.User, error)
 }
