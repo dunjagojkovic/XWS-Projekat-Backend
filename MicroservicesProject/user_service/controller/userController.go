@@ -43,6 +43,19 @@ func (uc *UserController) Registration(ctx context.Context, request *pb.Registra
 
 }
 
+func (uc *UserController) Login(ctx context.Context, request *pb.LoginRequest) (*pb.LoginResponse, error) {
+
+	token, key, err := uc.service.Login(request.User.Username, request.User.Password)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.LoginResponse{
+		Token: token,
+		Key:   key,
+	}, nil
+
+}
+
 func mapNewUser(userPb *pb.RegisterUser) *model.User {
 
 	user := &model.User{

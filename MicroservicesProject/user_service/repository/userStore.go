@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"userS/model"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -34,4 +35,28 @@ func (store *UserStore) RegisterUser(user *model.User) (*model.User, error) {
 
 	fmt.Println(result)
 	return user, nil
+}
+
+func (store *UserStore) Login(username, password string) (bool, error) {
+	filter := bson.D{{"username", username}}
+
+	cur, err := store.users.Find(context.TODO(), filter)
+	if err != nil {
+		return false, err
+	}
+
+	var user model.User
+	for cur.Next(context.TODO()) {
+
+		err := cur.Decode(&user)
+		if err != nil {
+			return false, err
+		}
+
+		if user.Password == password {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }

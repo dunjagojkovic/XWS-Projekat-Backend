@@ -6,4 +6,5 @@ import (
 
 type UserStoreI interface {
 	RegisterUser(user *model.User) (*model.User, error)
+	Login(username, password string) (bool, error)
 }
