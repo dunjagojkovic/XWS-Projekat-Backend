@@ -1,0 +1,196 @@
+syntax = "proto3";
+
+option go_package = "common/user";
+
+package user;
+
+import "google/api/annotations.proto";
+
+service UserService{
+
+        rpc Registration(RegistrationRequest) returns(RegistrationResponse) {
+                option (google.api.http) = {
+                        post: "/register"
+                        body: "user"
+                };
+
+        }
+        
+        rpc Login(LoginRequest) returns(LoginResponse) {
+                option (google.api.http) = {
+                        post: "/login"
+                        body: "user"
+                };
+        }
+
+        rpc EditPassword(EditPasswordRequest) returns(User) {
+                option (google.api.http) = {
+                        post: "/editPassword"
+                        body: "password"
+                };
+        }
+
+        rpc GetUsers(GetUsersRequest) returns(GetUsersResponse) {
+        	option (google.api.http) = {
+			get: "/users"
+		};
+        }
+
+        rpc CurrentUser(CurrentUserRequest) returns(User) {
+        	option (google.api.http) = {
+			get: "/current/{username}"
+		};
+        }
+
+        rpc EditUser(EditUserRequest) returns(User) {
+                option (google.api.http) = {
+                        put: "/edit"
+                        body: "user"
+                };
+        }
+
+        rpc GetPublicUsers(GetUsersRequest) returns(GetUsersResponse) {
+        	option (google.api.http) = {
+			get: "/publicUsers"
+		};
+        }
+        rpc FilterUsers(FilterUsersRequest) returns(FilterUsersResponse) {
+        	option (google.api.http) = {
+			get: "/filterUsers/{searchTerm}"
+		};
+        }
+
+
+}
+
+message EditPasswordRequest {
+        PasswordEdit password = 1;
+}
+message FilterUsersResponse{
+        repeated User users = 1;
+}
+
+message FilterUsersRequest {
+        string searchTerm = 1;
+}
+
+message PasswordEdit {
+        string newPassword = 1;
+        string oldPassword = 2;
+        string username = 3;
+
+}
+
+message EditUserRequest {
+        EditUser user = 1;
+}
+
+message GetUsersRequest {
+
+}
+
+
+message CurrentUserRequest {
+        string username = 1;
+}
+
+
+message GetUsersResponse{
+        repeated User users = 1;
+}
+
+message LoginRequest {
+        LoginUserRequest user = 1;
+}
+
+message LoginUserRequest {
+        string username = 1;
+        string password = 2;
+}
+
+message LoginResponse {
+        string token = 1;
+        string key = 2;
+}
+
+
+
+message RegistrationResponse {
+        string id = 1;
+        string name = 2;
+        string surname = 3;
+        string email = 4;
+        string username = 5;
+        string password = 6;
+        string phoneNumber = 7;
+        string gender = 8;
+        bool isPublic = 9;
+        string birthDate = 10;
+}
+
+message RegistrationRequest {
+        RegisterUser user = 1;
+}
+
+message RegisterUser {
+
+        string name = 1;
+        string surname = 2;
+        string email = 3;
+        string username = 4;
+        string password = 5;
+        string phoneNumber = 6;
+        string gender = 7;
+        bool isPublic = 8;
+        string birthDate = 9;
+}
+
+message User {
+
+        string id = 1;
+        string name = 2;
+        string surname = 3;
+        string email = 4;
+        string username = 5;
+        string password = 6;
+        string phoneNumber = 7;
+        string gender = 8;
+        bool isPublic = 9;
+        string birthDate = 10;
+        string biography = 11;
+        repeated WorkExperience workExperiences = 12;
+        string education = 13;
+        string hobby = 14;
+        string interest = 15;
+        
+}
+
+message EditUser {
+
+        string name = 1;
+        string surname = 2;
+        string email = 3;
+        string username = 4;
+        string phoneNumber = 5;
+        string gender = 6;
+        string birthDate = 7;
+        string biography = 8;
+        WorkExperience workExperience = 9;
+        string education = 10;
+        string hobby = 11;
+        string interest = 12;
+        
+}
+
+message WorkExperience {
+    string id = 1;
+    string description = 2;
+   
+}
+
+
+
+
+
+
+
