@@ -71,6 +71,31 @@ services:
     networks:
       - network
 
+
+  app:
+    image: 'docker-spring-boot-postgres:latest'
+    build:
+      context: .
+      dockerfile: ./AgentService/src/main/docker/Dockerfile
+    container_name: agent-app
+    depends_on:
+      - agent
+    ports:
+      - 8080:8080
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://agent:5432/agent
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+
+  agent:
+    image: 'postgres:13.1-alpine'
+    container_name: agent
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRES_USERNAME=postgres
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=agent
+
   post_db:
     image: mongo
     container_name: post_db
