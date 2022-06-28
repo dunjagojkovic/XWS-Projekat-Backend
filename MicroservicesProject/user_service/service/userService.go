@@ -8,6 +8,8 @@ import (
 	"userS/model"
 	"userS/repository"
 
+	"strings"
+
 	"github.com/dgrijalva/jwt-go"
 )
 
@@ -88,5 +90,20 @@ func (service *UserService) EditUser(user *model.User, work *model.WorkExperienc
 
 func (service *UserService) EditPassword(newPassword, oldPassword, username string) (*model.User, error) {
 	return service.store.EditPassword(newPassword, oldPassword, username)
+
+}
+
+func (service *UserService) FilterUsers(searchTerm string) ([]*model.User, error) {
+	users, err := service.store.GetPublicUsers()
+	var filterUsers []*model.User
+	for _, user := range users {
+		if strings.Contains(strings.ToLower(user.Username), strings.ToLower(searchTerm)) || strings.Contains(strings.ToLower(user.Name), strings.ToLower(searchTerm)) || strings.Contains(strings.ToLower(user.Surname), strings.ToLower(searchTerm)) {
+			filterUsers = append(filterUsers, user)
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	return filterUsers, nil
 
 }

@@ -54,11 +54,24 @@ service UserService{
 			get: "/publicUsers"
 		};
         }
+        rpc FilterUsers(FilterUsersRequest) returns(FilterUsersResponse) {
+        	option (google.api.http) = {
+			get: "/filterUsers/{searchTerm}"
+		};
+        }
+
 
 }
 
 message EditPasswordRequest {
         PasswordEdit password = 1;
+}
+message FilterUsersResponse{
+        repeated User users = 1;
+}
+
+message FilterUsersRequest {
+        string searchTerm = 1;
 }
 
 message PasswordEdit {

@@ -29,6 +29,7 @@ type UserServiceClient interface {
 	CurrentUser(ctx context.Context, in *CurrentUserRequest, opts ...grpc.CallOption) (*User, error)
 	EditUser(ctx context.Context, in *EditUserRequest, opts ...grpc.CallOption) (*User, error)
 	GetPublicUsers(ctx context.Context, in *GetUsersRequest, opts ...grpc.CallOption) (*GetUsersResponse, error)
+	FilterUsers(ctx context.Context, in *FilterUsersRequest, opts ...grpc.CallOption) (*FilterUsersResponse, error)
 }
 
 type userServiceClient struct {
@@ -102,6 +103,15 @@ func (c *userServiceClient) GetPublicUsers(ctx context.Context, in *GetUsersRequ
 	return out, nil
 }
 
+func (c *userServiceClient) FilterUsers(ctx context.Context, in *FilterUsersRequest, opts ...grpc.CallOption) (*FilterUsersResponse, error) {
+	out := new(FilterUsersResponse)
+	err := c.cc.Invoke(ctx, "/user.UserService/FilterUsers", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServiceServer is the server API for UserService service.
 // All implementations must embed UnimplementedUserServiceServer
 // for forward compatibility
@@ -113,6 +123,7 @@ type UserServiceServer interface {
 	CurrentUser(context.Context, *CurrentUserRequest) (*User, error)
 	EditUser(context.Context, *EditUserRequest) (*User, error)
 	GetPublicUsers(context.Context, *GetUsersRequest) (*GetUsersResponse, error)
+	FilterUsers(context.Context, *FilterUsersRequest) (*FilterUsersResponse, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
 
@@ -140,6 +151,9 @@ func (UnimplementedUserServiceServer) EditUser(context.Context, *EditUserRequest
 }
 func (UnimplementedUserServiceServer) GetPublicUsers(context.Context, *GetUsersRequest) (*GetUsersResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetPublicUsers not implemented")
+}
+func (UnimplementedUserServiceServer) FilterUsers(context.Context, *FilterUsersRequest) (*FilterUsersResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FilterUsers not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
 
@@ -280,6 +294,24 @@ func _UserService_GetPublicUsers_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserService_FilterUsers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FilterUsersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).FilterUsers(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/user.UserService/FilterUsers",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).FilterUsers(ctx, req.(*FilterUsersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserService_ServiceDesc is the grpc.ServiceDesc for UserService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -314,6 +346,10 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetPublicUsers",
 			Handler:    _UserService_GetPublicUsers_Handler,
+		},
+		{
+			MethodName: "FilterUsers",
+			Handler:    _UserService_FilterUsers_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

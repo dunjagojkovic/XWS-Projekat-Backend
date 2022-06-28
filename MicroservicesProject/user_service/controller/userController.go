@@ -146,8 +146,8 @@ func (uc *UserController) CurrentUser(ctx context.Context, request *pb.CurrentUs
 	return userPb, nil
 }
 
-func (pc *UserController) GetUsers(ctx context.Context, request *pb.GetUsersRequest) (*pb.GetUsersResponse, error) {
-	users, err := pc.service.GetUsers()
+func (uc *UserController) GetUsers(ctx context.Context, request *pb.GetUsersRequest) (*pb.GetUsersResponse, error) {
+	users, err := uc.service.GetUsers()
 	if err != nil {
 		return nil, err
 	}
@@ -161,8 +161,8 @@ func (pc *UserController) GetUsers(ctx context.Context, request *pb.GetUsersRequ
 	return response, nil
 }
 
-func (pc *UserController) GetPublicUsers(ctx context.Context, request *pb.GetUsersRequest) (*pb.GetUsersResponse, error) {
-	users, err := pc.service.GetPublicUsers()
+func (uc *UserController) GetPublicUsers(ctx context.Context, request *pb.GetUsersRequest) (*pb.GetUsersResponse, error) {
+	users, err := uc.service.GetPublicUsers()
 	if err != nil {
 		return nil, err
 	}
@@ -182,6 +182,7 @@ func (uc *UserController) EditUser(ctx context.Context, request *pb.EditUserRequ
 	user := mapEditUser(request.User)
 	fmt.Println(user.Education)
 	fmt.Println(request.User.Education)
+	fmt.Println(request.User.WorkExperience.Description)
 	workExperience := mapWorkExperience(request.User.WorkExperience)
 	editedUser, err := uc.service.EditUser(user, workExperience)
 
@@ -191,6 +192,24 @@ func (uc *UserController) EditUser(ctx context.Context, request *pb.EditUserRequ
 	userPb := mapEditedUser(editedUser)
 
 	return userPb, nil
+}
+
+func (uc *UserController) FilterUsers(ctx context.Context, request *pb.FilterUsersRequest) (*pb.FilterUsersResponse, error) {
+
+	searchTerm := request.SearchTerm
+	users, err := uc.service.FilterUsers(searchTerm)
+	if err != nil {
+		return nil, err
+	}
+	response := &pb.FilterUsersResponse{
+		Users: []*pb.User{},
+	}
+	for _, user := range users {
+		current := mapUser(user)
+		response.Users = append(response.Users, current)
+	}
+	return response, nil
+
 }
 
 func mapNewUser(userPb *pb.RegisterUser) *model.User {

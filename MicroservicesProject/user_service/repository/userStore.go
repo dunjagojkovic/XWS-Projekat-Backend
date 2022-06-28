@@ -264,6 +264,20 @@ func (store *UserStore) EditUser(user *model.User, work *model.WorkExperience) (
 			return nil, err
 		}
 	}
+	if work.Description != "" {
+		update := bson.D{
+			{"$push", bson.D{
+				{"work_experiences", work},
+			},
+			},
+		}
+
+		_, err := store.users.UpdateOne(context.TODO(), filter, update)
+
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	findFilter := bson.D{{"username", user.Username}}
 	var result model.User
