@@ -1,0 +1,107 @@
+package com.agent.controller;
+
+import com.agent.dto.CommentDTO;
+import com.agent.dto.CompanyDTO;
+import com.agent.dto.SurveyDTO;
+import com.agent.dto.converters.CompanyConverters;
+import com.agent.model.Comment;
+import com.agent.model.Company;
+import com.agent.model.Survey;
+import com.agent.service.CompanyService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@CrossOrigin(origins = "*")
+@RequestMapping("api/companies")
+public class CompanyController {
+
+    @Autowired
+    CompanyService companyService;
+
+    @PostMapping(consumes = "application/json", path = "/registerCompany")
+    public ResponseEntity<?> add(@RequestBody CompanyDTO dto) {
+        Company company  = companyService.add(dto);
+
+        return new ResponseEntity<>(CompanyConverters.modelToDTO(company), HttpStatus.OK);
+    }
+
+    @GetMapping(path = "/allPendingCompanies")
+    public ResponseEntity<?> getAll() {
+        List<Company> companies = companyService.getAllCompaniesForApproving();
+        return new ResponseEntity<>(CompanyConverters.modelsToDTOs(companies), HttpStatus.OK);
+    }
+
+    @GetMapping(path = "/approvedCompanies")
+    public ResponseEntity<?> getAcceptedCompanies() {
+        List<Company> companies = companyService.getApprovedCompanies();
+        return new ResponseEntity<>(companies, HttpStatus.OK);
+    }
+
+    @PutMapping(path = "/approveCompanyRequest")
+    public ResponseEntity<?> approveRequest(@RequestBody CompanyDTO dto){
+       Company company =  companyService.approveCompanyRegistration(dto);
+        return new ResponseEntity<>(company, HttpStatus.OK);
+    }
+
+    @PutMapping(path = "/declineCompanyRequest")
+    public ResponseEntity<?> declineCompanyRequest( @RequestBody CompanyDTO companyDTO) {
+        Company company = companyService.declineCompanyRegistration(companyDTO);
+        return new ResponseEntity<>(company, HttpStatus.OK);
+    }
+
+    @GetMapping(path = "/myCompanies")
+    public ResponseEntity<?> getMyCompanies() {
+        List<Company> companies = companyService.getAllCompaniesForOwner();
+        return new ResponseEntity<>(CompanyConverters.modelsToDTOs(companies), HttpStatus.OK);
+    }
+
+    @PutMapping(path = "/editCompanyInfo")
+    public ResponseEntity<?> editCompanyInfo(@RequestBody CompanyDTO dto) {
+        Company company = companyService.editCompanyInfo(dto);
+
+        return new ResponseEntity<>(company, HttpStatus.OK);
+    }
+
+
+    @GetMapping(path = "/{id}")
+    public ResponseEntity<?> getCompany(@PathVariable Long id) {
+
+        Company company = companyService.getCompanyInfo(id);
+
+        if(company == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        return new ResponseEntity<>(company, HttpStatus.OK);
+    }
+    
+    @PostMapping(path = "/comment")
+    ResponseEntity<?> comment(@RequestBody CommentDTO commentDTO){
+        Comment comment = companyService.comment(commentDTO);
+        return new ResponseEntity<>(comment, HttpStatus.OK);
+    }
+    
+    @GetMapping(value = "/comments/{id}")
+    public ResponseEntity<?> getJobOfferComments(@PathVariable Long id) {
+        List<Comment> comments = companyService.getComments(id);
+        return new ResponseEntity<>(comments, HttpStatus.OK);
+    }
+    
+    @PostMapping(path = "/survey")
+    ResponseEntity<?> survey(@RequestBody SurveyDTO surveyDTO){
+        Survey survey = companyService.survey(surveyDTO);
+        return new ResponseEntity<>(survey, HttpStatus.OK);
+    }
+    
+    @GetMapping(value = "/surveys/{id}")
+    public ResponseEntity<?> getJobOfferSurveys(@PathVariable Long id) {
+        List<Survey> surveys = companyService.getCompanySurveys(id);
+        return new ResponseEntity<>(surveys, HttpStatus.OK);
+    }
+
+}
