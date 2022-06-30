@@ -25,6 +25,7 @@ type UserServiceClient interface {
 	Registration(ctx context.Context, in *RegistrationRequest, opts ...grpc.CallOption) (*RegistrationResponse, error)
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
 	EditPassword(ctx context.Context, in *EditPasswordRequest, opts ...grpc.CallOption) (*User, error)
+	EditPrivacy(ctx context.Context, in *EditPrivacyRequest, opts ...grpc.CallOption) (*User, error)
 	GetUsers(ctx context.Context, in *GetUsersRequest, opts ...grpc.CallOption) (*GetUsersResponse, error)
 	CurrentUser(ctx context.Context, in *CurrentUserRequest, opts ...grpc.CallOption) (*User, error)
 	EditUser(ctx context.Context, in *EditUserRequest, opts ...grpc.CallOption) (*User, error)
@@ -61,6 +62,15 @@ func (c *userServiceClient) Login(ctx context.Context, in *LoginRequest, opts ..
 func (c *userServiceClient) EditPassword(ctx context.Context, in *EditPasswordRequest, opts ...grpc.CallOption) (*User, error) {
 	out := new(User)
 	err := c.cc.Invoke(ctx, "/user.UserService/EditPassword", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) EditPrivacy(ctx context.Context, in *EditPrivacyRequest, opts ...grpc.CallOption) (*User, error) {
+	out := new(User)
+	err := c.cc.Invoke(ctx, "/user.UserService/EditPrivacy", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -119,6 +129,7 @@ type UserServiceServer interface {
 	Registration(context.Context, *RegistrationRequest) (*RegistrationResponse, error)
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
 	EditPassword(context.Context, *EditPasswordRequest) (*User, error)
+	EditPrivacy(context.Context, *EditPrivacyRequest) (*User, error)
 	GetUsers(context.Context, *GetUsersRequest) (*GetUsersResponse, error)
 	CurrentUser(context.Context, *CurrentUserRequest) (*User, error)
 	EditUser(context.Context, *EditUserRequest) (*User, error)
@@ -139,6 +150,9 @@ func (UnimplementedUserServiceServer) Login(context.Context, *LoginRequest) (*Lo
 }
 func (UnimplementedUserServiceServer) EditPassword(context.Context, *EditPasswordRequest) (*User, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method EditPassword not implemented")
+}
+func (UnimplementedUserServiceServer) EditPrivacy(context.Context, *EditPrivacyRequest) (*User, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method EditPrivacy not implemented")
 }
 func (UnimplementedUserServiceServer) GetUsers(context.Context, *GetUsersRequest) (*GetUsersResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUsers not implemented")
@@ -218,6 +232,24 @@ func _UserService_EditPassword_Handler(srv interface{}, ctx context.Context, dec
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UserServiceServer).EditPassword(ctx, req.(*EditPasswordRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_EditPrivacy_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EditPrivacyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).EditPrivacy(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/user.UserService/EditPrivacy",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).EditPrivacy(ctx, req.(*EditPrivacyRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -330,6 +362,10 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "EditPassword",
 			Handler:    _UserService_EditPassword_Handler,
+		},
+		{
+			MethodName: "EditPrivacy",
+			Handler:    _UserService_EditPrivacy_Handler,
 		},
 		{
 			MethodName: "GetUsers",

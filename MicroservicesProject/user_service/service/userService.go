@@ -93,6 +93,11 @@ func (service *UserService) EditPassword(newPassword, oldPassword, username stri
 
 }
 
+func (service *UserService) EditPrivacy(isPublic bool, username string) (*model.User, error) {
+	return service.store.EditPrivacy(isPublic, username)
+
+}
+
 func (service *UserService) FilterUsers(searchTerm string) ([]*model.User, error) {
 	users, err := service.store.GetPublicUsers()
 	var filterUsers []*model.User

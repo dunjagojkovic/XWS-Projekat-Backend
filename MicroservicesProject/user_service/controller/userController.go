@@ -70,6 +70,17 @@ func (uc *UserController) EditPassword(ctx context.Context, request *pb.EditPass
 
 }
 
+func (uc *UserController) EditPrivacy(ctx context.Context, request *pb.EditPrivacyRequest) (*pb.User, error) {
+
+	user, err := uc.service.EditPrivacy(request.Privacy.IsPublic, request.Privacy.Username)
+	if err != nil {
+		return nil, err
+	}
+	userPb := mapEditedUser(user)
+	return userPb, nil
+
+}
+
 func mapUser(user *model.User) *pb.User {
 
 	userPb := &pb.User{

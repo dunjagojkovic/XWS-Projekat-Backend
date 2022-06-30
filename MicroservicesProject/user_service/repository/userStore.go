@@ -325,3 +325,36 @@ func (store *UserStore) EditPassword(newPassword, oldPassword, username string) 
 
 	return &result, err1
 }
+
+func (store *UserStore) EditPrivacy(isPublic bool, username string) (*model.User, error) {
+
+	filter := bson.D{{"username", username}}
+
+	var user model.User
+
+	err := store.users.FindOne(context.TODO(), filter).Decode(&user)
+
+	if err != nil {
+		return nil, err
+	}
+
+	update := bson.D{
+		{"$set", bson.D{
+			{"is_public", isPublic},
+		}},
+	}
+
+	result1, err := store.users.UpdateOne(context.TODO(), filter, update)
+	fmt.Println(result1)
+
+	if err != nil {
+		return nil, err
+	}
+
+	findFilter := bson.D{{"username", user.Username}}
+	var result model.User
+
+	err1 := store.users.FindOne(context.TODO(), findFilter).Decode(&result)
+
+	return &result, err1
+}

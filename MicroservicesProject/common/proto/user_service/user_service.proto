@@ -30,6 +30,13 @@ service UserService{
                 };
         }
 
+        rpc EditPrivacy(EditPrivacyRequest) returns(User) {
+                option (google.api.http) = {
+                        post: "/editPrivacy"
+                        body: "privacy"
+                };
+        }
+
         rpc GetUsers(GetUsersRequest) returns(GetUsersResponse) {
         	option (google.api.http) = {
 			get: "/users"
@@ -63,6 +70,10 @@ service UserService{
 
 }
 
+message EditPrivacyRequest {
+        PrivacyEdit privacy = 1;
+}
+
 message EditPasswordRequest {
         PasswordEdit password = 1;
 }
@@ -79,6 +90,11 @@ message PasswordEdit {
         string oldPassword = 2;
         string username = 3;
 
+}
+
+message PrivacyEdit {
+        bool isPublic = 1;
+        string username = 2;
 }
 
 message EditUserRequest {
