@@ -67,7 +67,16 @@ service UserService{
 		};
         }
 
+        rpc GetUser(GetUserRequest) returns(User) {
+        	option (google.api.http) = {
+			get: "/user/{id}"
+		};
+        }
 
+}
+
+message GetUserRequest {
+        string id = 1;
 }
 
 message EditPrivacyRequest {

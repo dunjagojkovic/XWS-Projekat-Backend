@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/dgrijalva/jwt-go"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 var jwtKey = []byte("my_secret_key")
@@ -70,6 +71,11 @@ func (service *UserService) Login(username, password string) (string, string, er
 
 func (service *UserService) CurrentUser(username string) (model.User, error) {
 	return service.store.CurrentUser(username)
+
+}
+
+func (service *UserService) GetUser(id primitive.ObjectID) (model.User, error) {
+	return service.store.GetUser(id)
 
 }
 

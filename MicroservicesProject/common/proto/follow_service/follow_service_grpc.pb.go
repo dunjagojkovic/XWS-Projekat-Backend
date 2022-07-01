@@ -22,8 +22,8 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type FollowServiceClient interface {
-	Follow(ctx context.Context, in *FollowRequest, opts ...grpc.CallOption) (*FollowResponse, error)
 	AcceptFollow(ctx context.Context, in *AcceptFollowRequest, opts ...grpc.CallOption) (*AcceptFollowResponse, error)
+	Follow(ctx context.Context, in *FollowRequest, opts ...grpc.CallOption) (*FollowResponse, error)
 	Unfollow(ctx context.Context, in *UnfollowRequest, opts ...grpc.CallOption) (*UnfollowResponse, error)
 	FollowRequestRemove(ctx context.Context, in *FollowRequestRemoveRequest, opts ...grpc.CallOption) (*FollowRequestRemoveResponse, error)
 	Follows(ctx context.Context, in *FollowsRequest, opts ...grpc.CallOption) (*FollowsResponse, error)
@@ -41,18 +41,18 @@ func NewFollowServiceClient(cc grpc.ClientConnInterface) FollowServiceClient {
 	return &followServiceClient{cc}
 }
 
-func (c *followServiceClient) Follow(ctx context.Context, in *FollowRequest, opts ...grpc.CallOption) (*FollowResponse, error) {
-	out := new(FollowResponse)
-	err := c.cc.Invoke(ctx, "/follow.FollowService/Follow", in, out, opts...)
+func (c *followServiceClient) AcceptFollow(ctx context.Context, in *AcceptFollowRequest, opts ...grpc.CallOption) (*AcceptFollowResponse, error) {
+	out := new(AcceptFollowResponse)
+	err := c.cc.Invoke(ctx, "/follow.FollowService/AcceptFollow", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *followServiceClient) AcceptFollow(ctx context.Context, in *AcceptFollowRequest, opts ...grpc.CallOption) (*AcceptFollowResponse, error) {
-	out := new(AcceptFollowResponse)
-	err := c.cc.Invoke(ctx, "/follow.FollowService/AcceptFollow", in, out, opts...)
+func (c *followServiceClient) Follow(ctx context.Context, in *FollowRequest, opts ...grpc.CallOption) (*FollowResponse, error) {
+	out := new(FollowResponse)
+	err := c.cc.Invoke(ctx, "/follow.FollowService/Follow", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -126,8 +126,8 @@ func (c *followServiceClient) Relationships(ctx context.Context, in *Relationshi
 // All implementations must embed UnimplementedFollowServiceServer
 // for forward compatibility
 type FollowServiceServer interface {
-	Follow(context.Context, *FollowRequest) (*FollowResponse, error)
 	AcceptFollow(context.Context, *AcceptFollowRequest) (*AcceptFollowResponse, error)
+	Follow(context.Context, *FollowRequest) (*FollowResponse, error)
 	Unfollow(context.Context, *UnfollowRequest) (*UnfollowResponse, error)
 	FollowRequestRemove(context.Context, *FollowRequestRemoveRequest) (*FollowRequestRemoveResponse, error)
 	Follows(context.Context, *FollowsRequest) (*FollowsResponse, error)
@@ -142,11 +142,11 @@ type FollowServiceServer interface {
 type UnimplementedFollowServiceServer struct {
 }
 
-func (UnimplementedFollowServiceServer) Follow(context.Context, *FollowRequest) (*FollowResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Follow not implemented")
-}
 func (UnimplementedFollowServiceServer) AcceptFollow(context.Context, *AcceptFollowRequest) (*AcceptFollowResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AcceptFollow not implemented")
+}
+func (UnimplementedFollowServiceServer) Follow(context.Context, *FollowRequest) (*FollowResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Follow not implemented")
 }
 func (UnimplementedFollowServiceServer) Unfollow(context.Context, *UnfollowRequest) (*UnfollowResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Unfollow not implemented")
@@ -182,24 +182,6 @@ func RegisterFollowServiceServer(s grpc.ServiceRegistrar, srv FollowServiceServe
 	s.RegisterService(&FollowService_ServiceDesc, srv)
 }
 
-func _FollowService_Follow_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(FollowRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(FollowServiceServer).Follow(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/follow.FollowService/Follow",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FollowServiceServer).Follow(ctx, req.(*FollowRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _FollowService_AcceptFollow_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(AcceptFollowRequest)
 	if err := dec(in); err != nil {
@@ -214,6 +196,24 @@ func _FollowService_AcceptFollow_Handler(srv interface{}, ctx context.Context, d
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(FollowServiceServer).AcceptFollow(ctx, req.(*AcceptFollowRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _FollowService_Follow_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FollowRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FollowServiceServer).Follow(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/follow.FollowService/Follow",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FollowServiceServer).Follow(ctx, req.(*FollowRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -352,12 +352,12 @@ var FollowService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*FollowServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Follow",
-			Handler:    _FollowService_Follow_Handler,
-		},
-		{
 			MethodName: "AcceptFollow",
 			Handler:    _FollowService_AcceptFollow_Handler,
+		},
+		{
+			MethodName: "Follow",
+			Handler:    _FollowService_Follow_Handler,
 		},
 		{
 			MethodName: "Unfollow",

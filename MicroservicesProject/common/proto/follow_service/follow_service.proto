@@ -8,18 +8,21 @@ import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 
 service FollowService{
-  rpc Follow(FollowRequest) returns(FollowResponse){
-    option(google.api.http) = {
-      put: "/follow"
-      body: "*"
-    };
-  }
+  
   rpc AcceptFollow(AcceptFollowRequest) returns(AcceptFollowResponse){
     option(google.api.http) = {
       put: "/acceptFollow"
       body: "*"
     };
   }
+
+  rpc Follow(FollowRequest) returns(FollowResponse){
+    option(google.api.http) = {
+      put: "/follow"
+      body: "*"
+    };
+  }
+  
   rpc Unfollow(UnfollowRequest) returns(UnfollowResponse){
     option(google.api.http) = {
       put: "/unfollow"
@@ -67,14 +70,6 @@ message Request{
 
 message Response{
   string response = 1;
-}
-
-message Id{
-  string id = 1;
-}
-
-message IdList{
-  repeated Id ids = 1;
 }
 
 message FollowRequest{

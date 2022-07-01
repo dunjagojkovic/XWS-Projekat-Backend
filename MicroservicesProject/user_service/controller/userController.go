@@ -157,6 +157,20 @@ func (uc *UserController) CurrentUser(ctx context.Context, request *pb.CurrentUs
 	return userPb, nil
 }
 
+func (uc *UserController) GetUser(ctx context.Context, request *pb.GetUserRequest) (*pb.User, error) {
+
+	id := request.Id
+	objID, err := primitive.ObjectIDFromHex(id)
+	user, err := uc.service.GetUser(objID)
+
+	if err != nil {
+		return nil, err
+	}
+	userPb := mapEditedUser(&user)
+
+	return userPb, nil
+}
+
 func (uc *UserController) GetUsers(ctx context.Context, request *pb.GetUsersRequest) (*pb.GetUsersResponse, error) {
 	users, err := uc.service.GetUsers()
 	if err != nil {

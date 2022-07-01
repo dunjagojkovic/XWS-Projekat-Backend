@@ -6,6 +6,7 @@ import (
 	"userS/model"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -63,6 +64,17 @@ func (store *UserStore) Login(username, password string) (bool, error) {
 
 func (store *UserStore) CurrentUser(username string) (model.User, error) {
 	filter := bson.D{{"username", username}}
+	var result model.User
+
+	err := store.users.FindOne(context.TODO(), filter).Decode(&result)
+
+	fmt.Println(err)
+
+	return result, nil
+}
+
+func (store *UserStore) GetUser(id primitive.ObjectID) (model.User, error) {
+	filter := bson.D{{"_id", id}}
 	var result model.User
 
 	err := store.users.FindOne(context.TODO(), filter).Decode(&result)

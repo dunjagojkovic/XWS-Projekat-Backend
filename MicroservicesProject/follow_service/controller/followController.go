@@ -24,6 +24,34 @@ func NewFollowController(service *service.FollowService, userServiceEndpoint str
 	}
 }
 
+func (fc *FollowController) Follow(ctx context.Context, request *pb.FollowRequest) (*pb.FollowResponse, error) {
+
+	fmt.Println("Follow")
+	followerId := request.FollowerId
+	followedId := request.FollowedId
+	userClient := NewUsersClient(fc.userServiceAddress)
+	userResponse, err := userClient.GetUser(context.TODO(), &user.GetUserRequest{Id: followedId})
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println(userResponse.Name)
+	if !userResponse.IsPublic {
+		response, err := fc.service.FollowRequest(followerId, followedId)
+		if err != nil {
+			return nil, err
+		}
+		responsePb := &pb.FollowResponse{Response: response}
+		return responsePb, nil
+	}
+
+	response, err := fc.service.Follow(followerId, followedId)
+	if err != nil {
+		return nil, err
+	}
+	responsePb := &pb.FollowResponse{Response: response}
+	return responsePb, nil
+}
+
 func (fc *FollowController) Follows(ctx context.Context, request *pb.FollowsRequest) (*pb.FollowsResponse, error) {
 	id := request.Id
 	response, err := fc.service.Follows(id)
@@ -39,46 +67,20 @@ func (fc *FollowController) Follows(ctx context.Context, request *pb.FollowsRequ
 
 func (fc *FollowController) Followers(ctx context.Context, request *pb.FollowersRequest) (*pb.FollowersResponse, error) {
 	id := request.Id
+	fmt.Println(id)
 	response, err := fc.service.Followers(id)
 	if err != nil {
 		return nil, err
 	}
 	responsePb := &pb.FollowersResponse{Followers: []*pb.Follower{}}
 	for _, user := range response {
+		fmt.Println(user.Id)
 		responsePb.Followers = append(responsePb.Followers, &pb.Follower{Id: user.Id, Time: timestamppb.New(user.TimeOfFollow)})
 	}
 	return responsePb, nil
 }
 
-func (fc *FollowController) FollowRequests(ctx context.Context, request *pb.FollowRequestsRequest) (*pb.FollowRequestsResponse, error) {
-	md, _ := metadata.FromIncomingContext(ctx)
-	fmt.Println(md)
-	id := request.Id
-	response, err := fc.service.FollowRequests(id)
-	if err != nil {
-		return nil, err
-	}
-	responsePb := &pb.FollowRequestsResponse{FollowRequests: []*pb.Follower{}}
-	for _, user := range response {
-		responsePb.FollowRequests = append(responsePb.FollowRequests, &pb.Follower{Id: user.Id, Time: timestamppb.New(user.TimeOfFollow)})
-	}
-	return responsePb, nil
-}
-
-func (fc *FollowController) FollowerRequests(ctx context.Context, request *pb.FollowerRequestsRequest) (*pb.FollowerRequestsResponse, error) {
-	id := request.Id
-	response, err := fc.service.FollowerRequests(id)
-	if err != nil {
-		return nil, err
-	}
-	responsePb := &pb.FollowerRequestsResponse{FollowerRequests: []*pb.Follower{}}
-	for _, user := range response {
-		responsePb.FollowerRequests = append(responsePb.FollowerRequests, &pb.Follower{Id: user.Id, Time: timestamppb.New(user.TimeOfFollow)})
-	}
-	return responsePb, nil
-}
-
-func (fc *FollowController) Relationship(ctx context.Context, request *pb.RelationshipsRequest) (*pb.RelationshipsResponse, error) {
+func (fc *FollowController) Relationships(ctx context.Context, request *pb.RelationshipsRequest) (*pb.RelationshipsResponse, error) {
 	followerId := request.FollowerId
 	followedId := request.FollowedId
 	response, err := fc.service.Relationship(followerId, followedId)
@@ -90,7 +92,7 @@ func (fc *FollowController) Relationship(ctx context.Context, request *pb.Relati
 	return responsePb, nil
 }
 
-func (fc *FollowController) ConfirmFollow(ctx context.Context, request *pb.AcceptFollowRequest) (*pb.AcceptFollowResponse, error) {
+func (fc *FollowController) AcceptFollow(ctx context.Context, request *pb.AcceptFollowRequest) (*pb.AcceptFollowResponse, error) {
 
 	followerId := request.FollowerId
 	followedId := request.FollowedId
@@ -99,34 +101,6 @@ func (fc *FollowController) ConfirmFollow(ctx context.Context, request *pb.Accep
 		return nil, err
 	}
 	responsePb := &pb.AcceptFollowResponse{Response: response}
-	return responsePb, nil
-}
-
-func (fc *FollowController) Follow(ctx context.Context, request *pb.FollowRequest) (*pb.FollowResponse, error) {
-
-	fmt.Println("Follow")
-	followerId := request.FollowerId
-	followedId := request.FollowedId
-	userClient := NewUsersClient(fc.userServiceAddress)
-	userResponse, err := userClient.CurrentUser(context.TODO(), &user.CurrentUserRequest{Username: "nikola"})
-	if err != nil {
-		return nil, err
-	}
-	fmt.Println(userResponse.Name)
-	if !userResponse.IsPublic {
-		response, err := fc.service.FollowRequest(followerId, followedId)
-		if err != nil {
-			return nil, err
-		}
-		responsePb := &pb.FollowResponse{Response: response}
-		return responsePb, nil
-	}
-	fmt.Println("Javni")
-	response, err := fc.service.Follow(followerId, followedId)
-	if err != nil {
-		return nil, err
-	}
-	responsePb := &pb.FollowResponse{Response: response}
 	return responsePb, nil
 }
 
@@ -151,5 +125,37 @@ func (fc *FollowController) FollowRequestRemove(ctx context.Context, request *pb
 		return nil, err
 	}
 	responsePb := &pb.FollowRequestRemoveResponse{Response: response}
+	return responsePb, nil
+}
+
+func (fc *FollowController) FollowRequests(ctx context.Context, request *pb.FollowRequestsRequest) (*pb.FollowRequestsResponse, error) {
+	md, _ := metadata.FromIncomingContext(ctx)
+	fmt.Println(md)
+	id := request.Id
+	response, err := fc.service.FollowRequests(id)
+	if err != nil {
+		return nil, err
+	}
+	responsePb := &pb.FollowRequestsResponse{FollowRequests: []*pb.Follower{}}
+	for _, user := range response {
+		responsePb.FollowRequests = append(responsePb.FollowRequests, &pb.Follower{Id: user.Id, Time: timestamppb.New(user.TimeOfFollow)})
+	}
+	return responsePb, nil
+}
+
+func (fc *FollowController) FollowerRequests(ctx context.Context, request *pb.FollowerRequestsRequest) (*pb.FollowerRequestsResponse, error) {
+	fmt.Println("Radi")
+	id := request.Id
+	fmt.Println(id)
+	response, err := fc.service.FollowerRequests(id)
+	if err != nil {
+		return nil, err
+	}
+
+	responsePb := &pb.FollowerRequestsResponse{FollowerRequests: []*pb.Follower{}}
+	for _, user := range response {
+		fmt.Println(user.Id)
+		responsePb.FollowerRequests = append(responsePb.FollowerRequests, &pb.Follower{Id: user.Id, Time: timestamppb.New(user.TimeOfFollow)})
+	}
 	return responsePb, nil
 }

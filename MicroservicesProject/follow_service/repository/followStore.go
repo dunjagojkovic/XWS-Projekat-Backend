@@ -86,6 +86,7 @@ func (store *FollowStore) Followers(id string) ([]*model.User, error) {
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println(followers)
 	return followers.([]*model.User), nil
 }
 
