@@ -1,0 +1,160 @@
+syntax = "proto3";
+
+option go_package = "common/follow";
+
+package follow;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+service FollowService{
+  rpc Follow(FollowRequest) returns(FollowResponse){
+    option(google.api.http) = {
+      put: "/follow"
+      body: "*"
+    };
+  }
+  rpc AcceptFollow(AcceptFollowRequest) returns(AcceptFollowResponse){
+    option(google.api.http) = {
+      put: "/acceptFollow"
+      body: "*"
+    };
+  }
+  rpc Unfollow(UnfollowRequest) returns(UnfollowResponse){
+    option(google.api.http) = {
+      put: "/unfollow"
+      body: "*"
+    };
+  }
+  rpc FollowRequestRemove(FollowRequestRemoveRequest) returns(FollowRequestRemoveResponse){
+    option(google.api.http) = {
+      put: "/followRequest"
+      body: "*"
+    };
+  }
+  rpc Follows(FollowsRequest) returns(FollowsResponse){
+    option(google.api.http) = {
+      get: "/follows/{id}"
+    };
+  }
+  rpc Followers(FollowersRequest) returns(FollowersResponse){
+    option(google.api.http) = {
+      get: "/followers/{id}"
+    };
+  }
+  rpc FollowRequests(FollowRequestsRequest) returns(FollowRequestsResponse){
+    option(google.api.http) = {
+      get: "/followRequests/{id}"
+    };
+  }
+  rpc FollowerRequests(FollowerRequestsRequest) returns(FollowerRequestsResponse){
+    option(google.api.http) = {
+      get: "/followerRequests/{id}"
+    };
+  }
+  rpc Relationships(RelationshipsRequest) returns(RelationshipsResponse){
+    option(google.api.http) = {
+      get: "/relationship/{followedId}/{followerId}"
+    };
+  }
+
+}
+
+message Request{
+  string subjectId = 1;
+  string objectId = 2;
+}
+
+message Response{
+  string response = 1;
+}
+
+message Id{
+  string id = 1;
+}
+
+message IdList{
+  repeated Id ids = 1;
+}
+
+message FollowRequest{
+  string followerId = 1;
+  string followedId = 2;
+}
+
+message FollowResponse{
+  string response = 1;
+}
+
+message AcceptFollowRequest{
+  string followerId = 1;
+  string followedId = 2;
+}
+
+message AcceptFollowResponse{
+  string response = 1;
+}
+
+message UnfollowRequest{
+  string followerId = 1;
+  string followedId = 2;
+}
+
+message UnfollowResponse{
+  string response = 1;
+}
+
+message FollowRequestRemoveRequest{
+  string followerId = 1;
+  string followedId = 2;
+}
+
+message FollowRequestRemoveResponse{
+  string response = 1;
+}
+
+message FollowsRequest{
+  string id = 1;
+}
+
+message FollowsResponse{
+  repeated Follower follows = 1;
+}
+
+message FollowersRequest{
+  string id = 1;
+}
+
+message FollowersResponse{
+  repeated Follower followers = 1;
+}
+
+message FollowRequestsRequest{
+  string id = 1;
+}
+
+message FollowRequestsResponse{
+  repeated Follower followRequests = 1;
+}
+
+message FollowerRequestsRequest{
+  string id = 1;
+}
+
+message FollowerRequestsResponse{
+  repeated Follower followerRequests = 1;
+}
+
+message RelationshipsRequest{
+  string followerId = 1;
+  string followedId = 2;
+}
+
+message RelationshipsResponse{
+  string relationship = 1;
+}
+
+message Follower{
+  string id = 1;
+  google.protobuf.Timestamp time = 2;
+}

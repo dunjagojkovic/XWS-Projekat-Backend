@@ -49,7 +49,40 @@ services:
     networks:
       - network
 
+  follow_service:
+    image: follow_service
+    container_name: follow_service
+    build:
+      context: .
+      dockerfile: ./follow_service/Dockerfile
+    restart: on-failure
+    environment:
+      FOLLOW_SERVICE_PORT:   ${FOLLOW_SERVICE_PORT}
+      FOLLOW_DATABASE:       ${FOLLOW_DATABASE}
+      FOLLOW_DB_HOST:        ${FOLLOW_DB_HOST}
+      FOLLOW_DB_PORT:        ${FOLLOW_DB_PORT}
+      FOLLOW_DB_USERNAME:    ${FOLLOW_DB_USERNAME}
+      FOLLOW_DB_PASSWORD:    ${FOLLOW_DB_PASSWORD}
+      DB_NEO4J_VERSION:      ${DB_NEO4J_VERSION}
+      USER_SERVICE_HOST:     ${USER_SERVICE_HOST}
+      USER_SERVICE_PORT:     ${USER_SERVICE_PORT}
+      
+    depends_on:
+      - follow_db
+    networks:
+      - network
 
+  follow_db:
+    image: neo4j
+    container_name: follow_db
+    restart: on-failure
+    environment:
+      NEO4J_AUTH: none
+    ports:
+      - 7474:7474
+      - 7687:7687
+    networks:
+      - network
 
   gateway:
     image: gateway
@@ -68,6 +101,8 @@ services:
       JOB_SERVICE_PORT: ${JOB_SERVICE_PORT}
       USER_SERVICE_HOST: ${USER_SERVICE_HOST}
       USER_SERVICE_PORT: ${USER_SERVICE_PORT}
+      FOLLOW_SERVICE_HOST: ${FOLLOW_SERVICE_HOST}
+      FOLLOW_SERVICE_PORT: ${FOLLOW_SERVICE_PORT}
     networks:
       - network
 

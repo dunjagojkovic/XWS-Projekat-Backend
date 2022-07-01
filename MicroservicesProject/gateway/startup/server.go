@@ -2,6 +2,7 @@ package startup
 
 import (
 	//"context"
+	followGw "common/proto/follow_service"
 	postGw "common/proto/post_service"
 	"context"
 	"fmt"
@@ -48,6 +49,12 @@ func (server *Server) initHandlers() {
 	errUser := userGw.RegisterUserServiceHandlerFromEndpoint(context.TODO(), server.mux, userEndpoint, opts)
 	if errUser != nil {
 		panic(errUser)
+	}
+
+	followEndpoint := fmt.Sprintf("%s:%s", server.config.FollowHost, server.config.FollowPort)
+	errFollow := followGw.RegisterFollowServiceHandlerFromEndpoint(context.TODO(), server.mux, followEndpoint, opts)
+	if errFollow != nil {
+		panic(errFollow)
 	}
 
 }
