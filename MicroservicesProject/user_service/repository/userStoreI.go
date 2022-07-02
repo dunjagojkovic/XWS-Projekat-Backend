@@ -13,6 +13,7 @@ type UserStoreI interface {
 	GetUser(id primitive.ObjectID) (model.User, error)
 	GetUsers() ([]*model.User, error)
 	GetPublicUsers() ([]*model.User, error)
+	GetUsersById([]string) ([]*model.User, error)
 	EditUser(*model.User, *model.WorkExperience) (*model.User, error)
 	EditPassword(string, string, string) (*model.User, error)
 	EditPrivacy(bool, string) (*model.User, error)

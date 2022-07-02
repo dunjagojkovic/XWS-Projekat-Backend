@@ -89,6 +89,11 @@ func (service *UserService) GetPublicUsers() ([]*model.User, error) {
 
 }
 
+func (service *UserService) GetUsersById(users []string) ([]*model.User, error) {
+	return service.store.GetUsersById(users)
+
+}
+
 func (service *UserService) EditUser(user *model.User, work *model.WorkExperience) (*model.User, error) {
 	return service.store.EditUser(user, work)
 

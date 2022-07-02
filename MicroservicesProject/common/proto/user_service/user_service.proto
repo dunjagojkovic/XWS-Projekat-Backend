@@ -73,10 +73,26 @@ service UserService{
 		};
         }
 
+        rpc GetUsersById(GetUsersByIdRequest) returns(GetUsersResponse) {
+        	option (google.api.http) = {
+			post: "/usersById",
+                        body: "*"
+		};
+        }
+
 }
 
 message GetUserRequest {
         string id = 1;
+}
+
+message GetUsersByIdRequest {
+        repeated UserById userById = 1;
+}
+
+message UserById {
+        string id = 1;
+        string time = 2;
 }
 
 message EditPrivacyRequest {

@@ -96,6 +96,35 @@ func (store *UserStore) GetPublicUsers() ([]*model.User, error) {
 
 }
 
+func (store *UserStore) GetUsersById(usersById []string) ([]*model.User, error) {
+	fmt.Println(usersById)
+	filter := bson.D{{}}
+	result, err := store.filter(filter)
+	for _, r := range result {
+		fmt.Println(r.Id)
+	}
+	var users []*model.User
+
+	if len(usersById) == 0 {
+		return nil, nil
+	}
+
+	if err != nil {
+		return nil, err
+	}
+	for _, user := range result {
+		for _, userById := range usersById {
+			if user.Id.String() == userById {
+				fmt.Println(user.Id.String())
+				users = append(users, user)
+
+			}
+		}
+	}
+	return users, nil
+
+}
+
 func (store *UserStore) filter(filter interface{}) ([]*model.User, error) {
 	cursor, err := store.users.Find(context.TODO(), filter)
 	defer cursor.Close(context.TODO())
