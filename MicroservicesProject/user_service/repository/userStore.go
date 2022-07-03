@@ -100,9 +100,6 @@ func (store *UserStore) GetUsersById(usersById []string) ([]*model.User, error) 
 	fmt.Println(usersById)
 	filter := bson.D{{}}
 	result, err := store.filter(filter)
-	for _, r := range result {
-		fmt.Println(r.Id)
-	}
 	var users []*model.User
 
 	if len(usersById) == 0 {
@@ -114,8 +111,10 @@ func (store *UserStore) GetUsersById(usersById []string) ([]*model.User, error) 
 	}
 	for _, user := range result {
 		for _, userById := range usersById {
-			if user.Id.String() == userById {
-				fmt.Println(user.Id.String())
+			objID, _ := primitive.ObjectIDFromHex(userById)
+			fmt.Println(user.Id)
+			if user.Id == objID {
+				fmt.Println(user.Id)
 				users = append(users, user)
 
 			}
