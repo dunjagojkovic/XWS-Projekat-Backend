@@ -32,6 +32,22 @@ services:
       - job_db
     networks:
       - network
+
+  message_service:
+    image: message_service
+    container_name: message_service
+    build:
+      context: .
+      dockerfile: ./message_service/Dockerfile
+    restart: on-failure
+    environment:
+      MESSAGE_DB_HOST: ${MESSAGE_DB_HOST}
+      MESSAGE_DB_PORT: ${MESSAGE_DB_PORT}
+      MESSAGE_SERVICE_PORT: ${MESSAGE_SERVICE_PORT}
+    depends_on:
+      - message_db
+    networks:
+      - network
   
   user_service:
     image: user_service
@@ -103,6 +119,8 @@ services:
       USER_SERVICE_PORT: ${USER_SERVICE_PORT}
       FOLLOW_SERVICE_HOST: ${FOLLOW_SERVICE_HOST}
       FOLLOW_SERVICE_PORT: ${FOLLOW_SERVICE_PORT}
+      MESSAGE_SERVICE_HOST: ${MESSAGE_SERVICE_HOST}
+      MESSAGE_SERVICE_PORT: ${MESSAGE_SERVICE_PORT}
     networks:
       - network
 
@@ -140,6 +158,15 @@ services:
     networks:
       - network
 
+  message_db:
+    image: mongo
+    container_name: message_db
+    restart: on-failure
+    #ports:
+     # - 27018:27017
+    networks:
+      - network 
+
   job_db:
     image: mongo
     container_name: job_db
@@ -169,6 +196,18 @@ services:
       - network
     volumes:
       - ./mongo_post_db:/data/db
+
+  mongo-express_message:
+    image: mongo-express
+    restart: always
+    ports:
+      - 8084:8081
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://message_db:27017
+    networks:
+      - network
+    volumes:
+      - ./mongo_message_db:/data/db
 
   mongo-express_job:
     image: mongo-express
@@ -202,3 +241,4 @@ volumes:
    mongo_post_db:
    mongo_job_db:
    mongo_user_db:
+   mongo_message_db:
