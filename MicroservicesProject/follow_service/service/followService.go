@@ -44,3 +44,6 @@ func (service *FollowService) Unfollow(followerId string, followedId string) (st
 func (service *FollowService) FollowRequestRemove(followerId string, followedId string) (string, error) {
 	return service.store.FollowRequestRemove(followerId, followedId)
 }
+func (service *FollowService) Recommended(id string) ([]*model.User, error) {
+	return service.store.Recommended(id)
+}

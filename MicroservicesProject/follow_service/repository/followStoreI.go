@@ -15,4 +15,5 @@ type FollowStoreI interface {
 	AcceptFollow(followerId string, followedId string) (string, error)
 	Unfollow(followerId string, followedId string) (string, error)
 	FollowRequestRemove(followerId string, followedId string) (string, error)
+	Recommended(id string) ([]*model.User, error)
 }

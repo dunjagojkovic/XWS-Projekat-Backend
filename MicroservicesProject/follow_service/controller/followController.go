@@ -159,3 +159,19 @@ func (fc *FollowController) FollowerRequests(ctx context.Context, request *pb.Fo
 	}
 	return responsePb, nil
 }
+
+func (fc *FollowController) GetRecommended(ctx context.Context, request *pb.Id) (*pb.ListId, error) {
+
+	users, err := fc.service.Recommended(request.Id)
+
+	if err != nil {
+		return nil, err
+	}
+	result := &pb.ListId{
+		ListId: []*pb.Id{},
+	}
+	for _, user := range users {
+		result.ListId = append(result.ListId, &pb.Id{Id: user.Id})
+	}
+	return result, nil
+}

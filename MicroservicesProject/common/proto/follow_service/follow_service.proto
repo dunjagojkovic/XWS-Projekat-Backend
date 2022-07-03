@@ -61,6 +61,20 @@ service FollowService{
     };
   }
 
+  rpc GetRecommended(Id)returns(ListId){
+    option(google.api.http) = {
+      get: "/recommended/{id}"
+    };
+  }
+
+}
+
+message Id{
+  string id = 1;
+}
+
+message ListId{
+  repeated Id listId = 1;
 }
 
 message Request{

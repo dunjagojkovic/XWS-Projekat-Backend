@@ -320,6 +320,40 @@ func (store *FollowStore) FollowRequestRemove(followerId string, followedId stri
 	return session.LastBookmark(), nil
 }
 
+func (store *FollowStore) Recommended(id string) ([]*model.User, error) {
+	session := store.driver.NewSession(neo4j.SessionConfig{
+		AccessMode:   neo4j.AccessModeRead,
+		DatabaseName: store.databaseName,
+	})
+	defer unsafeClose(session)
+	followers, err := session.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+		records, err := tx.Run(
+			"MATCH r = (u1:User{userId:$id}) - [f1:FOLLOWING] -> (u2:User) - [f2:FOLLOWING] -> (u3:User) "+
+				"WHERE NOT exists((u1) - [:FOLLOWING] -> (u3))"+
+				"RETURN u3, count(f2) as fol_num "+
+				"ORDER BY fol_num DESC "+
+				"LIMIT 15",
+			map[string]interface{}{"id": id})
+		if err != nil {
+			return nil, err
+		}
+		results := []*model.User{}
+		for records.Next() {
+			record := records.Record()
+			id, _ := record.Get("u3")
+			user := model.User{
+				Id: id.(dbtype.Node).Props["userId"].(string),
+			}
+			results = append(results, &user)
+		}
+		return results, nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return followers.([]*model.User), nil
+}
+
 func unsafeClose(closeable io.Closer) {
 	if err := closeable.Close(); err != nil {
 		log.Fatal(fmt.Errorf("could not close resource: %w", err))

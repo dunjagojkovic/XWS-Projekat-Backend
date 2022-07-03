@@ -31,6 +31,7 @@ type FollowServiceClient interface {
 	FollowRequests(ctx context.Context, in *FollowRequestsRequest, opts ...grpc.CallOption) (*FollowRequestsResponse, error)
 	FollowerRequests(ctx context.Context, in *FollowerRequestsRequest, opts ...grpc.CallOption) (*FollowerRequestsResponse, error)
 	Relationships(ctx context.Context, in *RelationshipsRequest, opts ...grpc.CallOption) (*RelationshipsResponse, error)
+	GetRecommended(ctx context.Context, in *Id, opts ...grpc.CallOption) (*ListId, error)
 }
 
 type followServiceClient struct {
@@ -122,6 +123,15 @@ func (c *followServiceClient) Relationships(ctx context.Context, in *Relationshi
 	return out, nil
 }
 
+func (c *followServiceClient) GetRecommended(ctx context.Context, in *Id, opts ...grpc.CallOption) (*ListId, error) {
+	out := new(ListId)
+	err := c.cc.Invoke(ctx, "/follow.FollowService/GetRecommended", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // FollowServiceServer is the server API for FollowService service.
 // All implementations must embed UnimplementedFollowServiceServer
 // for forward compatibility
@@ -135,6 +145,7 @@ type FollowServiceServer interface {
 	FollowRequests(context.Context, *FollowRequestsRequest) (*FollowRequestsResponse, error)
 	FollowerRequests(context.Context, *FollowerRequestsRequest) (*FollowerRequestsResponse, error)
 	Relationships(context.Context, *RelationshipsRequest) (*RelationshipsResponse, error)
+	GetRecommended(context.Context, *Id) (*ListId, error)
 	mustEmbedUnimplementedFollowServiceServer()
 }
 
@@ -168,6 +179,9 @@ func (UnimplementedFollowServiceServer) FollowerRequests(context.Context, *Follo
 }
 func (UnimplementedFollowServiceServer) Relationships(context.Context, *RelationshipsRequest) (*RelationshipsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Relationships not implemented")
+}
+func (UnimplementedFollowServiceServer) GetRecommended(context.Context, *Id) (*ListId, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetRecommended not implemented")
 }
 func (UnimplementedFollowServiceServer) mustEmbedUnimplementedFollowServiceServer() {}
 
@@ -344,6 +358,24 @@ func _FollowService_Relationships_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _FollowService_GetRecommended_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Id)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FollowServiceServer).GetRecommended(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/follow.FollowService/GetRecommended",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FollowServiceServer).GetRecommended(ctx, req.(*Id))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // FollowService_ServiceDesc is the grpc.ServiceDesc for FollowService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -386,6 +418,10 @@ var FollowService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Relationships",
 			Handler:    _FollowService_Relationships_Handler,
+		},
+		{
+			MethodName: "GetRecommended",
+			Handler:    _FollowService_GetRecommended_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
