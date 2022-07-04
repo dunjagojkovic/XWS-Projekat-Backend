@@ -398,3 +398,21 @@ func (store *UserStore) EditPrivacy(isPublic bool, username string) (*model.User
 
 	return &result, err1
 }
+
+func (store *UserStore) BlockUser(block *model.Block) (primitive.ObjectID, error) {
+
+	filter := bson.D{{"_id", block.BlockerId}}
+
+	update := bson.D{
+		{"$push", bson.D{
+			{"blocked_users", block},
+		}},
+	}
+
+	_, err := store.users.UpdateOne(context.TODO(), filter, update)
+
+	if err != nil {
+		return primitive.NewObjectID(), err
+	}
+	return block.Id, err
+}

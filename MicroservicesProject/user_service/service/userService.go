@@ -123,3 +123,8 @@ func (service *UserService) FilterUsers(searchTerm string) ([]*model.User, error
 	return filterUsers, nil
 
 }
+
+func (service *UserService) BlockUser(block *model.Block) (primitive.ObjectID, error) {
+	return service.store.BlockUser(block)
+
+}

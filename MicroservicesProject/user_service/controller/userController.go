@@ -171,6 +171,28 @@ func (uc *UserController) GetUser(ctx context.Context, request *pb.GetUserReques
 	return userPb, nil
 }
 
+func (uc *UserController) BlockUser(ctx context.Context, request *pb.BlockUserRequest) (*pb.GetUserRequest, error) {
+
+	var block *model.Block
+	blockedId, err := primitive.ObjectIDFromHex(request.BlockedId)
+	blockerId, err := primitive.ObjectIDFromHex(request.BlockerId)
+
+	block.BlockedId = blockedId
+	block.BlockerId = blockerId
+	block.Status = request.Status
+
+	id, err := uc.service.BlockUser(block)
+
+	if err != nil {
+		return nil, err
+	}
+	response := &pb.GetUserRequest{
+		Id: id.Hex(),
+	}
+
+	return response, nil
+}
+
 func (uc *UserController) GetUsers(ctx context.Context, request *pb.GetUsersRequest) (*pb.GetUsersResponse, error) {
 	users, err := uc.service.GetUsers()
 	if err != nil {
