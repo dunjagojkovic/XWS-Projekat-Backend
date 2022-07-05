@@ -87,6 +87,13 @@ service UserService{
 		};
         }
 
+        rpc Unblock(BlockUserRequest) returns(GetUserRequest) {
+        	option (google.api.http) = {
+			post: "/unblockUser",
+                        body: "*"
+		};
+        }
+
 
 
 }

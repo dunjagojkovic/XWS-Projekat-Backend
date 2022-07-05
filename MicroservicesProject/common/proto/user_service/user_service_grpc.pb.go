@@ -34,6 +34,7 @@ type UserServiceClient interface {
 	GetUser(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*User, error)
 	GetUsersById(ctx context.Context, in *GetUsersByIdRequest, opts ...grpc.CallOption) (*GetUsersResponse, error)
 	BlockUser(ctx context.Context, in *BlockUserRequest, opts ...grpc.CallOption) (*GetUserRequest, error)
+	Unblock(ctx context.Context, in *BlockUserRequest, opts ...grpc.CallOption) (*GetUserRequest, error)
 }
 
 type userServiceClient struct {
@@ -152,6 +153,15 @@ func (c *userServiceClient) BlockUser(ctx context.Context, in *BlockUserRequest,
 	return out, nil
 }
 
+func (c *userServiceClient) Unblock(ctx context.Context, in *BlockUserRequest, opts ...grpc.CallOption) (*GetUserRequest, error) {
+	out := new(GetUserRequest)
+	err := c.cc.Invoke(ctx, "/user.UserService/Unblock", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServiceServer is the server API for UserService service.
 // All implementations must embed UnimplementedUserServiceServer
 // for forward compatibility
@@ -168,6 +178,7 @@ type UserServiceServer interface {
 	GetUser(context.Context, *GetUserRequest) (*User, error)
 	GetUsersById(context.Context, *GetUsersByIdRequest) (*GetUsersResponse, error)
 	BlockUser(context.Context, *BlockUserRequest) (*GetUserRequest, error)
+	Unblock(context.Context, *BlockUserRequest) (*GetUserRequest, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
 
@@ -210,6 +221,9 @@ func (UnimplementedUserServiceServer) GetUsersById(context.Context, *GetUsersByI
 }
 func (UnimplementedUserServiceServer) BlockUser(context.Context, *BlockUserRequest) (*GetUserRequest, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BlockUser not implemented")
+}
+func (UnimplementedUserServiceServer) Unblock(context.Context, *BlockUserRequest) (*GetUserRequest, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Unblock not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
 
@@ -440,6 +454,24 @@ func _UserService_BlockUser_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserService_Unblock_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BlockUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).Unblock(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/user.UserService/Unblock",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).Unblock(ctx, req.(*BlockUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserService_ServiceDesc is the grpc.ServiceDesc for UserService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -494,6 +526,10 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "BlockUser",
 			Handler:    _UserService_BlockUser_Handler,
+		},
+		{
+			MethodName: "Unblock",
+			Handler:    _UserService_Unblock_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

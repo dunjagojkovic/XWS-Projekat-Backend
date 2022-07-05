@@ -416,3 +416,27 @@ func (store *UserStore) BlockUser(block *model.Block) (primitive.ObjectID, error
 	}
 	return block.Id, err
 }
+
+func (store *UserStore) Unblock(block *model.Block) (primitive.ObjectID, error) {
+
+	filter := bson.D{{"_id", block.BlockerId}}
+
+	var user *model.User
+
+	store.users.FindOne(context.TODO(), filter).Decode(&user)
+
+	var list []model.Block
+
+	for _, blockUser := range user.BlockedUsers {
+		if blockUser.BlockedId == block.BlockedId {
+			blockUser.Status = block.Status
+			fmt.Println(blockUser.Status)
+			list = append(list, blockUser)
+
+		}
+	}
+	user.BlockedUsers = list
+
+	store.users.FindOneAndReplace(context.TODO(), filter, user)
+	return block.Id, nil
+}

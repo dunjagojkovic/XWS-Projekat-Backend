@@ -128,3 +128,8 @@ func (service *UserService) BlockUser(block *model.Block) (primitive.ObjectID, e
 	return service.store.BlockUser(block)
 
 }
+
+func (service *UserService) Unblock(block *model.Block) (primitive.ObjectID, error) {
+	return service.store.Unblock(block)
+
+}

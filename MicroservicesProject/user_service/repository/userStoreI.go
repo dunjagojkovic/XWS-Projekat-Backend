@@ -18,4 +18,5 @@ type UserStoreI interface {
 	EditPassword(string, string, string) (*model.User, error)
 	EditPrivacy(bool, string) (*model.User, error)
 	BlockUser(block *model.Block) (primitive.ObjectID, error)
+	Unblock(block *model.Block) (primitive.ObjectID, error)
 }

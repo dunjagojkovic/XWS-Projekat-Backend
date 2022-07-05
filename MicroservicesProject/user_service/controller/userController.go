@@ -173,15 +173,25 @@ func (uc *UserController) GetUser(ctx context.Context, request *pb.GetUserReques
 
 func (uc *UserController) BlockUser(ctx context.Context, request *pb.BlockUserRequest) (*pb.GetUserRequest, error) {
 
-	var block *model.Block
-	blockedId, err := primitive.ObjectIDFromHex(request.BlockedId)
-	blockerId, err := primitive.ObjectIDFromHex(request.BlockerId)
+	blockUser := mapNewBlock(request)
 
-	block.BlockedId = blockedId
-	block.BlockerId = blockerId
-	block.Status = request.Status
+	id, err := uc.service.BlockUser(blockUser)
 
-	id, err := uc.service.BlockUser(block)
+	if err != nil {
+		return nil, err
+	}
+	response := &pb.GetUserRequest{
+		Id: id.Hex(),
+	}
+
+	return response, nil
+}
+
+func (uc *UserController) Unblock(ctx context.Context, request *pb.BlockUserRequest) (*pb.GetUserRequest, error) {
+
+	blockUser := mapNewBlock(request)
+
+	id, err := uc.service.Unblock(blockUser)
 
 	if err != nil {
 		return nil, err
@@ -301,6 +311,20 @@ func mapNewUser(userPb *pb.RegisterUser) *model.User {
 	}
 
 	return user
+}
+
+func mapNewBlock(blockPb *pb.BlockUserRequest) *model.Block {
+
+	blocked, _ := primitive.ObjectIDFromHex(blockPb.BlockedId)
+	blocker, _ := primitive.ObjectIDFromHex(blockPb.BlockerId)
+	blockUser := &model.Block{
+		Id:        primitive.NewObjectID(),
+		BlockedId: blocked,
+		BlockerId: blocker,
+		Status:    blockPb.Status,
+	}
+
+	return blockUser
 }
 
 func mapEditUser(userPb *pb.EditUser) *model.User {
