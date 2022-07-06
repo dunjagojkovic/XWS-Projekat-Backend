@@ -12,6 +12,12 @@ services:
       POST_DB_HOST: ${POST_DB_HOST}
       POST_DB_PORT: ${POST_DB_PORT}
       POST_SERVICE_PORT: ${POST_SERVICE_PORT}
+      JAEGER_SERVICE_NAME: post_service
+      JAEGER_AGENT_HOST: tracing
+      JAEGER_AGENT_PORT: 6831     
+      JAEGER_SAMPLER_MANAGER_HOST_PORT: jaeger:5778
+      JAEGER_SAMPLER_TYPE: const
+      JAEGER_SAMPLER_PARAM: 1
     depends_on:
       - post_db
     networks:
@@ -123,6 +129,20 @@ services:
       MESSAGE_SERVICE_PORT: ${MESSAGE_SERVICE_PORT}
     networks:
       - network
+
+  tracing:
+    image: jaegertracing/all-in-one
+    container_name: jaeger
+    ports:
+          - "5775:5775/udp"
+          - "6831:6831/udp"
+          - "6832:6832/udp"
+          - "5778:5778"
+          - "16686:16686"
+          - "14268:14268"
+          - "9411:9411"
+    networks:
+      - tracing
 
 
   app:
@@ -236,6 +256,8 @@ services:
 networks:
   network:
     driver: bridge
+  tracing:
+
 
 volumes:
    mongo_post_db:

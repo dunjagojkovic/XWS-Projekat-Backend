@@ -4,6 +4,7 @@ import (
 	postGW "common/proto/post_service"
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"postS/controller"
@@ -12,17 +13,30 @@ import (
 
 	"google.golang.org/grpc"
 
+	"common/tracer"
+
+	otgo "github.com/opentracing/opentracing-go"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+const (
+	Name = "post_service"
+)
+
 type Server struct {
 	config *Config
+	Tracer otgo.Tracer
+	Closer io.Closer
 }
 
 func NewServer(config *Config) *Server {
+	tracer, closer := tracer.Init(Name)
+	otgo.SetGlobalTracer(tracer)
 	return &Server{
 		config: config,
+		Tracer: tracer,
+		Closer: closer,
 	}
 }
 
