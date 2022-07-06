@@ -24,21 +24,21 @@ func NewMessageController(service *service.MessageService) *MessageController {
 
 }
 
-/*func (mc *MessageController) GetAllById(ctx context.Context, request *pb.GetAllByIdRequest) (*pb.GetAllByIdResponse, error) {
+func (mc *MessageController) GetMessages(ctx context.Context, request *pb.GetChatsRequest) (*pb.GetMessagesResponse, error) {
 	fmt.Println(request.Id)
-	messages, err := mc.service.GetAllById(request.Id)
+	messages, err := mc.service.GetMessages(request.Id)
 	if err != nil {
 		return nil, err
 	}
-	response := &pb.GetAllByIdResponse{
+	response := &pb.GetMessagesResponse{
 		Messages: []*pb.Message{},
 	}
 	for _, message := range messages {
-		current := mapMessage(message)
+		current := mapMessage(&message)
 		response.Messages = append(response.Messages, current)
 	}
 	return response, nil
-}*/
+}
 
 func (mc *MessageController) GetChats(ctx context.Context, request *pb.GetChatsRequest) (*pb.GetChatsResponse, error) {
 	fmt.Println(request.Id)

@@ -27,37 +27,17 @@ func NewMessageStore(client *mongo.Client) MessageStoreI {
 	}
 }
 
-/*func (store *MessageStore) GetAllById(id string) ([]*model.Message, error) {
-	objID, err := primitive.ObjectIDFromHex(id)
-	filterSender := bson.D{{"sender", objID}}
-	senderMessages, err := store.filter(filterSender)
-	if err != nil {
-		return nil, err
-	}
-	filterReceiver := bson.D{{"receiver", objID}}
-	receiverMessages, err := store.filter(filterReceiver)
-	if err != nil {
-		return nil, err
-	}
+func (store *MessageStore) GetMessages(id string) ([]model.Message, error) {
+	objID, _ := primitive.ObjectIDFromHex(id)
+	filter := bson.D{{"_id", objID}}
 
-	var result []*model.Message
+	var result *model.Chat
 
-	for _, rM := range receiverMessages {
-		fmt.Println(rM.Id)
+	store.chats.FindOne(context.TODO(), filter).Decode(&result)
 
-		result = append(result, rM)
-	}
-	for _, sM := range senderMessages {
-		fmt.Println(sM.Id)
-		result = append(result, sM)
-	}
-	sort.Slice(result, func(i, j int) bool {
-		return result[i].Time.Before(result[j].Time)
-	})
+	return result.Messages, nil
 
-	return result, nil
-
-}*/
+}
 
 func (store *MessageStore) GetChats(user string) ([]*model.Chat, error) {
 	u, err := primitive.ObjectIDFromHex(user)

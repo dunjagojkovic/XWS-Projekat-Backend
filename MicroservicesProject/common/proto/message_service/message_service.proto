@@ -38,7 +38,17 @@ service MessageService{
 			get: "/chats/{id}"
 		};
         }
+
+        rpc GetMessages(GetChatsRequest) returns(GetMessagesResponse) {
+        	option (google.api.http) = {
+			get: "/messages/{id}"
+		};
+        }
         
+}
+
+message GetMessagesResponse {
+        repeated Message messages = 1;
 }
 
 message ChangeMessageStatusRequest {

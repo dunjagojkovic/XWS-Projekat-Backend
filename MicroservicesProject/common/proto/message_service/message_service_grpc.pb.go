@@ -25,6 +25,7 @@ type MessageServiceClient interface {
 	CreateMessage(ctx context.Context, in *CreateMessageRequest, opts ...grpc.CallOption) (*CreateMessageResponse, error)
 	ChangeMessageStatus(ctx context.Context, in *ChangeMessageStatusRequest, opts ...grpc.CallOption) (*CreateMessageResponse, error)
 	GetChats(ctx context.Context, in *GetChatsRequest, opts ...grpc.CallOption) (*GetChatsResponse, error)
+	GetMessages(ctx context.Context, in *GetChatsRequest, opts ...grpc.CallOption) (*GetMessagesResponse, error)
 }
 
 type messageServiceClient struct {
@@ -62,6 +63,15 @@ func (c *messageServiceClient) GetChats(ctx context.Context, in *GetChatsRequest
 	return out, nil
 }
 
+func (c *messageServiceClient) GetMessages(ctx context.Context, in *GetChatsRequest, opts ...grpc.CallOption) (*GetMessagesResponse, error) {
+	out := new(GetMessagesResponse)
+	err := c.cc.Invoke(ctx, "/message.MessageService/GetMessages", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MessageServiceServer is the server API for MessageService service.
 // All implementations must embed UnimplementedMessageServiceServer
 // for forward compatibility
@@ -69,6 +79,7 @@ type MessageServiceServer interface {
 	CreateMessage(context.Context, *CreateMessageRequest) (*CreateMessageResponse, error)
 	ChangeMessageStatus(context.Context, *ChangeMessageStatusRequest) (*CreateMessageResponse, error)
 	GetChats(context.Context, *GetChatsRequest) (*GetChatsResponse, error)
+	GetMessages(context.Context, *GetChatsRequest) (*GetMessagesResponse, error)
 	mustEmbedUnimplementedMessageServiceServer()
 }
 
@@ -84,6 +95,9 @@ func (UnimplementedMessageServiceServer) ChangeMessageStatus(context.Context, *C
 }
 func (UnimplementedMessageServiceServer) GetChats(context.Context, *GetChatsRequest) (*GetChatsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetChats not implemented")
+}
+func (UnimplementedMessageServiceServer) GetMessages(context.Context, *GetChatsRequest) (*GetMessagesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMessages not implemented")
 }
 func (UnimplementedMessageServiceServer) mustEmbedUnimplementedMessageServiceServer() {}
 
@@ -152,6 +166,24 @@ func _MessageService_GetChats_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MessageService_GetMessages_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetChatsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MessageServiceServer).GetMessages(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/message.MessageService/GetMessages",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MessageServiceServer).GetMessages(ctx, req.(*GetChatsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MessageService_ServiceDesc is the grpc.ServiceDesc for MessageService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -170,6 +202,10 @@ var MessageService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetChats",
 			Handler:    _MessageService_GetChats_Handler,
+		},
+		{
+			MethodName: "GetMessages",
+			Handler:    _MessageService_GetMessages_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

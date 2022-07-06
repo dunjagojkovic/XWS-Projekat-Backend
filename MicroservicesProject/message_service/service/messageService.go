@@ -17,9 +17,9 @@ func NewMessageService(store repository.MessageStoreI) *MessageService {
 	}
 }
 
-/*func (service *MessageService) GetAllById(id string) ([]*model.Message, error) {
-	return service.store.GetAllById(id)
-}*/
+func (service *MessageService) GetMessages(id string) ([]model.Message, error) {
+	return service.store.GetMessages(id)
+}
 
 func (service *MessageService) CreateMessage(message *model.Message) (primitive.ObjectID, error) {
 	return service.store.CreateMessage(message)
