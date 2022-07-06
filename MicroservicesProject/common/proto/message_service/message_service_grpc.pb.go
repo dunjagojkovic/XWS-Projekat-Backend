@@ -22,9 +22,9 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type MessageServiceClient interface {
-	GetAllById(ctx context.Context, in *GetAllByIdRequest, opts ...grpc.CallOption) (*GetAllByIdResponse, error)
 	CreateMessage(ctx context.Context, in *CreateMessageRequest, opts ...grpc.CallOption) (*CreateMessageResponse, error)
 	ChangeMessageStatus(ctx context.Context, in *ChangeMessageStatusRequest, opts ...grpc.CallOption) (*CreateMessageResponse, error)
+	GetChats(ctx context.Context, in *GetChatsRequest, opts ...grpc.CallOption) (*GetChatsResponse, error)
 }
 
 type messageServiceClient struct {
@@ -33,15 +33,6 @@ type messageServiceClient struct {
 
 func NewMessageServiceClient(cc grpc.ClientConnInterface) MessageServiceClient {
 	return &messageServiceClient{cc}
-}
-
-func (c *messageServiceClient) GetAllById(ctx context.Context, in *GetAllByIdRequest, opts ...grpc.CallOption) (*GetAllByIdResponse, error) {
-	out := new(GetAllByIdResponse)
-	err := c.cc.Invoke(ctx, "/message.MessageService/GetAllById", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *messageServiceClient) CreateMessage(ctx context.Context, in *CreateMessageRequest, opts ...grpc.CallOption) (*CreateMessageResponse, error) {
@@ -62,13 +53,22 @@ func (c *messageServiceClient) ChangeMessageStatus(ctx context.Context, in *Chan
 	return out, nil
 }
 
+func (c *messageServiceClient) GetChats(ctx context.Context, in *GetChatsRequest, opts ...grpc.CallOption) (*GetChatsResponse, error) {
+	out := new(GetChatsResponse)
+	err := c.cc.Invoke(ctx, "/message.MessageService/GetChats", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MessageServiceServer is the server API for MessageService service.
 // All implementations must embed UnimplementedMessageServiceServer
 // for forward compatibility
 type MessageServiceServer interface {
-	GetAllById(context.Context, *GetAllByIdRequest) (*GetAllByIdResponse, error)
 	CreateMessage(context.Context, *CreateMessageRequest) (*CreateMessageResponse, error)
 	ChangeMessageStatus(context.Context, *ChangeMessageStatusRequest) (*CreateMessageResponse, error)
+	GetChats(context.Context, *GetChatsRequest) (*GetChatsResponse, error)
 	mustEmbedUnimplementedMessageServiceServer()
 }
 
@@ -76,14 +76,14 @@ type MessageServiceServer interface {
 type UnimplementedMessageServiceServer struct {
 }
 
-func (UnimplementedMessageServiceServer) GetAllById(context.Context, *GetAllByIdRequest) (*GetAllByIdResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetAllById not implemented")
-}
 func (UnimplementedMessageServiceServer) CreateMessage(context.Context, *CreateMessageRequest) (*CreateMessageResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateMessage not implemented")
 }
 func (UnimplementedMessageServiceServer) ChangeMessageStatus(context.Context, *ChangeMessageStatusRequest) (*CreateMessageResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ChangeMessageStatus not implemented")
+}
+func (UnimplementedMessageServiceServer) GetChats(context.Context, *GetChatsRequest) (*GetChatsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetChats not implemented")
 }
 func (UnimplementedMessageServiceServer) mustEmbedUnimplementedMessageServiceServer() {}
 
@@ -96,24 +96,6 @@ type UnsafeMessageServiceServer interface {
 
 func RegisterMessageServiceServer(s grpc.ServiceRegistrar, srv MessageServiceServer) {
 	s.RegisterService(&MessageService_ServiceDesc, srv)
-}
-
-func _MessageService_GetAllById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetAllByIdRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MessageServiceServer).GetAllById(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/message.MessageService/GetAllById",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MessageServiceServer).GetAllById(ctx, req.(*GetAllByIdRequest))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _MessageService_CreateMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -152,6 +134,24 @@ func _MessageService_ChangeMessageStatus_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MessageService_GetChats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetChatsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MessageServiceServer).GetChats(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/message.MessageService/GetChats",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MessageServiceServer).GetChats(ctx, req.(*GetChatsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MessageService_ServiceDesc is the grpc.ServiceDesc for MessageService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -160,16 +160,16 @@ var MessageService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*MessageServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GetAllById",
-			Handler:    _MessageService_GetAllById_Handler,
-		},
-		{
 			MethodName: "CreateMessage",
 			Handler:    _MessageService_CreateMessage_Handler,
 		},
 		{
 			MethodName: "ChangeMessageStatus",
 			Handler:    _MessageService_ChangeMessageStatus_Handler,
+		},
+		{
+			MethodName: "GetChats",
+			Handler:    _MessageService_GetChats_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

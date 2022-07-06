@@ -17,14 +17,18 @@ func NewMessageService(store repository.MessageStoreI) *MessageService {
 	}
 }
 
-func (service *MessageService) GetAllById(id string) ([]*model.Message, error) {
+/*func (service *MessageService) GetAllById(id string) ([]*model.Message, error) {
 	return service.store.GetAllById(id)
-}
+}*/
 
 func (service *MessageService) CreateMessage(message *model.Message) (primitive.ObjectID, error) {
 	return service.store.CreateMessage(message)
 }
 
-func (service *MessageService) ChangeMessageStatus(status, id string) (primitive.ObjectID, error) {
-	return service.store.ChangeMessageStatus(status, id)
+func (service *MessageService) GetChats(user string) ([]*model.Chat, error) {
+	return service.store.GetChats(user)
+}
+
+func (service *MessageService) ChangeMessageStatus(status, id, chatId string) (primitive.ObjectID, error) {
+	return service.store.ChangeMessageStatus(status, id, chatId)
 }

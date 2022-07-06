@@ -24,7 +24,7 @@ func NewMessageController(service *service.MessageService) *MessageController {
 
 }
 
-func (mc *MessageController) GetAllById(ctx context.Context, request *pb.GetAllByIdRequest) (*pb.GetAllByIdResponse, error) {
+/*func (mc *MessageController) GetAllById(ctx context.Context, request *pb.GetAllByIdRequest) (*pb.GetAllByIdResponse, error) {
 	fmt.Println(request.Id)
 	messages, err := mc.service.GetAllById(request.Id)
 	if err != nil {
@@ -36,6 +36,22 @@ func (mc *MessageController) GetAllById(ctx context.Context, request *pb.GetAllB
 	for _, message := range messages {
 		current := mapMessage(message)
 		response.Messages = append(response.Messages, current)
+	}
+	return response, nil
+}*/
+
+func (mc *MessageController) GetChats(ctx context.Context, request *pb.GetChatsRequest) (*pb.GetChatsResponse, error) {
+	fmt.Println(request.Id)
+	chats, err := mc.service.GetChats(request.Id)
+	if err != nil {
+		return nil, err
+	}
+	response := &pb.GetChatsResponse{
+		Chats: []*pb.Chat{},
+	}
+	for _, chat := range chats {
+		current := mapChat(chat)
+		response.Chats = append(response.Chats, current)
 	}
 	return response, nil
 }
@@ -56,10 +72,11 @@ func (mc *MessageController) CreateMessage(ctx context.Context, request *pb.Crea
 func (mc *MessageController) ChangeMessageStatus(ctx context.Context, request *pb.ChangeMessageStatusRequest) (*pb.CreateMessageResponse, error) {
 
 	id := request.Id
+	chatId := request.IdChat
 	fmt.Println(id)
 	status := request.Status
 	fmt.Println(status)
-	_id, err := mc.service.ChangeMessageStatus(status, id)
+	_id, err := mc.service.ChangeMessageStatus(status, id, chatId)
 	if err != nil {
 		return nil, err
 	}
@@ -98,4 +115,29 @@ func mapMessage(message *model.Message) *pb.Message {
 	}
 
 	return messagePb
+}
+
+func mapChat(chat *model.Chat) *pb.Chat {
+	chatPb := &pb.Chat{
+		Id:         chat.Id.Hex(),
+		FirstUser:  chat.FirstUser.Hex(),
+		SecondUser: chat.SecondUser.Hex(),
+		Messages:   make([]*pb.Message, 0),
+	}
+
+	for _, message := range chat.Messages {
+
+		messagePb := *&pb.Message{
+			Id:       message.Id.Hex(),
+			Text:     message.Text,
+			Sender:   message.Sender.Hex(),
+			Receiver: message.Receiver.Hex(),
+			Time:     timestamppb.New(message.Time),
+			Status:   message.Status,
+		}
+
+		chatPb.Messages = append(chatPb.Messages, &messagePb)
+	}
+
+	return chatPb
 }
