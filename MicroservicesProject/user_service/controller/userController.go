@@ -308,6 +308,7 @@ func mapNewUser(userPb *pb.RegisterUser) *model.User {
 		Education:      "",
 		Hobby:          "",
 		Interest:       "",
+		BlockedUsers:   make([]model.Block, 0),
 	}
 
 	return user
