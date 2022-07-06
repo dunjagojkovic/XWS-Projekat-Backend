@@ -42,6 +42,10 @@ func (service *UserService) RegisterUser(user *model.User) (*model.User, error) 
 	return service.store.RegisterUser(user)
 }
 
+func (service *UserService) CheckBlocking(first, second string) bool {
+	return service.store.ChechBlocking(first, second)
+}
+
 func (service *UserService) Login(username, password string) (string, string, error) {
 	isLoged, _ := service.store.Login(username, password)
 	if isLoged {
@@ -121,5 +125,15 @@ func (service *UserService) FilterUsers(searchTerm string) ([]*model.User, error
 		return nil, err
 	}
 	return filterUsers, nil
+
+}
+
+func (service *UserService) BlockUser(block *model.Block) (primitive.ObjectID, error) {
+	return service.store.BlockUser(block)
+
+}
+
+func (service *UserService) Unblock(block *model.Block) (primitive.ObjectID, error) {
+	return service.store.Unblock(block)
 
 }

@@ -62,6 +62,34 @@ func (store *UserStore) Login(username, password string) (bool, error) {
 	return false, nil
 }
 
+func (store *UserStore) ChechBlocking(first, second string) bool {
+	idFirst, _ := primitive.ObjectIDFromHex(first)
+	idSecond, _ := primitive.ObjectIDFromHex(second)
+	filterFirstUser := bson.D{{"_id", idFirst}}
+	var firstUser model.User
+
+	store.users.FindOne(context.TODO(), filterFirstUser).Decode(&firstUser)
+
+	for _, blockFirstUser := range firstUser.BlockedUsers {
+		if blockFirstUser.BlockedId == idSecond {
+			return true
+		}
+	}
+
+	filterSecondUser := bson.D{{"_id", idSecond}}
+	var secondUser model.User
+
+	store.users.FindOne(context.TODO(), filterSecondUser).Decode(&secondUser)
+
+	for _, blockSecondUser := range secondUser.BlockedUsers {
+		if blockSecondUser.BlockedId == idFirst {
+			return true
+		}
+	}
+	return false
+
+}
+
 func (store *UserStore) CurrentUser(username string) (model.User, error) {
 	filter := bson.D{{"username", username}}
 	var result model.User
@@ -397,4 +425,46 @@ func (store *UserStore) EditPrivacy(isPublic bool, username string) (*model.User
 	err1 := store.users.FindOne(context.TODO(), findFilter).Decode(&result)
 
 	return &result, err1
+}
+
+func (store *UserStore) BlockUser(block *model.Block) (primitive.ObjectID, error) {
+
+	filter := bson.D{{"_id", block.BlockerId}}
+
+	update := bson.D{
+		{"$push", bson.D{
+			{"blocked_users", block},
+		}},
+	}
+
+	_, err := store.users.UpdateOne(context.TODO(), filter, update)
+
+	if err != nil {
+		return primitive.NewObjectID(), err
+	}
+	return block.Id, err
+}
+
+func (store *UserStore) Unblock(block *model.Block) (primitive.ObjectID, error) {
+
+	filter := bson.D{{"_id", block.BlockerId}}
+
+	var user *model.User
+
+	store.users.FindOne(context.TODO(), filter).Decode(&user)
+
+	var list []model.Block
+
+	for _, blockUser := range user.BlockedUsers {
+		if blockUser.BlockedId == block.BlockedId {
+			blockUser.Status = block.Status
+			fmt.Println(blockUser.Status)
+			list = append(list, blockUser)
+
+		}
+	}
+	user.BlockedUsers = list
+
+	store.users.FindOneAndReplace(context.TODO(), filter, user)
+	return block.Id, nil
 }

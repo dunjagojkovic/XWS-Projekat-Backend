@@ -44,6 +44,12 @@ services:
       MESSAGE_DB_HOST: ${MESSAGE_DB_HOST}
       MESSAGE_DB_PORT: ${MESSAGE_DB_PORT}
       MESSAGE_SERVICE_PORT: ${MESSAGE_SERVICE_PORT}
+      NATS_HOST: ${NATS_HOST}
+      NATS_PORT: ${NATS_PORT}
+      NATS_USER: ${NATS_USER}
+      NATS_PASS: ${NATS_PASS}
+      CREATE_MESSAGE_COMMAND_SUBJECT: ${CREATE_MESSAGE_COMMAND_SUBJECT}
+      CREATE_MESSAGE_REPLY_SUBJECT: ${CREATE_MESSAGE_REPLY_SUBJECT}
     depends_on:
       - message_db
     networks:
@@ -60,6 +66,12 @@ services:
       USER_DB_HOST: ${USER_DB_HOST}
       USER_DB_PORT: ${USER_DB_PORT}
       USER_SERVICE_PORT: ${USER_SERVICE_PORT}
+      NATS_HOST: ${NATS_HOST}
+      NATS_PORT: ${NATS_PORT}
+      NATS_USER: ${NATS_USER}
+      NATS_PASS: ${NATS_PASS}
+      CREATE_MESSAGE_COMMAND_SUBJECT: ${CREATE_MESSAGE_COMMAND_SUBJECT}
+      CREATE_MESSAGE_REPLY_SUBJECT: ${CREATE_MESSAGE_REPLY_SUBJECT}
     depends_on:
       - user_db
     networks:
@@ -232,6 +244,13 @@ services:
       - network
     volumes:
       - ./mongo_user_db:/data/db
+
+  nats:
+    image: nats
+    container_name: nats
+    restart: on-failure
+    networks:
+      - network
 
 networks:
   network:

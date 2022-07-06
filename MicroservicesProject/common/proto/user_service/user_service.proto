@@ -80,6 +80,28 @@ service UserService{
 		};
         }
 
+        rpc BlockUser(BlockUserRequest) returns(GetUserRequest) {
+        	option (google.api.http) = {
+			post: "/blockUser",
+                        body: "*"
+		};
+        }
+
+        rpc Unblock(BlockUserRequest) returns(GetUserRequest) {
+        	option (google.api.http) = {
+			post: "/unblockUser",
+                        body: "*"
+		};
+        }
+
+
+
+}
+
+message BlockUserRequest {
+        string blockedId = 1;
+        string blockerId = 2;
+        string status = 3;
 }
 
 message GetUserRequest {

@@ -18,4 +18,5 @@ type User struct {
 	Education      string             `bson:"education"`
 	Hobby          string             `bson:"hobby"`
 	Interest       string             `bson:"interest"`
+	BlockedUsers   []Block            `bson:"blocked_users"`
 }

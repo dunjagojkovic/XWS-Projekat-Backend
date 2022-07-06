@@ -171,6 +171,38 @@ func (uc *UserController) GetUser(ctx context.Context, request *pb.GetUserReques
 	return userPb, nil
 }
 
+func (uc *UserController) BlockUser(ctx context.Context, request *pb.BlockUserRequest) (*pb.GetUserRequest, error) {
+
+	blockUser := mapNewBlock(request)
+
+	id, err := uc.service.BlockUser(blockUser)
+
+	if err != nil {
+		return nil, err
+	}
+	response := &pb.GetUserRequest{
+		Id: id.Hex(),
+	}
+
+	return response, nil
+}
+
+func (uc *UserController) Unblock(ctx context.Context, request *pb.BlockUserRequest) (*pb.GetUserRequest, error) {
+
+	blockUser := mapNewBlock(request)
+
+	id, err := uc.service.Unblock(blockUser)
+
+	if err != nil {
+		return nil, err
+	}
+	response := &pb.GetUserRequest{
+		Id: id.Hex(),
+	}
+
+	return response, nil
+}
+
 func (uc *UserController) GetUsers(ctx context.Context, request *pb.GetUsersRequest) (*pb.GetUsersResponse, error) {
 	users, err := uc.service.GetUsers()
 	if err != nil {
@@ -276,9 +308,24 @@ func mapNewUser(userPb *pb.RegisterUser) *model.User {
 		Education:      "",
 		Hobby:          "",
 		Interest:       "",
+		BlockedUsers:   make([]model.Block, 0),
 	}
 
 	return user
+}
+
+func mapNewBlock(blockPb *pb.BlockUserRequest) *model.Block {
+
+	blocked, _ := primitive.ObjectIDFromHex(blockPb.BlockedId)
+	blocker, _ := primitive.ObjectIDFromHex(blockPb.BlockerId)
+	blockUser := &model.Block{
+		Id:        primitive.NewObjectID(),
+		BlockedId: blocked,
+		BlockerId: blocker,
+		Status:    blockPb.Status,
+	}
+
+	return blockUser
 }
 
 func mapEditUser(userPb *pb.EditUser) *model.User {
