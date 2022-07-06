@@ -6,7 +6,8 @@ import (
 	"fmt"
 	"messageS/model"
 	"messageS/service"
-	"time"
+
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -72,14 +73,14 @@ func mapNewMessage(messagePb *pb.CreateMessage) *model.Message {
 
 	receiverId, _ := primitive.ObjectIDFromHex(messagePb.Receiver)
 	senderId, _ := primitive.ObjectIDFromHex(messagePb.Sender)
-	layout := "2006-01-02 15:04:05"
-	dt, _ := time.Parse(layout, messagePb.Time)
+	//layout := "2006-01-02 15:04:05"
+	//dt, _ := time.Parse(layout, messagePb.Time)
 	message := &model.Message{
 		Id:       primitive.NewObjectID(),
 		Text:     messagePb.Text,
 		Sender:   senderId,
 		Receiver: receiverId,
-		Time:     primitive.NewDateTimeFromTime(dt),
+		Time:     messagePb.Time.AsTime(),
 		Status:   messagePb.Status,
 	}
 
@@ -92,7 +93,7 @@ func mapMessage(message *model.Message) *pb.Message {
 		Text:     message.Text,
 		Sender:   message.Sender.Hex(),
 		Receiver: message.Receiver.Hex(),
-		Time:     message.Time.Time().String(),
+		Time:     timestamppb.New(message.Time),
 		Status:   message.Status,
 	}
 

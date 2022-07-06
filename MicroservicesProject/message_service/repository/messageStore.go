@@ -54,7 +54,7 @@ func (store *MessageStore) GetAllById(id string) ([]*model.Message, error) {
 		result = append(result, sM)
 	}
 	sort.Slice(result, func(i, j int) bool {
-		return result[i].Time.Time().Before(result[j].Time.Time())
+		return result[i].Time.Before(result[j].Time)
 	})
 
 	return result, nil
