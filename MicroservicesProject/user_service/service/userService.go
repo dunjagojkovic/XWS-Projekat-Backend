@@ -42,6 +42,10 @@ func (service *UserService) RegisterUser(user *model.User) (*model.User, error) 
 	return service.store.RegisterUser(user)
 }
 
+func (service *UserService) CheckBlocking(first, second string) bool {
+	return service.store.ChechBlocking(first, second)
+}
+
 func (service *UserService) Login(username, password string) (string, string, error) {
 	isLoged, _ := service.store.Login(username, password)
 	if isLoged {

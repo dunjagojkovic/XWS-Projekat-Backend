@@ -59,7 +59,7 @@ func (mc *MessageController) GetChats(ctx context.Context, request *pb.GetChatsR
 func (mc *MessageController) CreateMessage(ctx context.Context, request *pb.CreateMessageRequest) (*pb.CreateMessageResponse, error) {
 
 	message := mapNewMessage(request.CreatedMessage)
-	id, err := mc.service.CreateMessage(message)
+	id, _, err := mc.service.CreateMessage(message)
 	if err != nil {
 		return nil, err
 	}

@@ -75,7 +75,7 @@ func (store *MessageStore) GetChats(user string) ([]*model.Chat, error) {
 	return result, nil
 }
 
-func (store *MessageStore) CreateMessage(message *model.Message) (primitive.ObjectID, error) {
+func (store *MessageStore) CreateMessage(message *model.Message) (primitive.ObjectID, primitive.ObjectID, error) {
 
 	filter := bson.D{{"first_user", message.Sender}, {"second_user", message.Receiver}}
 	var result *model.Chat
@@ -91,7 +91,7 @@ func (store *MessageStore) CreateMessage(message *model.Message) (primitive.Obje
 		}
 		_, err := store.chats.InsertOne(context.TODO(), chat)
 		if err != nil {
-			return primitive.NilObjectID, err
+			return primitive.NilObjectID, primitive.NilObjectID, err
 		}
 
 		update := bson.D{
@@ -103,10 +103,10 @@ func (store *MessageStore) CreateMessage(message *model.Message) (primitive.Obje
 		store.chats.UpdateOne(context.TODO(), filter, update)
 
 		if err != nil {
-			return primitive.NewObjectID(), err
+			return primitive.NewObjectID(), primitive.NilObjectID, err
 		}
 
-		return message.Id, nil
+		return message.Id, chat.Id, nil
 
 	}
 
@@ -118,7 +118,7 @@ func (store *MessageStore) CreateMessage(message *model.Message) (primitive.Obje
 
 	store.chats.UpdateOne(context.TODO(), filter, update)
 
-	return message.Id, nil
+	return message.Id, result.Id, nil
 }
 
 func (store *MessageStore) filter(filter interface{}) ([]*model.Chat, error) {

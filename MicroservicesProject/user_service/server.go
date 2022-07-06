@@ -10,6 +10,8 @@ import (
 	"userS/service"
 
 	userGW "common/proto/user_service"
+	saga "common/saga/messaging"
+	"common/saga/messaging/nats"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -19,6 +21,10 @@ import (
 type Server struct {
 	config *Config
 }
+
+const (
+	QueueGroup = "user_service"
+)
 
 func NewServer(config *Config) *Server {
 	return &Server{
@@ -40,6 +46,10 @@ func (server *Server) Start() {
 	store := repository.NewUserStore(client)
 	userService := service.NewUserService(store)
 
+	commandSubscriber := server.initSubscriber(server.config.CreateMessageCommandSubject, QueueGroup)
+	replyPublisher := server.initPublisher(server.config.CreateMessageReplySubject)
+	server.initCreateMessageHandler(userService, replyPublisher, commandSubscriber)
+
 	userController := controller.NewUserController(userService)
 
 	server.startGrpcServer(userController)
@@ -54,5 +64,32 @@ func (server *Server) startGrpcServer(userController *controller.UserController)
 	userGW.RegisterUserServiceServer(grpcServer, userController)
 	if err := grpcServer.Serve(listener); err != nil {
 		log.Fatalf("failed to serve: %s", err)
+	}
+}
+
+func (server *Server) initPublisher(subject string) saga.Publisher {
+	publisher, err := nats.NewNATSPublisher(
+		server.config.NatsHost, server.config.NatsPort,
+		server.config.NatsUser, server.config.NatsPass, subject)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return publisher
+}
+
+func (server *Server) initSubscriber(subject, queueGroup string) saga.Subscriber {
+	subscriber, err := nats.NewNATSSubscriber(
+		server.config.NatsHost, server.config.NatsPort,
+		server.config.NatsUser, server.config.NatsPass, subject, queueGroup)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return subscriber
+}
+
+func (server *Server) initCreateMessageHandler(service *service.UserService, publisher saga.Publisher, subscriber saga.Subscriber) {
+	_, err := controller.NewCreateMessageCommandHandler(service, publisher, subscriber)
+	if err != nil {
+		log.Fatal(err)
 	}
 }
