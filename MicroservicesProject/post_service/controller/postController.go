@@ -97,7 +97,7 @@ func mapComment(comment *model.Comment) *pb.Comment {
 }
 
 func (pc *PostController) GetAll(ctx context.Context, request *pb.GetAllRequest) (*pb.GetAllResponse, error) {
-	span := tracer.StartSpanFromContextMetadata(ctx, "GetAll")
+	span := tracer.StartSpanFromContextMetadata(ctx, "GetAllController")
 	defer span.Finish()
 
 	span1 := tracer.StartSpanFromContext(tracer.ContextWithSpan(ctx, span), "MongoGetAll")

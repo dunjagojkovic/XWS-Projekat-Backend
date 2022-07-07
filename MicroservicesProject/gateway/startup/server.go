@@ -11,9 +11,10 @@ import (
 	cfg "gateway/startup/config"
 	"io"
 
+	grpc_opentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-
-	otgo "github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/ext"
 
 	"log"
 	"net/http"
@@ -32,33 +33,55 @@ const (
 type Server struct {
 	config *cfg.Config
 	mux    *runtime.ServeMux
-	Tracer otgo.Tracer
-	Closer io.Closer
+	tracer opentracing.Tracer
+	closer io.Closer
 }
 
 func NewServer(config *cfg.Config) *Server {
 	tracer, closer := tracer.Init(Name)
-	otgo.SetGlobalTracer(tracer)
+	opentracing.SetGlobalTracer(tracer)
+
 	server := &Server{
 		config: config,
 		mux:    runtime.NewServeMux(),
-		Tracer: tracer,
-		Closer: closer,
+		tracer: tracer,
+		closer: closer,
 	}
+
 	server.initHandlers()
 	return server
 }
 
-func (s *Server) GetTracer() otgo.Tracer {
-	return s.Tracer
-}
+var grpcGatewayTag = opentracing.Tag{Key: string(ext.Component), Value: "grpc-gateway"}
 
-func (s *Server) GetCloser() io.Closer {
-	return s.Closer
+func tracingWrapper(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		parentSpanContext, err := opentracing.GlobalTracer().Extract(
+			opentracing.HTTPHeaders,
+			opentracing.HTTPHeadersCarrier(r.Header))
+		if err == nil || err == opentracing.ErrSpanContextNotFound {
+			serverSpan := opentracing.GlobalTracer().StartSpan(
+				"ServeHTTP",
+				// this is magical, it attaches the new span to the parent parentSpanContext, and creates an unparented one if empty.
+				ext.RPCServerOption(parentSpanContext),
+				grpcGatewayTag,
+			)
+			r = r.WithContext(opentracing.ContextWithSpan(r.Context(), serverSpan))
+			defer serverSpan.Finish()
+		}
+		h.ServeHTTP(w, r)
+	})
 }
 
 func (server *Server) initHandlers() {
-	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
+	opts := []grpc.DialOption{
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithUnaryInterceptor(
+			grpc_opentracing.UnaryClientInterceptor(
+				grpc_opentracing.WithTracer(opentracing.GlobalTracer()),
+			),
+		),
+	}
 	postEmdpoint := fmt.Sprintf("%s:%s", server.config.PostHost, server.config.PostPort)
 	err := postGw.RegisterPostServiceHandlerFromEndpoint(context.TODO(), server.mux, postEmdpoint, opts)
 	if err != nil {
@@ -105,13 +128,17 @@ func cors(h http.Handler) http.Handler {
 }
 
 func (server *Server) Start() {
-	gwmux := runtime.NewServeMux()
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", server.config.Port), cors(server.mux)))
+}
 
-	gwServer := &http.Server{
-		Addr:    ":8090",
-		Handler: tracingWrapper(gwmux),
-	}
-	//cors(server.mux)
+func (server *Server) GetTracer() opentracing.Tracer {
+	return server.tracer
+}
 
-	log.Fatal(gwServer.ListenAndServe())
+func (server *Server) GetCloser() io.Closer {
+	return server.closer
+}
+
+func (server *Server) CloseTracer() error {
+	return server.closer.Close()
 }
