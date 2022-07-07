@@ -33,6 +33,7 @@ type UserServiceClient interface {
 	FilterUsers(ctx context.Context, in *FilterUsersRequest, opts ...grpc.CallOption) (*FilterUsersResponse, error)
 	GetUser(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*User, error)
 	GetUsersById(ctx context.Context, in *GetUsersByIdRequest, opts ...grpc.CallOption) (*GetUsersResponse, error)
+	GetUserUsernamesById(ctx context.Context, in *GetUserUsernamesByIdRequest, opts ...grpc.CallOption) (*GetUsersResponse, error)
 	BlockUser(ctx context.Context, in *BlockUserRequest, opts ...grpc.CallOption) (*GetUserRequest, error)
 	Unblock(ctx context.Context, in *BlockUserRequest, opts ...grpc.CallOption) (*GetUserRequest, error)
 }
@@ -144,6 +145,15 @@ func (c *userServiceClient) GetUsersById(ctx context.Context, in *GetUsersByIdRe
 	return out, nil
 }
 
+func (c *userServiceClient) GetUserUsernamesById(ctx context.Context, in *GetUserUsernamesByIdRequest, opts ...grpc.CallOption) (*GetUsersResponse, error) {
+	out := new(GetUsersResponse)
+	err := c.cc.Invoke(ctx, "/user.UserService/GetUserUsernamesById", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *userServiceClient) BlockUser(ctx context.Context, in *BlockUserRequest, opts ...grpc.CallOption) (*GetUserRequest, error) {
 	out := new(GetUserRequest)
 	err := c.cc.Invoke(ctx, "/user.UserService/BlockUser", in, out, opts...)
@@ -177,6 +187,7 @@ type UserServiceServer interface {
 	FilterUsers(context.Context, *FilterUsersRequest) (*FilterUsersResponse, error)
 	GetUser(context.Context, *GetUserRequest) (*User, error)
 	GetUsersById(context.Context, *GetUsersByIdRequest) (*GetUsersResponse, error)
+	GetUserUsernamesById(context.Context, *GetUserUsernamesByIdRequest) (*GetUsersResponse, error)
 	BlockUser(context.Context, *BlockUserRequest) (*GetUserRequest, error)
 	Unblock(context.Context, *BlockUserRequest) (*GetUserRequest, error)
 	mustEmbedUnimplementedUserServiceServer()
@@ -218,6 +229,9 @@ func (UnimplementedUserServiceServer) GetUser(context.Context, *GetUserRequest) 
 }
 func (UnimplementedUserServiceServer) GetUsersById(context.Context, *GetUsersByIdRequest) (*GetUsersResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUsersById not implemented")
+}
+func (UnimplementedUserServiceServer) GetUserUsernamesById(context.Context, *GetUserUsernamesByIdRequest) (*GetUsersResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserUsernamesById not implemented")
 }
 func (UnimplementedUserServiceServer) BlockUser(context.Context, *BlockUserRequest) (*GetUserRequest, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BlockUser not implemented")
@@ -436,6 +450,24 @@ func _UserService_GetUsersById_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserService_GetUserUsernamesById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserUsernamesByIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).GetUserUsernamesById(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/user.UserService/GetUserUsernamesById",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).GetUserUsernamesById(ctx, req.(*GetUserUsernamesByIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _UserService_BlockUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(BlockUserRequest)
 	if err := dec(in); err != nil {
@@ -522,6 +554,10 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUsersById",
 			Handler:    _UserService_GetUsersById_Handler,
+		},
+		{
+			MethodName: "GetUserUsernamesById",
+			Handler:    _UserService_GetUserUsernamesById_Handler,
 		},
 		{
 			MethodName: "BlockUser",

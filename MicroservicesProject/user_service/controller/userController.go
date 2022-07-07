@@ -239,6 +239,22 @@ func (uc *UserController) GetUsersById(ctx context.Context, request *pb.GetUsers
 	return response, nil
 }
 
+func (uc *UserController) GetUserUsernamesById(ctx context.Context, request *pb.GetUserUsernamesByIdRequest) (*pb.GetUsersResponse, error) {
+	fmt.Println(request.UserById)
+	result, err := uc.service.GetUsersById(request.UserById)
+	if err != nil {
+		return nil, err
+	}
+	response := &pb.GetUsersResponse{
+		Users: []*pb.User{},
+	}
+	for _, user := range result {
+		current := mapUser(user)
+		response.Users = append(response.Users, current)
+	}
+	return response, nil
+}
+
 func (uc *UserController) GetPublicUsers(ctx context.Context, request *pb.GetUsersRequest) (*pb.GetUsersResponse, error) {
 	users, err := uc.service.GetPublicUsers()
 	if err != nil {

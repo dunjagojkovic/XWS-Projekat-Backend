@@ -42,12 +42,14 @@ func (mc *MessageController) GetMessages(ctx context.Context, request *pb.GetCha
 
 func (mc *MessageController) GetChats(ctx context.Context, request *pb.GetChatsRequest) (*pb.GetChatsResponse, error) {
 	fmt.Println(request.Id)
-	chats, err := mc.service.GetChats(request.Id)
+	chats, list, err := mc.service.GetChats(request.Id)
+	fmt.Println(list)
 	if err != nil {
 		return nil, err
 	}
 	response := &pb.GetChatsResponse{
 		Chats: []*pb.Chat{},
+		List:  list,
 	}
 	for _, chat := range chats {
 		current := mapChat(chat)

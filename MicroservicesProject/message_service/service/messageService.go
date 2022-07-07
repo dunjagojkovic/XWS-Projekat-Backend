@@ -41,7 +41,7 @@ func (service *MessageService) CreateMessage(message *model.Message) (primitive.
 
 }
 
-func (service *MessageService) GetChats(user string) ([]*model.Chat, error) {
+func (service *MessageService) GetChats(user string) ([]*model.Chat, []string, error) {
 	return service.store.GetChats(user)
 }
 
