@@ -1,9 +1,12 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"postS/config"
+)
 
 func main() {
-	config := NewConfig()
+	config := config.NewConfig()
 	fmt.Println(config.PostDBHost)
 	server := NewServer(config)
 	server.Start()

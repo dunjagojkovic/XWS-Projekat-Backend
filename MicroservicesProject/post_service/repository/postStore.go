@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"common/tracer"
 	"context"
 	"fmt"
 	"postS/model"
@@ -35,7 +36,10 @@ func NewPostStore(client *mongo.Client) PostStoreI {
 	}
 }
 
-func (store *PostStore) GetAll() ([]*model.Post, error) {
+func (store *PostStore) GetAll(ctx context.Context) ([]*model.Post, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "GetAll")
+	defer span.Finish()
+
 	filter := bson.D{{}}
 	return store.filter(filter)
 

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"postS/model"
 	"postS/repository"
 
@@ -17,8 +18,8 @@ func NewPostService(store repository.PostStoreI) *PostService {
 	}
 }
 
-func (service *PostService) GetAll() ([]*model.Post, error) {
-	return service.store.GetAll()
+func (service *PostService) GetAll(ctx context.Context) ([]*model.Post, error) {
+	return service.store.GetAll(ctx)
 }
 
 func (service *PostService) Get(id primitive.ObjectID) (model.Post, error) {

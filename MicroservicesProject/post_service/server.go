@@ -14,8 +14,10 @@ import (
 	"google.golang.org/grpc"
 
 	"common/tracer"
+	"postS/config"
 
 	otgo "github.com/opentracing/opentracing-go"
+	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -25,18 +27,21 @@ const (
 )
 
 type Server struct {
-	config *Config
-	Tracer otgo.Tracer
-	Closer io.Closer
+	config       *config.Config
+	Tracer       otgo.Tracer
+	Closer       io.Closer
+	CustomLogger *controller.CustomLogger
 }
 
-func NewServer(config *Config) *Server {
+func NewServer(config *config.Config) *Server {
+	CustomLogger := controller.NewCustomLogger()
 	tracer, closer := tracer.Init(Name)
 	otgo.SetGlobalTracer(tracer)
 	return &Server{
-		config: config,
-		Tracer: tracer,
-		Closer: closer,
+		config:       config,
+		CustomLogger: CustomLogger,
+		Tracer:       tracer,
+		Closer:       closer,
 	}
 }
 
@@ -48,25 +53,30 @@ func (server *Server) Start() {
 
 	if err != nil {
 		fmt.Println(err)
+		server.CustomLogger.ErrorLogger.WithFields(logrus.Fields{"Post db host": server.config.PostDBHost, "Post db port": server.config.PostDBPort}).Error("MongoDB initialization for post service failed")
 	} else {
 		fmt.Println(uri)
+		server.CustomLogger.SuccessLogger.Info("MongoDB initialization for post service succesfull")
+
 	}
 	store := repository.NewPostStore(client)
 	postService := service.NewPostService(store)
-
 	postController := controller.NewPostController(postService)
 
+	server.CustomLogger.SuccessLogger.Info("Starting gRPC server for post service")
 	server.startGrpcServer(postController)
 }
 
 func (server *Server) startGrpcServer(postController *controller.PostController) {
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", server.config.Port))
 	if err != nil {
+		server.CustomLogger.ErrorLogger.Error("Failed to listen in post service: ", listener)
 		log.Fatalf("failed to listen: %v", err)
 	}
 	grpcServer := grpc.NewServer()
 	postGW.RegisterPostServiceServer(grpcServer, postController)
 	if err := grpcServer.Serve(listener); err != nil {
+		server.CustomLogger.ErrorLogger.Error("Failed to serve gRPC in post service: ", listener)
 		log.Fatalf("failed to serve: %s", err)
 	}
 }

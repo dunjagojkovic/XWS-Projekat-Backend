@@ -4,6 +4,7 @@ import (
 	"context"
 	"postS/model"
 	"postS/service"
+	"strconv"
 
 	pb "common/proto/post_service"
 	"common/tracer"
@@ -13,12 +14,15 @@ import (
 
 type PostController struct {
 	pb.UnimplementedPostServiceServer
-	service *service.PostService
+	service      *service.PostService
+	CustomLogger *CustomLogger
 }
 
 func NewPostController(service *service.PostService) *PostController {
+	CustomLogger := NewCustomLogger()
 	return &PostController{
-		service: service,
+		service:      service,
+		CustomLogger: CustomLogger,
 	}
 
 }
@@ -97,14 +101,14 @@ func mapComment(comment *model.Comment) *pb.Comment {
 }
 
 func (pc *PostController) GetAll(ctx context.Context, request *pb.GetAllRequest) (*pb.GetAllResponse, error) {
-	span := tracer.StartSpanFromContextMetadata(ctx, "GetAllController")
+	span := tracer.StartSpanFromContext(ctx, "GetAll")
 	defer span.Finish()
 
-	span1 := tracer.StartSpanFromContext(tracer.ContextWithSpan(ctx, span), "MongoGetAll")
-	posts, err := pc.service.GetAll()
-	span1.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	posts, err := pc.service.GetAll(ctx)
 
 	if err != nil {
+		pc.CustomLogger.ErrorLogger.Error("Get all posts unsuccessful")
 		return nil, err
 	}
 	response := &pb.GetAllResponse{
@@ -114,6 +118,8 @@ func (pc *PostController) GetAll(ctx context.Context, request *pb.GetAllRequest)
 		current := mapPost(post)
 		response.Posts = append(response.Posts, current)
 	}
+	pc.CustomLogger.SuccessLogger.Info("Found " + strconv.Itoa(len(posts)) + " posts")
+
 	return response, nil
 }
 
@@ -124,6 +130,7 @@ func (pc *PostController) Get(ctx context.Context, request *pb.GetRequest) (*pb.
 	id := request.Id
 	objectId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
+		pc.CustomLogger.ErrorLogger.Error("ObjectId not created with ID:" + id)
 		return nil, err
 	}
 
@@ -132,12 +139,14 @@ func (pc *PostController) Get(ctx context.Context, request *pb.GetRequest) (*pb.
 	span1.Finish()
 
 	if err != nil {
+		pc.CustomLogger.ErrorLogger.Error("Post with ID: " + id + " not found")
 		return nil, err
 	}
 	postPb := mapPost(&post)
 	response := &pb.GetResponse{
 		Post: postPb,
 	}
+	pc.CustomLogger.SuccessLogger.Info("Post with ID: " + id + " received successfully")
 	return response, nil
 }
 
@@ -151,6 +160,7 @@ func (pc *PostController) GetUserPosts(ctx context.Context, request *pb.GetUserP
 	span1.Finish()
 
 	if err != nil {
+		pc.CustomLogger.ErrorLogger.Error("Get all by user: " + username)
 		return nil, err
 	}
 	response := &pb.GetAllResponse{
@@ -160,6 +170,7 @@ func (pc *PostController) GetUserPosts(ctx context.Context, request *pb.GetUserP
 		current := mapPost(&post)
 		response.Posts = append(response.Posts, current)
 	}
+	pc.CustomLogger.SuccessLogger.Info("Found " + strconv.Itoa(len(posts)) + " posts created by user: " + username)
 	return response, nil
 
 }
@@ -169,16 +180,18 @@ func (pc *PostController) CreatePost(ctx context.Context, request *pb.CreatePost
 	defer span.Finish()
 
 	post := mapNewPost(request.Post)
-	span1 := tracer.StartSpanFromContext(tracer.ContextWithSpan(ctx, span), "MongoCreatePost")
 	id, err := pc.service.CreatePost(post)
-	span1.Finish()
 
 	if err != nil {
+		pc.CustomLogger.ErrorLogger.Error("ObjectId not created with ID:" + post.Id.Hex())
 		return nil, err
 	}
-	return &pb.CreatePostResponse{
+
+	response := &pb.CreatePostResponse{
 		Id: id.Hex(),
-	}, nil
+	}
+	pc.CustomLogger.SuccessLogger.Info("Post with ID: " + post.Id.Hex() + " created succesfully by user with ID: " + post.User)
+	return response, nil
 
 }
 
@@ -272,11 +285,14 @@ func (pc *PostController) LikePost(ctx context.Context, request *pb.LikeDislikeP
 	span1.Finish()
 
 	if err != nil {
+		pc.CustomLogger.ErrorLogger.Error("Post with ID: " + objectId.Hex() + " was not succesfully liked by user: " + username)
 		return nil, err
 	}
-	return &pb.CreatePostResponse{
+	response := &pb.CreatePostResponse{
 		Id: id.Hex(),
-	}, nil
+	}
+	pc.CustomLogger.SuccessLogger.Info("Post with ID: " + objectId.Hex() + " liked by user with ID: " + username)
+	return response, nil
 
 }
 
@@ -291,11 +307,14 @@ func (pc *PostController) DislikePost(ctx context.Context, request *pb.LikeDisli
 	span1.Finish()
 
 	if err != nil {
+		pc.CustomLogger.ErrorLogger.Error("Post with ID: " + objectId.Hex() + " was not disliked by user: " + username)
 		return nil, err
 	}
-	return &pb.CreatePostResponse{
+	response := &pb.CreatePostResponse{
 		Id: id.Hex(),
-	}, nil
+	}
+	pc.CustomLogger.SuccessLogger.Info("Post with ID: " + objectId.Hex() + " disliked by user with ID: " + username)
+	return response, nil
 
 }
 
