@@ -1,10 +1,13 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"userS/config"
+)
 
 func main() {
 
-	config := NewConfig()
+	config := config.NewConfig()
 	fmt.Println(config.UserDBHost)
 	server := NewServer(config)
 	server.Start()

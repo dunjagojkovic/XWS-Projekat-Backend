@@ -12,12 +12,15 @@ import (
 
 type UserController struct {
 	pb.UnimplementedUserServiceServer
-	service *service.UserService
+	service      *service.UserService
+	CustomLogger *CustomLogger
 }
 
 func NewUserController(service *service.UserService) *UserController {
+	CustomLogger := NewCustomLogger()
 	return &UserController{
-		service: service,
+		service:      service,
+		CustomLogger: CustomLogger,
 	}
 
 }
@@ -27,9 +30,10 @@ func (uc *UserController) Registration(ctx context.Context, request *pb.Registra
 	user := mapNewUser(request.User)
 	user, err := uc.service.RegisterUser(user)
 	if err != nil {
+		uc.CustomLogger.ErrorLogger.Error("User not created")
 		return nil, err
 	}
-	return &pb.RegistrationResponse{
+	response := &pb.RegistrationResponse{
 		Id:          user.Id.Hex(),
 		Name:        user.Name,
 		Surname:     user.Surname,
@@ -40,7 +44,9 @@ func (uc *UserController) Registration(ctx context.Context, request *pb.Registra
 		Gender:      user.Gender,
 		IsPublic:    user.IsPublic,
 		BirthDate:   user.BirthDate,
-	}, nil
+	}
+	uc.CustomLogger.SuccessLogger.Info("User registration successfull, created user with ID:" + response.Id)
+	return response, nil
 
 }
 
@@ -66,6 +72,8 @@ func (uc *UserController) EditPassword(ctx context.Context, request *pb.EditPass
 		return nil, err
 	}
 	userPb := mapEditedUser(user)
+	uc.CustomLogger.SuccessLogger.Info("User with ID: " + user.Id.Hex() + "changed password successfully")
+
 	return userPb, nil
 
 }
@@ -77,71 +85,10 @@ func (uc *UserController) EditPrivacy(ctx context.Context, request *pb.EditPriva
 		return nil, err
 	}
 	userPb := mapEditedUser(user)
+
+	uc.CustomLogger.SuccessLogger.Info("User with ID: " + user.Id.Hex() + " updated profile privacy successfully")
 	return userPb, nil
 
-}
-
-func mapUser(user *model.User) *pb.User {
-
-	userPb := &pb.User{
-		Id:              user.Id.Hex(),
-		Name:            user.Name,
-		Surname:         user.Surname,
-		Email:           user.Email,
-		Username:        user.Username,
-		Password:        user.Password,
-		PhoneNumber:     user.PhoneNumber,
-		Gender:          user.Gender,
-		IsPublic:        user.IsPublic,
-		BirthDate:       user.BirthDate,
-		Biography:       user.Biography,
-		WorkExperiences: make([]*pb.WorkExperience, 0),
-	}
-
-	for _, workExperience := range user.WorkExperience {
-
-		workPb := *&pb.WorkExperience{
-			Id:          workExperience.Id.Hex(),
-			Description: workExperience.Description,
-		}
-
-		userPb.WorkExperiences = append(userPb.WorkExperiences, &workPb)
-	}
-
-	return userPb
-}
-
-func mapEditedUser(user *model.User) *pb.User {
-
-	userPb := &pb.User{
-		Id:              user.Id.Hex(),
-		Name:            user.Name,
-		Surname:         user.Surname,
-		Email:           user.Email,
-		Username:        user.Username,
-		Password:        user.Password,
-		PhoneNumber:     user.PhoneNumber,
-		Gender:          user.Gender,
-		IsPublic:        user.IsPublic,
-		BirthDate:       user.BirthDate,
-		Biography:       user.Biography,
-		WorkExperiences: make([]*pb.WorkExperience, 0),
-		Education:       user.Education,
-		Hobby:           user.Hobby,
-		Interest:        user.Interest,
-	}
-
-	for _, workExperience := range user.WorkExperience {
-
-		workPb := *&pb.WorkExperience{
-			Id:          workExperience.Id.Hex(),
-			Description: workExperience.Description,
-		}
-
-		userPb.WorkExperiences = append(userPb.WorkExperiences, &workPb)
-	}
-
-	return userPb
 }
 
 func (uc *UserController) CurrentUser(ctx context.Context, request *pb.CurrentUserRequest) (*pb.User, error) {
@@ -150,10 +97,12 @@ func (uc *UserController) CurrentUser(ctx context.Context, request *pb.CurrentUs
 	user, err := uc.service.CurrentUser(username)
 
 	if err != nil {
+		uc.CustomLogger.ErrorLogger.Error("User:" + username + " not found")
 		return nil, err
 	}
 	userPb := mapEditedUser(&user)
 
+	uc.CustomLogger.SuccessLogger.Info("Currently logged in user:" + username)
 	return userPb, nil
 }
 
@@ -164,10 +113,11 @@ func (uc *UserController) GetUser(ctx context.Context, request *pb.GetUserReques
 	user, err := uc.service.GetUser(objID)
 
 	if err != nil {
+		uc.CustomLogger.ErrorLogger.Error("User with ID:" + objID.Hex() + " not found")
 		return nil, err
 	}
 	userPb := mapEditedUser(&user)
-
+	uc.CustomLogger.SuccessLogger.Info("User by ID:" + objID.Hex() + " received successfully")
 	return userPb, nil
 }
 
@@ -184,6 +134,7 @@ func (uc *UserController) BlockUser(ctx context.Context, request *pb.BlockUserRe
 		Id: id.Hex(),
 	}
 
+	uc.CustomLogger.SuccessLogger.Info("Blocking user successfully")
 	return response, nil
 }
 
@@ -269,6 +220,7 @@ func (uc *UserController) EditUser(ctx context.Context, request *pb.EditUserRequ
 	}
 	userPb := mapEditedUser(editedUser)
 
+	uc.CustomLogger.SuccessLogger.Info("User with ID: " + user.Id.Hex() + "updated successfully")
 	return userPb, nil
 }
 
@@ -288,6 +240,69 @@ func (uc *UserController) FilterUsers(ctx context.Context, request *pb.FilterUse
 	}
 	return response, nil
 
+}
+
+func mapUser(user *model.User) *pb.User {
+
+	userPb := &pb.User{
+		Id:              user.Id.Hex(),
+		Name:            user.Name,
+		Surname:         user.Surname,
+		Email:           user.Email,
+		Username:        user.Username,
+		Password:        user.Password,
+		PhoneNumber:     user.PhoneNumber,
+		Gender:          user.Gender,
+		IsPublic:        user.IsPublic,
+		BirthDate:       user.BirthDate,
+		Biography:       user.Biography,
+		WorkExperiences: make([]*pb.WorkExperience, 0),
+	}
+
+	for _, workExperience := range user.WorkExperience {
+
+		workPb := *&pb.WorkExperience{
+			Id:          workExperience.Id.Hex(),
+			Description: workExperience.Description,
+		}
+
+		userPb.WorkExperiences = append(userPb.WorkExperiences, &workPb)
+	}
+
+	return userPb
+}
+
+func mapEditedUser(user *model.User) *pb.User {
+
+	userPb := &pb.User{
+		Id:              user.Id.Hex(),
+		Name:            user.Name,
+		Surname:         user.Surname,
+		Email:           user.Email,
+		Username:        user.Username,
+		Password:        user.Password,
+		PhoneNumber:     user.PhoneNumber,
+		Gender:          user.Gender,
+		IsPublic:        user.IsPublic,
+		BirthDate:       user.BirthDate,
+		Biography:       user.Biography,
+		WorkExperiences: make([]*pb.WorkExperience, 0),
+		Education:       user.Education,
+		Hobby:           user.Hobby,
+		Interest:        user.Interest,
+	}
+
+	for _, workExperience := range user.WorkExperience {
+
+		workPb := *&pb.WorkExperience{
+			Id:          workExperience.Id.Hex(),
+			Description: workExperience.Description,
+		}
+
+		userPb.WorkExperiences = append(userPb.WorkExperiences, &workPb)
+	}
+
+	return userPb
 }
 
 func mapNewUser(userPb *pb.RegisterUser) *model.User {

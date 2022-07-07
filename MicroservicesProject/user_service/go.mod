@@ -4,7 +4,11 @@ go 1.18
 
 replace common => ../common
 
-require go.mongodb.org/mongo-driver v1.9.1
+require (
+	github.com/sirupsen/logrus v1.8.1
+	go.mongodb.org/mongo-driver v1.9.1
+	gopkg.in/natefinch/lumberjack.v2 v2.0.0
+)
 
 require (
 	github.com/golang/protobuf v1.5.2 // indirect
