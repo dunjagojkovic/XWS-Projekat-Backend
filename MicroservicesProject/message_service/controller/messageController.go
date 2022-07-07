@@ -49,6 +49,7 @@ func (mc *MessageController) GetChats(ctx context.Context, request *pb.GetChatsR
 	}
 	response := &pb.GetChatsResponse{
 		Chats: []*pb.Chat{},
+		List:  list,
 	}
 	for _, chat := range chats {
 		current := mapChat(chat)

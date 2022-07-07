@@ -61,9 +61,10 @@ message GetChatsRequest {
     string id = 1;
 }
 
+
 message GetChatsResponse{
-    repeated Chat chats = 1;
-    repeated String list = 2;
+   repeated Chat chats = 1;
+   repeated string list = 2;
 
 }
 
