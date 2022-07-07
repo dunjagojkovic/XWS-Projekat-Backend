@@ -39,18 +39,19 @@ func (store *MessageStore) GetMessages(id string) ([]model.Message, error) {
 
 }
 
-func (store *MessageStore) GetChats(user string) ([]*model.Chat, error) {
+func (store *MessageStore) GetChats(user string) ([]*model.Chat, []string, error) {
 	u, err := primitive.ObjectIDFromHex(user)
 	filter1 := bson.D{{"first_user", u}}
 	cursor1, err := store.chats.Find(context.TODO(), filter1)
+	var list []string
 	defer cursor1.Close(context.TODO())
 
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	chats1, err := decode(cursor1)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 
 	}
 	filter2 := bson.D{{"second_user", u}}
@@ -58,21 +59,23 @@ func (store *MessageStore) GetChats(user string) ([]*model.Chat, error) {
 	defer cursor2.Close(context.TODO())
 
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	chats2, err := decode(cursor2)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 
 	}
 	var result []*model.Chat
 	for _, chat1 := range chats1 {
 		result = append(result, chat1)
+		list = append(list, chat1.FirstUser.Hex())
 	}
 	for _, chat2 := range chats2 {
 		result = append(result, chat2)
+		list = append(list, chat2.SecondUser.Hex())
 	}
-	return result, nil
+	return result, list, nil
 }
 
 func (store *MessageStore) CreateMessage(message *model.Message) (primitive.ObjectID, primitive.ObjectID, error) {

@@ -63,6 +63,7 @@ message GetChatsRequest {
 
 message GetChatsResponse{
     repeated Chat chats = 1;
+    repeated String list = 2;
 
 }
 
