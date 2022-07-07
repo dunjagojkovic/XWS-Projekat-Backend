@@ -69,11 +69,15 @@ func (store *MessageStore) GetChats(user string) ([]*model.Chat, []string, error
 	var result []*model.Chat
 	for _, chat1 := range chats1 {
 		result = append(result, chat1)
-		list = append(list, chat1.FirstUser.Hex())
+		if chat1.SecondUser != u {
+			list = append(list, chat1.SecondUser.Hex())
+		}
 	}
 	for _, chat2 := range chats2 {
 		result = append(result, chat2)
-		list = append(list, chat2.SecondUser.Hex())
+		if chat2.FirstUser != u {
+			list = append(list, chat2.FirstUser.Hex())
+		}
 	}
 	return result, list, nil
 }
@@ -86,31 +90,46 @@ func (store *MessageStore) CreateMessage(message *model.Message) (primitive.Obje
 	store.chats.FindOne(context.TODO(), filter).Decode(&result)
 
 	if result == nil {
-		chat := &model.Chat{
-			Id:         primitive.NewObjectID(),
-			FirstUser:  message.Sender,
-			SecondUser: message.Receiver,
-			Messages:   make([]model.Message, 0),
-		}
-		_, err := store.chats.InsertOne(context.TODO(), chat)
-		if err != nil {
-			return primitive.NilObjectID, primitive.NilObjectID, err
-		}
+		filter1 := bson.D{{"first_user", message.Receiver}, {"second_user", message.Sender}}
+		var result1 *model.Chat
 
-		update := bson.D{
+		store.chats.FindOne(context.TODO(), filter1).Decode(&result1)
+
+		if result1 == nil {
+			chat := &model.Chat{
+				Id:         primitive.NewObjectID(),
+				FirstUser:  message.Sender,
+				SecondUser: message.Receiver,
+				Messages:   make([]model.Message, 0),
+			}
+			_, err := store.chats.InsertOne(context.TODO(), chat)
+			if err != nil {
+				return primitive.NilObjectID, primitive.NilObjectID, err
+			}
+
+			update := bson.D{
+				{"$push", bson.D{
+					{"messages", message},
+				}},
+			}
+
+			store.chats.UpdateOne(context.TODO(), filter, update)
+
+			if err != nil {
+				return primitive.NewObjectID(), primitive.NilObjectID, err
+			}
+
+			return message.Id, chat.Id, nil
+		}
+		update1 := bson.D{
 			{"$push", bson.D{
 				{"messages", message},
 			}},
 		}
 
-		store.chats.UpdateOne(context.TODO(), filter, update)
+		store.chats.UpdateOne(context.TODO(), filter1, update1)
 
-		if err != nil {
-			return primitive.NewObjectID(), primitive.NilObjectID, err
-		}
-
-		return message.Id, chat.Id, nil
-
+		return message.Id, result1.Id, nil
 	}
 
 	update := bson.D{
