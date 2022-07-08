@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"messageS/model"
 	"messageS/service"
+	"strconv"
 
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -14,12 +15,15 @@ import (
 
 type MessageController struct {
 	pb.UnimplementedMessageServiceServer
-	service *service.MessageService
+	service      *service.MessageService
+	CustomLogger *CustomLogger
 }
 
 func NewMessageController(service *service.MessageService) *MessageController {
+	CustomLogger := NewCustomLogger()
 	return &MessageController{
-		service: service,
+		service:      service,
+		CustomLogger: CustomLogger,
 	}
 
 }
@@ -28,6 +32,7 @@ func (mc *MessageController) GetAllById(ctx context.Context, request *pb.GetAllB
 	fmt.Println(request.Id)
 	messages, err := mc.service.GetAllById(request.Id)
 	if err != nil {
+		mc.CustomLogger.ErrorLogger.Error("Get all messages for user unsuccessful")
 		return nil, err
 	}
 	response := &pb.GetAllByIdResponse{
@@ -37,6 +42,8 @@ func (mc *MessageController) GetAllById(ctx context.Context, request *pb.GetAllB
 		current := mapMessage(message)
 		response.Messages = append(response.Messages, current)
 	}
+	mc.CustomLogger.SuccessLogger.Info("Found " + strconv.Itoa(len(messages)) + " messages")
+
 	return response, nil
 }
 
@@ -45,11 +52,15 @@ func (mc *MessageController) CreateMessage(ctx context.Context, request *pb.Crea
 	message := mapNewMessage(request.CreatedMessage)
 	id, err := mc.service.CreateMessage(message)
 	if err != nil {
+		mc.CustomLogger.ErrorLogger.Error("ObjectId not created with ID:" + message.Id.Hex())
 		return nil, err
 	}
-	return &pb.CreateMessageResponse{
+	response := &pb.CreateMessageResponse{
 		Id: id.Hex(),
-	}, nil
+	}
+
+	mc.CustomLogger.SuccessLogger.Info("Message with ID: " + message.Id.Hex() + " created succesfully by user with ID: " + message.Sender.Hex() + " and message status: " + message.Status)
+	return response, nil
 
 }
 
@@ -73,8 +84,6 @@ func mapNewMessage(messagePb *pb.CreateMessage) *model.Message {
 
 	receiverId, _ := primitive.ObjectIDFromHex(messagePb.Receiver)
 	senderId, _ := primitive.ObjectIDFromHex(messagePb.Sender)
-	//layout := "2006-01-02 15:04:05"
-	//dt, _ := time.Parse(layout, messagePb.Time)
 	message := &model.Message{
 		Id:       primitive.NewObjectID(),
 		Text:     messagePb.Text,

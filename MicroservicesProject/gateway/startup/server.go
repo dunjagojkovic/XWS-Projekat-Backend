@@ -66,6 +66,10 @@ func tracingWrapper(h http.Handler) http.Handler {
 				ext.RPCServerOption(parentSpanContext),
 				grpcGatewayTag,
 			)
+			endpointName := r.Method + " " + r.URL.Path
+			span := tracer.StartSpanFromRequest(endpointName, serverSpan.Tracer(), r)
+			defer span.Finish()
+
 			r = r.WithContext(opentracing.ContextWithSpan(r.Context(), serverSpan))
 			defer serverSpan.Finish()
 		}
@@ -113,7 +117,7 @@ func (server *Server) initHandlers() {
 
 }
 
-func cors(h http.Handler) http.Handler {
+func cors(h http.Handler, server *Server) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		w.Header().Set("Access-Control-Allow-Origin", r.Header.Get("Origin"))
@@ -123,12 +127,17 @@ func cors(h http.Handler) http.Handler {
 		if r.Method == "OPTIONS" {
 			return
 		}
+
+		endpointName := r.Method + " " + r.URL.Path
+		span := tracer.StartSpanFromRequest(endpointName, server.tracer, r)
+		defer span.Finish()
+
 		h.ServeHTTP(w, r)
 	})
 }
 
 func (server *Server) Start() {
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", server.config.Port), cors(server.mux)))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", server.config.Port), cors(server.mux, server)))
 }
 
 func (server *Server) GetTracer() opentracing.Tracer {

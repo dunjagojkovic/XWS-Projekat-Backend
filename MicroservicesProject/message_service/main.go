@@ -1,11 +1,12 @@
 package main
 
-import "fmt"
+import (
+	"messageS/config"
+)
 
 func main() {
 
-	config := NewConfig()
-	fmt.Println(config.MessageDBHost)
+	config := config.NewConfig()
 	server := NewServer(config)
 	server.Start()
 
