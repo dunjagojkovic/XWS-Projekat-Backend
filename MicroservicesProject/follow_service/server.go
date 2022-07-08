@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"followS/config"
 	"followS/controller"
 	"log"
 	"net"
@@ -16,12 +17,15 @@ import (
 )
 
 type Server struct {
-	config *Config
+	config       *config.Config
+	CustomLogger *controller.CustomLogger
 }
 
-func NewServer(config *Config) *Server {
+func NewServer(config *config.Config) *Server {
+	CustomLogger := controller.NewCustomLogger()
 	return &Server{
-		config: config,
+		config:       config,
+		CustomLogger: CustomLogger,
 	}
 }
 
@@ -35,27 +39,30 @@ type Neo4jConfiguration struct {
 func (server *Server) Start() {
 	configuration := server.parseConfiguration()
 	driver, err := configuration.NewDriver()
+	server.CustomLogger.SuccessLogger.Info("Neo4J initialization for follow service successful, PORT: ", server.config.FollowDBPort)
+
 	if err != nil {
 		log.Fatal(err)
 	}
 	followStore := repository.NewFollowStore(&driver, configuration.Database)
-
 	followService := service.NewFollowService(followStore)
-
 	usersEndpoint := fmt.Sprintf("%s:%s", server.config.UserHost, server.config.UserPort)
 	followController := controller.NewFollowController(followService, usersEndpoint)
 
+	server.CustomLogger.SuccessLogger.Info("Starting gRPC server for follow service")
 	server.startGrpcServer(followController)
 }
 
 func (server *Server) startGrpcServer(followersHandler *controller.FollowController) {
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", server.config.Port))
 	if err != nil {
+		server.CustomLogger.ErrorLogger.Error("Failed to listen in follow service: ", listener)
 		log.Fatalf("failed to listen: %v", err)
 	}
 	grpcServer := grpc.NewServer()
 	pb.RegisterFollowServiceServer(grpcServer, followersHandler)
 	if err := grpcServer.Serve(listener); err != nil {
+		server.CustomLogger.ErrorLogger.Error("Failed to serve gRPC in follow service: ", listener)
 		log.Fatalf("failed to serve: %s", err)
 	}
 }

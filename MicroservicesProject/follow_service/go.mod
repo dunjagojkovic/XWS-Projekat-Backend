@@ -9,7 +9,11 @@ require (
 	github.com/neo4j/neo4j-go-driver/v4 v4.4.3
 )
 
-require google.golang.org/protobuf v1.28.0
+require (
+	github.com/sirupsen/logrus v1.8.1
+	google.golang.org/protobuf v1.28.0
+	gopkg.in/natefinch/lumberjack.v2 v2.0.0
+)
 
 require (
 	github.com/golang/protobuf v1.5.2 // indirect

@@ -1,7 +1,9 @@
 package main
 
+import "followS/config"
+
 func main() {
-	config := NewConfig()
+	config := config.NewConfig()
 	server := NewServer(config)
 	server.Start()
 }

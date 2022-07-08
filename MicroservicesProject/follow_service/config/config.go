@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"os"
@@ -14,6 +14,12 @@ type Config struct {
 	FollowDBPort     string
 	UserHost         string
 	UserPort         string
+	LogsFolder       string
+	InfoLogsFile     string
+	DebugLogsFile    string
+	ErrorLogsFile    string
+	SuccessLogsFile  string
+	WarningLogsFile  string
 }
 
 func NewConfig() *Config {
@@ -27,5 +33,11 @@ func NewConfig() *Config {
 		DBNeo4jVersion:   os.Getenv("DB_NEO4J_VERSION"),
 		UserHost:         os.Getenv("USER_SERVICE_HOST"),
 		UserPort:         os.Getenv("USER_SERVICE_PORT"),
+		LogsFolder:       "logs",
+		InfoLogsFile:     "/info.log",
+		DebugLogsFile:    "/debug.log",
+		ErrorLogsFile:    "/error.log",
+		SuccessLogsFile:  "/success.log",
+		WarningLogsFile:  "/warning.log",
 	}
 }
