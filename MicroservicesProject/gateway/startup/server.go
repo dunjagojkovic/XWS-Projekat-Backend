@@ -13,6 +13,8 @@ import (
 	"io"
 
 	grpc_opentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
+	otgo "github.com/opentracing/opentracing-go"
+
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
@@ -23,6 +25,7 @@ import (
 	jobGw "common/proto/job_service"
 	userGw "common/proto/user_service"
 
+	"github.com/urfave/negroni"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -40,7 +43,7 @@ type Server struct {
 
 func NewServer(config *cfg.Config) *Server {
 	tracer, closer := tracer.Init(Name)
-	opentracing.SetGlobalTracer(tracer)
+	otgo.SetGlobalTracer(tracer)
 
 	server := &Server{
 		config: config,
@@ -83,10 +86,10 @@ func (server *Server) initHandlers() {
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithUnaryInterceptor(
 			grpc_opentracing.UnaryClientInterceptor(
-				grpc_opentracing.WithTracer(opentracing.GlobalTracer()),
+				grpc_opentracing.WithTracer(otgo.GlobalTracer()),
 			),
-		),
-	}
+		)}
+
 	postEmdpoint := fmt.Sprintf("%s:%s", server.config.PostHost, server.config.PostPort)
 	err := postGw.RegisterPostServiceHandlerFromEndpoint(context.TODO(), server.mux, postEmdpoint, opts)
 	if err != nil {
@@ -134,12 +137,29 @@ func cors(h http.Handler, server *Server) http.Handler {
 		if r.Method == "OPTIONS" {
 			return
 		}
+		//h.ServeHTTP(w, r)
 
 		endpointName := r.Method + " " + r.URL.Path
-		span := tracer.StartSpanFromRequest(endpointName, server.tracer, r)
-		defer span.Finish()
+		log.Println("Context: ", r.Context())
+		log.Println("Endpoint: ", endpointName)
 
-		h.ServeHTTP(w, r)
+		parentSpanContext, err2 := opentracing.GlobalTracer().Extract(
+			opentracing.HTTPHeaders,
+			opentracing.HTTPHeadersCarrier(r.Header))
+		if err2 == nil || err2 == opentracing.ErrSpanContextNotFound {
+			serverSpan := opentracing.GlobalTracer().StartSpan(
+				endpointName,
+				ext.RPCServerOption(parentSpanContext),
+				grpcGatewayTag,
+			)
+			r = r.WithContext(opentracing.ContextWithSpan(r.Context(), serverSpan))
+			defer serverSpan.Finish()
+		}
+		lrw := negroni.NewResponseWriter(w)
+		server.mux.ServeHTTP(lrw, r)
+
+		statusCode := lrw.Status()
+		log.Println("<-- ", statusCode)
 	})
 }
 

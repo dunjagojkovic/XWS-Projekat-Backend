@@ -184,7 +184,6 @@ func (pc *PostController) GetUserPosts(ctx context.Context, request *pb.GetUserP
 
 func (pc *PostController) CreatePost(ctx context.Context, request *pb.CreatePostRequest) (*pb.CreatePostResponse, error) {
 	span := tracer.StartSpanFromContext(ctx, "CONTROLLER CreatePost")
-	span.SetOperationName("CONTROLLER CreatePost")
 	defer span.Finish()
 
 	ctx = tracer.ContextWithSpan(context.Background(), span)
