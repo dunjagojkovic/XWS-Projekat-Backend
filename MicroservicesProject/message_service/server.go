@@ -4,8 +4,10 @@ import (
 	messageGW "common/proto/message_service"
 	saga "common/saga/messaging"
 	"common/saga/messaging/nats"
+	"common/tracer"
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"messageS/config"
 	"messageS/controller"
@@ -13,6 +15,7 @@ import (
 	"messageS/service"
 	"net"
 
+	otgo "github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -22,18 +25,24 @@ import (
 type Server struct {
 	config       *config.Config
 	CustomLogger *controller.CustomLogger
+	Tracer       otgo.Tracer
+	Closer       io.Closer
 }
 
 const (
 	QueueGroup = "order_service"
+	Name       = "message_service"
 )
 
 func NewServer(config *config.Config) *Server {
-
 	CustomLogger := controller.NewCustomLogger()
+	tracer, closer := tracer.Init(Name)
+	otgo.SetGlobalTracer(tracer)
 	return &Server{
 		config:       config,
 		CustomLogger: CustomLogger,
+		Tracer:       tracer,
+		Closer:       closer,
 	}
 }
 

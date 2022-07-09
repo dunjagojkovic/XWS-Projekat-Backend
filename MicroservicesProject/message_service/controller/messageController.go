@@ -2,8 +2,8 @@ package controller
 
 import (
 	pb "common/proto/message_service"
+	"common/tracer"
 	"context"
-	"fmt"
 	"messageS/model"
 	"messageS/service"
 	"strconv"
@@ -29,8 +29,11 @@ func NewMessageController(service *service.MessageService) *MessageController {
 }
 
 func (mc *MessageController) GetMessages(ctx context.Context, request *pb.GetChatsRequest) (*pb.GetMessagesResponse, error) {
-	fmt.Println(request.Id)
-	messages, err := mc.service.GetMessages(request.Id)
+	span := tracer.StartSpanFromContext(ctx, "CONTROLLER GetMessages")
+	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	messages, err := mc.service.GetMessages(ctx, request.Id)
 	if err != nil {
 		mc.CustomLogger.ErrorLogger.Error("Get all messages for user unsuccessful")
 		return nil, err
@@ -39,7 +42,7 @@ func (mc *MessageController) GetMessages(ctx context.Context, request *pb.GetCha
 		Messages: []*pb.Message{},
 	}
 	for _, message := range messages {
-		current := mapMessage(&message)
+		current := mapMessage(ctx, &message)
 		response.Messages = append(response.Messages, current)
 	}
 	mc.CustomLogger.SuccessLogger.Info("Found " + strconv.Itoa(len(messages)) + " messages")
@@ -48,9 +51,12 @@ func (mc *MessageController) GetMessages(ctx context.Context, request *pb.GetCha
 }
 
 func (mc *MessageController) GetChats(ctx context.Context, request *pb.GetChatsRequest) (*pb.GetChatsResponse, error) {
-	fmt.Println(request.Id)
-	chats, list, err := mc.service.GetChats(request.Id)
-	fmt.Println(list)
+	span := tracer.StartSpanFromContext(ctx, "CONTROLLER GetChats")
+	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	chats, list, err := mc.service.GetChats(ctx, request.Id)
+
 	if err != nil {
 		return nil, err
 	}
@@ -59,16 +65,19 @@ func (mc *MessageController) GetChats(ctx context.Context, request *pb.GetChatsR
 		List:  list,
 	}
 	for _, chat := range chats {
-		current := mapChat(chat)
+		current := mapChat(ctx, chat)
 		response.Chats = append(response.Chats, current)
 	}
 	return response, nil
 }
 
 func (mc *MessageController) CreateMessage(ctx context.Context, request *pb.CreateMessageRequest) (*pb.CreateMessageResponse, error) {
+	span := tracer.StartSpanFromContext(ctx, "CONTROLLER CreateMessage")
+	defer span.Finish()
 
-	message := mapNewMessage(request.CreatedMessage)
-	id, _, err := mc.service.CreateMessage(message)
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	message := mapNewMessage(ctx, request.CreatedMessage)
+	id, _, err := mc.service.CreateMessage(ctx, message)
 	if err != nil {
 		mc.CustomLogger.ErrorLogger.Error("ObjectId not created with ID:" + message.Id.Hex())
 		return nil, err
@@ -83,13 +92,15 @@ func (mc *MessageController) CreateMessage(ctx context.Context, request *pb.Crea
 }
 
 func (mc *MessageController) ChangeMessageStatus(ctx context.Context, request *pb.ChangeMessageStatusRequest) (*pb.CreateMessageResponse, error) {
+	span := tracer.StartSpanFromContext(ctx, "CONTROLLER ChangeMessageStatus")
+	defer span.Finish()
 
 	id := request.Id
 	chatId := request.IdChat
-	fmt.Println(id)
 	status := request.Status
-	fmt.Println(status)
-	_id, err := mc.service.ChangeMessageStatus(status, id, chatId)
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	_id, err := mc.service.ChangeMessageStatus(ctx, status, id, chatId)
 	if err != nil {
 		return nil, err
 	}
@@ -99,7 +110,9 @@ func (mc *MessageController) ChangeMessageStatus(ctx context.Context, request *p
 
 }
 
-func mapNewMessage(messagePb *pb.CreateMessage) *model.Message {
+func mapNewMessage(ctx context.Context, messagePb *pb.CreateMessage) *model.Message {
+	span := tracer.StartSpanFromContext(ctx, "mapNewMessage")
+	defer span.Finish()
 
 	receiverId, _ := primitive.ObjectIDFromHex(messagePb.Receiver)
 	senderId, _ := primitive.ObjectIDFromHex(messagePb.Sender)
@@ -115,7 +128,10 @@ func mapNewMessage(messagePb *pb.CreateMessage) *model.Message {
 	return message
 }
 
-func mapMessage(message *model.Message) *pb.Message {
+func mapMessage(ctx context.Context, message *model.Message) *pb.Message {
+	span := tracer.StartSpanFromContext(ctx, "mapMessage")
+	defer span.Finish()
+
 	messagePb := &pb.Message{
 		Id:       message.Id.Hex(),
 		Text:     message.Text,
@@ -128,7 +144,10 @@ func mapMessage(message *model.Message) *pb.Message {
 	return messagePb
 }
 
-func mapChat(chat *model.Chat) *pb.Chat {
+func mapChat(ctx context.Context, chat *model.Chat) *pb.Chat {
+	span := tracer.StartSpanFromContext(ctx, "mapChat")
+	defer span.Finish()
+
 	chatPb := &pb.Chat{
 		Id:         chat.Id.Hex(),
 		FirstUser:  chat.FirstUser.Hex(),

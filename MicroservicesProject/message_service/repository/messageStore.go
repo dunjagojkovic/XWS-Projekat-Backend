@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"common/tracer"
 	"context"
 	"messageS/model"
 
@@ -27,7 +28,10 @@ func NewMessageStore(client *mongo.Client) MessageStoreI {
 	}
 }
 
-func (store *MessageStore) GetMessages(id string) ([]model.Message, error) {
+func (store *MessageStore) GetMessages(ctx context.Context, id string) ([]model.Message, error) {
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY GetMessages")
+	defer span.Finish()
+
 	objID, _ := primitive.ObjectIDFromHex(id)
 	filter := bson.D{{"_id", objID}}
 
@@ -39,7 +43,10 @@ func (store *MessageStore) GetMessages(id string) ([]model.Message, error) {
 
 }
 
-func (store *MessageStore) GetChats(user string) ([]*model.Chat, []string, error) {
+func (store *MessageStore) GetChats(ctx context.Context, user string) ([]*model.Chat, []string, error) {
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY GetChats")
+	defer span.Finish()
+
 	u, err := primitive.ObjectIDFromHex(user)
 	filter1 := bson.D{{"first_user", u}}
 	cursor1, err := store.chats.Find(context.TODO(), filter1)
@@ -82,7 +89,9 @@ func (store *MessageStore) GetChats(user string) ([]*model.Chat, []string, error
 	return result, list, nil
 }
 
-func (store *MessageStore) CreateMessage(message *model.Message) (primitive.ObjectID, primitive.ObjectID, error) {
+func (store *MessageStore) CreateMessage(ctx context.Context, message *model.Message) (primitive.ObjectID, primitive.ObjectID, error) {
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY CreateMessage")
+	defer span.Finish()
 
 	filter := bson.D{{"first_user", message.Sender}, {"second_user", message.Receiver}}
 	var result *model.Chat
@@ -143,7 +152,10 @@ func (store *MessageStore) CreateMessage(message *model.Message) (primitive.Obje
 	return message.Id, result.Id, nil
 }
 
-func (store *MessageStore) filter(filter interface{}) ([]*model.Chat, error) {
+func (store *MessageStore) filter(ctx context.Context, filter interface{}) ([]*model.Chat, error) {
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY filter")
+	defer span.Finish()
+
 	cursor, err := store.chats.Find(context.TODO(), filter)
 	defer cursor.Close(context.TODO())
 
@@ -153,7 +165,9 @@ func (store *MessageStore) filter(filter interface{}) ([]*model.Chat, error) {
 	return decode(cursor)
 }
 
-func (store *MessageStore) ChangeMessageStatus(status, id, chatId string) (primitive.ObjectID, error) {
+func (store *MessageStore) ChangeMessageStatus(ctx context.Context, status, id, chatId string) (primitive.ObjectID, error) {
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY ChangeMessageStatus")
+	defer span.Finish()
 
 	objID, _ := primitive.ObjectIDFromHex(chatId)
 	messID, _ := primitive.ObjectIDFromHex(id)
