@@ -11,6 +11,8 @@ import (
 	"postS/repository"
 	"postS/service"
 
+	otgrpc "github.com/opentracing-contrib/go-grpc"
+
 	"google.golang.org/grpc"
 
 	"common/tracer"
@@ -73,7 +75,14 @@ func (server *Server) startGrpcServer(postController *controller.PostController)
 		server.CustomLogger.ErrorLogger.Error("Failed to listen in post service: ", listener)
 		log.Fatalf("failed to listen: %v", err)
 	}
-	grpcServer := grpc.NewServer()
+	opts := []grpc.ServerOption{
+		grpc.UnaryInterceptor(
+			otgrpc.OpenTracingServerInterceptor(server.Tracer)),
+		grpc.StreamInterceptor(
+			otgrpc.OpenTracingStreamServerInterceptor(server.Tracer)),
+	}
+
+	grpcServer := grpc.NewServer(opts...)
 	postGW.RegisterPostServiceServer(grpcServer, postController)
 	if err := grpcServer.Serve(listener); err != nil {
 		server.CustomLogger.ErrorLogger.Error("Failed to serve gRPC in post service: ", listener)
