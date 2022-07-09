@@ -2,6 +2,7 @@ package controller
 
 import (
 	pb "common/proto/job_service"
+	"common/tracer"
 	"context"
 	"jobS/model"
 	"jobS/service"
@@ -22,7 +23,11 @@ func NewJobController(service *service.JobService) *JobController {
 }
 
 func (jc *JobController) GetAll(ctx context.Context, request *pb.GetAllRequest) (*pb.GetAllResponse, error) {
-	jobs, err := jc.service.GetAll()
+	span := tracer.StartSpanFromContext(ctx, "CONTROLLER GetAll")
+	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	jobs, err := jc.service.GetAll(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -30,17 +35,19 @@ func (jc *JobController) GetAll(ctx context.Context, request *pb.GetAllRequest) 
 		Offers: []*pb.JobOffer{},
 	}
 	for _, job := range jobs {
-		current := mapJob(job)
+		current := mapJob(ctx, job)
 		response.Offers = append(response.Offers, current)
 	}
 	return response, nil
 }
 
 func (jc *JobController) OwnerJobOffers(ctx context.Context, request *pb.OwnerJobOffersRequest) (*pb.GetAllResponse, error) {
+	span := tracer.StartSpanFromContext(ctx, "CONTROLLER OwnerJobOffers")
+	defer span.Finish()
 
 	key := request.Key.OwnerKey
-
-	jobs, err := jc.service.GetOwnerJobOffers(key)
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	jobs, err := jc.service.GetOwnerJobOffers(ctx, key)
 	if err != nil {
 		return nil, err
 	}
@@ -48,16 +55,19 @@ func (jc *JobController) OwnerJobOffers(ctx context.Context, request *pb.OwnerJo
 		Offers: []*pb.JobOffer{},
 	}
 	for _, job := range jobs {
-		current := mapJob(&job)
+		current := mapJob(ctx, &job)
 		response.Offers = append(response.Offers, current)
 	}
 	return response, nil
 }
 
 func (jc *JobController) CreateJobOffer(ctx context.Context, request *pb.CreateJobOfferRequest) (*pb.CreateJobOfferResponse, error) {
+	span := tracer.StartSpanFromContext(ctx, "CONTROLLER CreateJobOffer")
+	defer span.Finish()
 
-	job := mapNewJob(request.Job)
-	id, err := jc.service.CreateJobOffer(job)
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	job := mapNewJob(ctx, request.Job)
+	id, err := jc.service.CreateJobOffer(ctx, job)
 	if err != nil {
 		return nil, err
 	}
@@ -68,10 +78,13 @@ func (jc *JobController) CreateJobOffer(ctx context.Context, request *pb.CreateJ
 }
 
 func (jc *JobController) AddKey(ctx context.Context, request *pb.AddKeyRequest) (*pb.GetAllRequest, error) {
+	span := tracer.StartSpanFromContext(ctx, "CONTROLLER AddKey")
+	defer span.Finish()
 
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 	username := request.OfferKey.Username
 	key := request.OfferKey.Key
-	_, err := jc.service.InsertKey(username, key)
+	_, err := jc.service.InsertKey(ctx, username, key)
 	if err != nil {
 		return nil, err
 	}
@@ -80,9 +93,12 @@ func (jc *JobController) AddKey(ctx context.Context, request *pb.AddKeyRequest) 
 }
 
 func (jc *JobController) JobOfferSearch(ctx context.Context, request *pb.JobOfferSearchRequest) (*pb.GetAllResponse, error) {
+	span := tracer.StartSpanFromContext(ctx, "CONTROLLER JobOfferSearch")
+	defer span.Finish()
 
 	position := request.Search.Position
-	jobs, err := jc.service.JobOfferSearch(position)
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	jobs, err := jc.service.JobOfferSearch(ctx, position)
 	if err != nil {
 		return nil, err
 	}
@@ -90,14 +106,16 @@ func (jc *JobController) JobOfferSearch(ctx context.Context, request *pb.JobOffe
 		Offers: []*pb.JobOffer{},
 	}
 	for _, job := range jobs {
-		current := mapJob(&job)
+		current := mapJob(ctx, &job)
 		response.Offers = append(response.Offers, current)
 	}
 	return response, nil
 
 }
 
-func mapNewJob(jobPb *pb.CreateJobOffer) *model.JobOffer {
+func mapNewJob(ctx context.Context, jobPb *pb.CreateJobOffer) *model.JobOffer {
+	span := tracer.StartSpanFromContext(ctx, "CONTROLLER mapNewJob")
+	defer span.Finish()
 
 	job := &model.JobOffer{
 		Id:              primitive.NewObjectID(),
@@ -111,7 +129,10 @@ func mapNewJob(jobPb *pb.CreateJobOffer) *model.JobOffer {
 	return job
 }
 
-func mapJob(job *model.JobOffer) *pb.JobOffer {
+func mapJob(ctx context.Context, job *model.JobOffer) *pb.JobOffer {
+	span := tracer.StartSpanFromContext(ctx, "CONTROLLER mapJob")
+	defer span.Finish()
+
 	jobPb := &pb.JobOffer{
 		Id:              job.Id.Hex(),
 		Position:        job.Position,

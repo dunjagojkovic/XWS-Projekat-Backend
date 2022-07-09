@@ -1,6 +1,8 @@
 package service
 
 import (
+	"common/tracer"
+	"context"
 	"jobS/model"
 	"jobS/repository"
 
@@ -17,22 +19,37 @@ func NewJobService(store repository.JobStoreI) *JobService {
 	}
 }
 
-func (service *JobService) GetAll() ([]*model.JobOffer, error) {
-	return service.store.GetAll()
+func (service *JobService) GetAll(ctx context.Context) ([]*model.JobOffer, error) {
+	span := tracer.StartSpanFromContext(ctx, "SERVICE GetAll")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	return service.store.GetAll(ctx)
 }
 
-func (service *JobService) CreateJobOffer(job *model.JobOffer) (primitive.ObjectID, error) {
-	return service.store.CreateJobOffer(job)
+func (service *JobService) CreateJobOffer(ctx context.Context, job *model.JobOffer) (primitive.ObjectID, error) {
+	span := tracer.StartSpanFromContext(ctx, "SERVICE CreateJobOffer")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	return service.store.CreateJobOffer(ctx, job)
 }
 
-func (service *JobService) JobOfferSearch(position string) ([]model.JobOffer, error) {
-	return service.store.JobOfferSearch(position)
+func (service *JobService) JobOfferSearch(ctx context.Context, position string) ([]model.JobOffer, error) {
+	span := tracer.StartSpanFromContext(ctx, "SERVICE JobOfferSearch")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	return service.store.JobOfferSearch(ctx, position)
 }
 
-func (service *JobService) GetOwnerJobOffers(key string) ([]model.JobOffer, error) {
-	return service.store.GetOwnerJobOffers(key)
+func (service *JobService) GetOwnerJobOffers(ctx context.Context, key string) ([]model.JobOffer, error) {
+	span := tracer.StartSpanFromContext(ctx, "SERVICE GetOwnerJobOffers")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	return service.store.GetOwnerJobOffers(ctx, key)
 }
 
-func (service *JobService) InsertKey(username string, key string) (primitive.ObjectID, error) {
-	return service.store.InsertKey(username, key)
+func (service *JobService) InsertKey(ctx context.Context, username string, key string) (primitive.ObjectID, error) {
+	span := tracer.StartSpanFromContext(ctx, "SERVICE InsertKey")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	return service.store.InsertKey(ctx, username, key)
 }

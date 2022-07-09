@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"jobS/controller"
 	"jobS/repository"
 	"jobS/service"
@@ -10,19 +11,32 @@ import (
 	"net"
 
 	jobGW "common/proto/job_service"
+	"common/tracer"
+
+	otgo "github.com/opentracing/opentracing-go"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"google.golang.org/grpc"
 )
 
+const (
+	Name = "job_service"
+)
+
 type Server struct {
 	config *Config
+	Tracer otgo.Tracer
+	Closer io.Closer
 }
 
 func NewServer(config *Config) *Server {
+	tracer, closer := tracer.Init(Name)
+	otgo.SetGlobalTracer(tracer)
 	return &Server{
 		config: config,
+		Tracer: tracer,
+		Closer: closer,
 	}
 }
 

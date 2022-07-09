@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"common/tracer"
 	"context"
 	"jobS/model"
 	"strings"
@@ -28,13 +29,20 @@ func NewJobStore(client *mongo.Client) JobStoreI {
 	}
 }
 
-func (store *JobStore) GetAll() ([]*model.JobOffer, error) {
+func (store *JobStore) GetAll(ctx context.Context) ([]*model.JobOffer, error) {
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY GetAll")
+	defer span.Finish()
+
 	filter := bson.D{{}}
-	return store.filter(filter)
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	return store.filter(ctx, filter)
 
 }
 
-func (store *JobStore) CreateJobOffer(job *model.JobOffer) (primitive.ObjectID, error) {
+func (store *JobStore) CreateJobOffer(ctx context.Context, job *model.JobOffer) (primitive.ObjectID, error) {
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY CreateJobOffer")
+	defer span.Finish()
+
 	result, err := store.jobs.InsertOne(context.TODO(), job)
 	if err != nil {
 		return primitive.NewObjectID(), err
@@ -44,7 +52,10 @@ func (store *JobStore) CreateJobOffer(job *model.JobOffer) (primitive.ObjectID, 
 	return job.Id, nil
 }
 
-func (store *JobStore) filter(filter interface{}) ([]*model.JobOffer, error) {
+func (store *JobStore) filter(ctx context.Context, filter interface{}) ([]*model.JobOffer, error) {
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY filter")
+	defer span.Finish()
+
 	cursor, err := store.jobs.Find(context.TODO(), filter)
 	defer cursor.Close(context.TODO())
 
@@ -54,7 +65,9 @@ func (store *JobStore) filter(filter interface{}) ([]*model.JobOffer, error) {
 	return decode(cursor)
 }
 
-func (store *JobStore) JobOfferSearch(position string) ([]model.JobOffer, error) {
+func (store *JobStore) JobOfferSearch(ctx context.Context, position string) ([]model.JobOffer, error) {
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY JobOfferSearch")
+	defer span.Finish()
 
 	cur, err := store.jobs.Find(context.TODO(), bson.D{{}})
 	if err != nil {
@@ -63,7 +76,6 @@ func (store *JobStore) JobOfferSearch(position string) ([]model.JobOffer, error)
 
 	var jobs []model.JobOffer
 
-	// Iterate through the cursor
 	for cur.Next(context.TODO()) {
 		var job model.JobOffer
 		err := cur.Decode(&job)
@@ -87,7 +99,9 @@ func (store *JobStore) JobOfferSearch(position string) ([]model.JobOffer, error)
 	return foundJobs, nil
 }
 
-func (store *JobStore) GetOwnerJobOffers(key string) ([]model.JobOffer, error) {
+func (store *JobStore) GetOwnerJobOffers(ctx context.Context, key string) ([]model.JobOffer, error) {
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY GetOwnerJobOffers")
+	defer span.Finish()
 
 	cur, err := store.jobs.Find(context.TODO(), bson.D{{}})
 	if err != nil {
@@ -96,7 +110,6 @@ func (store *JobStore) GetOwnerJobOffers(key string) ([]model.JobOffer, error) {
 
 	var jobs []model.JobOffer
 
-	// Iterate through the cursor
 	for cur.Next(context.TODO()) {
 		var job model.JobOffer
 		err := cur.Decode(&job)
@@ -119,7 +132,9 @@ func (store *JobStore) GetOwnerJobOffers(key string) ([]model.JobOffer, error) {
 	return ownerJobs, nil
 }
 
-func (store *JobStore) InsertKey(username string, key string) (primitive.ObjectID, error) {
+func (store *JobStore) InsertKey(ctx context.Context, username string, key string) (primitive.ObjectID, error) {
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY InsertKey")
+	defer span.Finish()
 
 	filter := bson.D{{"user", username}}
 
