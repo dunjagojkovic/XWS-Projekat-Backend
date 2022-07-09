@@ -27,7 +27,9 @@ func NewPostController(service *service.PostService) *PostController {
 
 }
 
-func mapNewPost(postPb *pb.CreatePost) *model.Post {
+func mapNewPost(ctx context.Context, postPb *pb.CreatePost) *model.Post {
+	span := tracer.StartSpanFromContext(ctx, "mapNewPost")
+	defer span.Finish()
 
 	post := &model.Post{
 		Id:          primitive.NewObjectID(),
@@ -53,7 +55,9 @@ func mapNewPost(postPb *pb.CreatePost) *model.Post {
 	return post
 }
 
-func mapNewComment(commentPb *pb.PostComment) (*model.Comment, primitive.ObjectID) {
+func mapNewComment(ctx context.Context, commentPb *pb.PostComment) (*model.Comment, primitive.ObjectID) {
+	span := tracer.StartSpanFromContext(ctx, "mapNewComment")
+	defer span.Finish()
 
 	comment := &model.Comment{
 		Id:      primitive.NewObjectID(),
@@ -64,7 +68,10 @@ func mapNewComment(commentPb *pb.PostComment) (*model.Comment, primitive.ObjectI
 	return comment, postID
 }
 
-func mapPost(post *model.Post) *pb.Post {
+func mapPost(ctx context.Context, post *model.Post) *pb.Post {
+	span := tracer.StartSpanFromContext(ctx, "mapPost")
+	defer span.Finish()
+
 	postPb := &pb.Post{
 		Id:          post.Id.Hex(),
 		User:        post.User,
@@ -90,7 +97,10 @@ func mapPost(post *model.Post) *pb.Post {
 	return postPb
 }
 
-func mapComment(comment *model.Comment) *pb.Comment {
+func mapComment(ctx context.Context, comment *model.Comment) *pb.Comment {
+	span := tracer.StartSpanFromContext(ctx, "CONTROLLER mapComment")
+	defer span.Finish()
+
 	commentPb := &pb.Comment{
 		Id:      comment.Id.Hex(),
 		User:    comment.User,
@@ -101,7 +111,7 @@ func mapComment(comment *model.Comment) *pb.Comment {
 }
 
 func (pc *PostController) GetAll(ctx context.Context, request *pb.GetAllRequest) (*pb.GetAllResponse, error) {
-	span := tracer.StartSpanFromContext(ctx, "GetAll")
+	span := tracer.StartSpanFromContext(ctx, "CONTROLLER GetAll")
 	defer span.Finish()
 
 	ctx = tracer.ContextWithSpan(context.Background(), span)
@@ -115,7 +125,7 @@ func (pc *PostController) GetAll(ctx context.Context, request *pb.GetAllRequest)
 		Posts: []*pb.Post{},
 	}
 	for _, post := range posts {
-		current := mapPost(post)
+		current := mapPost(ctx, post)
 		response.Posts = append(response.Posts, current)
 	}
 	pc.CustomLogger.SuccessLogger.Info("Found " + strconv.Itoa(len(posts)) + " posts")
@@ -124,7 +134,7 @@ func (pc *PostController) GetAll(ctx context.Context, request *pb.GetAllRequest)
 }
 
 func (pc *PostController) Get(ctx context.Context, request *pb.GetRequest) (*pb.GetResponse, error) {
-	span := tracer.StartSpanFromContextMetadata(ctx, "Get")
+	span := tracer.StartSpanFromContext(ctx, "CONTROLLER Get")
 	defer span.Finish()
 
 	id := request.Id
@@ -133,16 +143,14 @@ func (pc *PostController) Get(ctx context.Context, request *pb.GetRequest) (*pb.
 		pc.CustomLogger.ErrorLogger.Error("ObjectId not created with ID:" + id)
 		return nil, err
 	}
-
-	span1 := tracer.StartSpanFromContext(tracer.ContextWithSpan(ctx, span), "MongoGet")
-	post, err := pc.service.Get(objectId)
-	span1.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	post, err := pc.service.Get(ctx, objectId)
 
 	if err != nil {
 		pc.CustomLogger.ErrorLogger.Error("Post with ID: " + id + " not found")
 		return nil, err
 	}
-	postPb := mapPost(&post)
+	postPb := mapPost(ctx, &post)
 	response := &pb.GetResponse{
 		Post: postPb,
 	}
@@ -151,23 +159,22 @@ func (pc *PostController) Get(ctx context.Context, request *pb.GetRequest) (*pb.
 }
 
 func (pc *PostController) GetUserPosts(ctx context.Context, request *pb.GetUserPostsRequest) (*pb.GetAllResponse, error) {
-	span := tracer.StartSpanFromContextMetadata(ctx, "GetUserPosts")
+	span := tracer.StartSpanFromContext(ctx, "CONTROLLER GetUserPosts")
 	defer span.Finish()
 
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 	username := request.Username
-	span1 := tracer.StartSpanFromContext(tracer.ContextWithSpan(ctx, span), "MongoGetUserPosts")
-	posts, err := pc.service.GetUserPosts(username)
-	span1.Finish()
+	posts, err := pc.service.GetUserPosts(ctx, username)
 
 	if err != nil {
-		pc.CustomLogger.ErrorLogger.Error("Get all by user: " + username)
+		pc.CustomLogger.ErrorLogger.Error("Get all by user: " + username + "unsuccessfully")
 		return nil, err
 	}
 	response := &pb.GetAllResponse{
 		Posts: []*pb.Post{},
 	}
 	for _, post := range posts {
-		current := mapPost(&post)
+		current := mapPost(ctx, &post)
 		response.Posts = append(response.Posts, current)
 	}
 	pc.CustomLogger.SuccessLogger.Info("Found " + strconv.Itoa(len(posts)) + " posts created by user: " + username)
@@ -176,11 +183,13 @@ func (pc *PostController) GetUserPosts(ctx context.Context, request *pb.GetUserP
 }
 
 func (pc *PostController) CreatePost(ctx context.Context, request *pb.CreatePostRequest) (*pb.CreatePostResponse, error) {
-	span := tracer.StartSpanFromContextMetadata(ctx, "CreatePost")
+	span := tracer.StartSpanFromContext(ctx, "CONTROLLER CreatePost")
+	span.SetOperationName("CONTROLLER CreatePost")
 	defer span.Finish()
 
-	post := mapNewPost(request.Post)
-	id, err := pc.service.CreatePost(post)
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	post := mapNewPost(ctx, request.Post)
+	id, err := pc.service.CreatePost(ctx, post)
 
 	if err != nil {
 		pc.CustomLogger.ErrorLogger.Error("ObjectId not created with ID:" + post.Id.Hex())
@@ -190,20 +199,19 @@ func (pc *PostController) CreatePost(ctx context.Context, request *pb.CreatePost
 	response := &pb.CreatePostResponse{
 		Id: id.Hex(),
 	}
-	pc.CustomLogger.SuccessLogger.Info("Post with ID: " + post.Id.Hex() + " created succesfully by user with ID: " + post.User)
+	pc.CustomLogger.SuccessLogger.Info("Post with ID: " + post.Id.Hex() + " created successfully by user with ID: " + post.User)
 	return response, nil
 
 }
 
 func (pc *PostController) GetPostComments(ctx context.Context, request *pb.GetRequest) (*pb.GetPostCommentsResponse, error) {
-	span := tracer.StartSpanFromContextMetadata(ctx, "GetPostComments")
+	span := tracer.StartSpanFromContext(ctx, "CONTROLLER GetPostComments")
 	defer span.Finish()
 
 	id := request.Id
 	objectId, err := primitive.ObjectIDFromHex(id)
-	span1 := tracer.StartSpanFromContext(tracer.ContextWithSpan(ctx, span), "MongoGetPostComments")
-	comments, err := pc.service.GetPostComments(objectId)
-	span1.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	comments, err := pc.service.GetPostComments(ctx, objectId)
 
 	if err != nil {
 		return nil, err
@@ -212,21 +220,20 @@ func (pc *PostController) GetPostComments(ctx context.Context, request *pb.GetRe
 		Comments: []*pb.Comment{},
 	}
 	for _, comment := range comments {
-		current := mapComment(&comment)
+		current := mapComment(ctx, &comment)
 		response.Comments = append(response.Comments, current)
 	}
 	return response, nil
 }
 
 func (pc *PostController) GetPostLikes(ctx context.Context, request *pb.GetRequest) (*pb.GetPostLikesResponse, error) {
-	span := tracer.StartSpanFromContextMetadata(ctx, "GetPostLikes")
+	span := tracer.StartSpanFromContext(ctx, "CONTROLLER GetPostLikes")
 	defer span.Finish()
 
 	id := request.Id
 	objectId, err := primitive.ObjectIDFromHex(id)
-	span1 := tracer.StartSpanFromContext(tracer.ContextWithSpan(ctx, span), "MongoGetPostLikes")
-	likes, err := pc.service.GetPostLikes(objectId)
-	span1.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	likes, err := pc.service.GetPostLikes(ctx, objectId)
 
 	if err != nil {
 		return nil, err
@@ -238,14 +245,13 @@ func (pc *PostController) GetPostLikes(ctx context.Context, request *pb.GetReque
 }
 
 func (pc *PostController) GetPostDislikes(ctx context.Context, request *pb.GetRequest) (*pb.GetPostLikesResponse, error) {
-	span := tracer.StartSpanFromContextMetadata(ctx, "GetPostDislikes")
+	span := tracer.StartSpanFromContext(ctx, "CONTROLLER GetPostDislikes")
 	defer span.Finish()
 
 	id := request.Id
 	objectId, err := primitive.ObjectIDFromHex(id)
-	span1 := tracer.StartSpanFromContext(tracer.ContextWithSpan(ctx, span), "MongoGetPostDislikes")
-	dislikes, err := pc.service.GetPostDislikes(objectId)
-	span1.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	dislikes, err := pc.service.GetPostDislikes(ctx, objectId)
 
 	if err != nil {
 		return nil, err
@@ -257,13 +263,12 @@ func (pc *PostController) GetPostDislikes(ctx context.Context, request *pb.GetRe
 }
 
 func (pc *PostController) CommentPost(ctx context.Context, request *pb.CommentPostRequest) (*pb.CreatePostResponse, error) {
-	span := tracer.StartSpanFromContextMetadata(ctx, "CommentPost")
+	span := tracer.StartSpanFromContext(ctx, "CONTROLLER CommentPost")
 	defer span.Finish()
 
-	comment, _id := mapNewComment(request.Comment)
-	span1 := tracer.StartSpanFromContext(tracer.ContextWithSpan(ctx, span), "MongoCommentPost")
-	id, err := pc.service.CommentPost(_id, comment)
-	span1.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	comment, _id := mapNewComment(ctx, request.Comment)
+	id, err := pc.service.CommentPost(ctx, _id, comment)
 
 	if err != nil {
 		return nil, err
@@ -275,14 +280,13 @@ func (pc *PostController) CommentPost(ctx context.Context, request *pb.CommentPo
 }
 
 func (pc *PostController) LikePost(ctx context.Context, request *pb.LikeDislikePostRequest) (*pb.CreatePostResponse, error) {
-	span := tracer.StartSpanFromContextMetadata(ctx, "LikePost")
+	span := tracer.StartSpanFromContext(ctx, "CONTROLLER LikePost")
 	defer span.Finish()
 
 	username := request.LikeDislike.Username
 	objectId, err := primitive.ObjectIDFromHex(request.LikeDislike.IdPost)
-	span1 := tracer.StartSpanFromContext(tracer.ContextWithSpan(ctx, span), "MongoLikePost")
-	id, err := pc.service.LikePost(objectId, username)
-	span1.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	id, err := pc.service.LikePost(ctx, objectId, username)
 
 	if err != nil {
 		pc.CustomLogger.ErrorLogger.Error("Post with ID: " + objectId.Hex() + " was not succesfully liked by user: " + username)
@@ -297,14 +301,13 @@ func (pc *PostController) LikePost(ctx context.Context, request *pb.LikeDislikeP
 }
 
 func (pc *PostController) DislikePost(ctx context.Context, request *pb.LikeDislikePostRequest) (*pb.CreatePostResponse, error) {
-	span := tracer.StartSpanFromContextMetadata(ctx, "DislikePost")
+	span := tracer.StartSpanFromContext(ctx, "CONTROLLER DislikePost")
 	defer span.Finish()
 
 	username := request.LikeDislike.Username
 	objectId, err := primitive.ObjectIDFromHex(request.LikeDislike.IdPost)
-	span1 := tracer.StartSpanFromContext(tracer.ContextWithSpan(ctx, span), "MongoDislikePost")
-	id, err := pc.service.DislikePost(objectId, username)
-	span1.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	id, err := pc.service.DislikePost(ctx, objectId, username)
 
 	if err != nil {
 		pc.CustomLogger.ErrorLogger.Error("Post with ID: " + objectId.Hex() + " was not disliked by user: " + username)
@@ -319,13 +322,12 @@ func (pc *PostController) DislikePost(ctx context.Context, request *pb.LikeDisli
 }
 
 func (pc *PostController) GetFollowingPosts(ctx context.Context, request *pb.GetFollowingPostsRequest) (*pb.GetAllResponse, error) {
-	span := tracer.StartSpanFromContextMetadata(ctx, "GetFollowingPosts")
+	span := tracer.StartSpanFromContext(ctx, "CONTROLLER GetFollowingPosts")
 	defer span.Finish()
 
 	users := request.Following.Users
-	span1 := tracer.StartSpanFromContext(tracer.ContextWithSpan(ctx, span), "MongoGetFollowingPosts")
-	posts, err := pc.service.GetFollowingPosts(users)
-	span1.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	posts, err := pc.service.GetFollowingPosts(ctx, users)
 
 	if err != nil {
 		return nil, err
@@ -334,7 +336,7 @@ func (pc *PostController) GetFollowingPosts(ctx context.Context, request *pb.Get
 		Posts: []*pb.Post{},
 	}
 	for _, post := range posts {
-		current := mapPost(&post)
+		current := mapPost(ctx, &post)
 		response.Posts = append(response.Posts, current)
 	}
 	return response, nil

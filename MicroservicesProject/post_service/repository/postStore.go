@@ -37,36 +37,46 @@ func NewPostStore(client *mongo.Client) PostStoreI {
 }
 
 func (store *PostStore) GetAll(ctx context.Context) ([]*model.Post, error) {
-	span := tracer.StartSpanFromContextMetadata(ctx, "GetAll")
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY GetAll")
 	defer span.Finish()
 
 	filter := bson.D{{}}
-	return store.filter(filter)
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	return store.filter(ctx, filter)
 
 }
 
-func (store *PostStore) Get(id primitive.ObjectID) (model.Post, error) {
+func (store *PostStore) Get(ctx context.Context, id primitive.ObjectID) (model.Post, error) {
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY Get")
+	defer span.Finish()
+
 	filter := bson.D{{"_id", id}}
 	var result model.Post
 
 	err := store.posts.FindOne(context.TODO(), filter).Decode(&result)
-
 	fmt.Println(err)
 
 	return result, nil
 }
 
-func (store *PostStore) filter(filter interface{}) ([]*model.Post, error) {
+func (store *PostStore) filter(ctx context.Context, filter interface{}) ([]*model.Post, error) {
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY filter")
+	defer span.Finish()
+
 	cursor, err := store.posts.Find(context.TODO(), filter)
 	defer cursor.Close(context.TODO())
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	if err != nil {
 		return nil, err
 	}
-	return decode(cursor)
+	return decode(ctx, cursor)
 }
 
-func decode(cursor *mongo.Cursor) (posts []*model.Post, err error) {
+func decode(ctx context.Context, cursor *mongo.Cursor) (posts []*model.Post, err error) {
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY decode")
+	defer span.Finish()
+
 	for cursor.Next(context.TODO()) {
 		var post model.Post
 		err = cursor.Decode(&post)
@@ -79,7 +89,10 @@ func decode(cursor *mongo.Cursor) (posts []*model.Post, err error) {
 	return
 }
 
-func (store *PostStore) GetUserPosts(username string) ([]model.Post, error) {
+func (store *PostStore) GetUserPosts(ctx context.Context, username string) ([]model.Post, error) {
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY GetUserPosts")
+	defer span.Finish()
+
 	filter := bson.D{{"user", username}}
 
 	cur, err := store.posts.Find(context.TODO(), filter)
@@ -89,7 +102,6 @@ func (store *PostStore) GetUserPosts(username string) ([]model.Post, error) {
 
 	var posts []model.Post
 
-	// Iterate through the cursor
 	for cur.Next(context.TODO()) {
 		var post model.Post
 		err := cur.Decode(&post)
@@ -103,7 +115,10 @@ func (store *PostStore) GetUserPosts(username string) ([]model.Post, error) {
 	return posts, nil
 }
 
-func (store *PostStore) CreatePost(post *model.Post) (primitive.ObjectID, error) {
+func (store *PostStore) CreatePost(ctx context.Context, post *model.Post) (primitive.ObjectID, error) {
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY CreatePost")
+	defer span.Finish()
+
 	result, err := store.posts.InsertOne(context.TODO(), post)
 	if err != nil {
 		return primitive.NewObjectID(), err
@@ -113,7 +128,10 @@ func (store *PostStore) CreatePost(post *model.Post) (primitive.ObjectID, error)
 	return post.Id, nil
 }
 
-func (store *PostStore) GetPostComments(id primitive.ObjectID) ([]model.Comment, error) {
+func (store *PostStore) GetPostComments(ctx context.Context, id primitive.ObjectID) ([]model.Comment, error) {
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY GetPostComments")
+	defer span.Finish()
+
 	filter := bson.D{{"_id", id}}
 	var result model.Post
 
@@ -125,7 +143,10 @@ func (store *PostStore) GetPostComments(id primitive.ObjectID) ([]model.Comment,
 	return result.CommentList, nil
 }
 
-func (store *PostStore) GetPostLikes(id primitive.ObjectID) ([]string, error) {
+func (store *PostStore) GetPostLikes(ctx context.Context, id primitive.ObjectID) ([]string, error) {
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY GetPostLikes")
+	defer span.Finish()
+
 	filter := bson.D{{"_id", id}}
 	var result model.Post
 
@@ -137,7 +158,10 @@ func (store *PostStore) GetPostLikes(id primitive.ObjectID) ([]string, error) {
 	return result.LikeList, nil
 }
 
-func (store *PostStore) GetPostDislikes(id primitive.ObjectID) ([]string, error) {
+func (store *PostStore) GetPostDislikes(ctx context.Context, id primitive.ObjectID) ([]string, error) {
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY GetPostDislikes")
+	defer span.Finish()
+
 	filter := bson.D{{"_id", id}}
 	var result model.Post
 
@@ -149,7 +173,9 @@ func (store *PostStore) GetPostDislikes(id primitive.ObjectID) ([]string, error)
 	return result.DislikeList, nil
 }
 
-func (store *PostStore) CommentPost(id primitive.ObjectID, comment *model.Comment) (primitive.ObjectID, error) {
+func (store *PostStore) CommentPost(ctx context.Context, id primitive.ObjectID, comment *model.Comment) (primitive.ObjectID, error) {
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY CommentPost")
+	defer span.Finish()
 
 	filter := bson.D{{"_id", id}}
 
@@ -167,7 +193,9 @@ func (store *PostStore) CommentPost(id primitive.ObjectID, comment *model.Commen
 	return comment.Id, err
 }
 
-func (store *PostStore) LikePost(id primitive.ObjectID, user string) (primitive.ObjectID, error) {
+func (store *PostStore) LikePost(ctx context.Context, id primitive.ObjectID, user string) (primitive.ObjectID, error) {
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY LikePost")
+	defer span.Finish()
 
 	filter := bson.D{{"_id", id}}
 
@@ -186,7 +214,9 @@ func (store *PostStore) LikePost(id primitive.ObjectID, user string) (primitive.
 
 }
 
-func (store *PostStore) DislikePost(id primitive.ObjectID, user string) (primitive.ObjectID, error) {
+func (store *PostStore) DislikePost(ctx context.Context, id primitive.ObjectID, user string) (primitive.ObjectID, error) {
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY DislikePost")
+	defer span.Finish()
 
 	filter := bson.D{{"_id", id}}
 
@@ -205,7 +235,9 @@ func (store *PostStore) DislikePost(id primitive.ObjectID, user string) (primiti
 
 }
 
-func (store *PostStore) GetFollowingPosts(users []string) ([]model.Post, error) {
+func (store *PostStore) GetFollowingPosts(ctx context.Context, users []string) ([]model.Post, error) {
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY GetFollowingPosts")
+	defer span.Finish()
 
 	cur, err := store.posts.Find(context.TODO(), bson.D{{}})
 	if err != nil {
