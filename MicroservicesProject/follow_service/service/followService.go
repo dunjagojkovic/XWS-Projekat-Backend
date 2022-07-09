@@ -1,6 +1,8 @@
 package service
 
 import (
+	"common/tracer"
+	"context"
 	"followS/model"
 	"followS/repository"
 )
@@ -14,36 +16,63 @@ func NewFollowService(store repository.FollowStoreI) *FollowService {
 		store: store,
 	}
 }
-func (service *FollowService) Follows(id string) ([]*model.User, error) {
-	return service.store.Follows(id)
+func (service *FollowService) Follows(ctx context.Context, id string) ([]*model.User, error) {
+	return service.store.Follows(ctx, id)
 }
-func (service *FollowService) Followers(id string) ([]*model.User, error) {
-	return service.store.Followers(id)
+func (service *FollowService) Followers(ctx context.Context, id string) ([]*model.User, error) {
+	return service.store.Followers(ctx, id)
 }
-func (service *FollowService) FollowRequests(id string) ([]*model.User, error) {
-	return service.store.FollowRequests(id)
+func (service *FollowService) FollowRequests(ctx context.Context, id string) ([]*model.User, error) {
+	span := tracer.StartSpanFromContext(ctx, "SERVICE GetAll")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	return service.store.FollowRequests(ctx, id)
 }
-func (service *FollowService) FollowerRequests(id string) ([]*model.User, error) {
-	return service.store.FollowerRequests(id)
+func (service *FollowService) FollowerRequests(ctx context.Context, id string) ([]*model.User, error) {
+	span := tracer.StartSpanFromContext(ctx, "SERVICE GetAll")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	return service.store.FollowerRequests(ctx, id)
 }
-func (service *FollowService) Relationship(followerId string, followedId string) (string, error) {
-	return service.store.Relationship(followerId, followedId)
+func (service *FollowService) Relationship(ctx context.Context, followerId string, followedId string) (string, error) {
+	span := tracer.StartSpanFromContext(ctx, "SERVICE GetAll")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	return service.store.Relationship(ctx, followerId, followedId)
 }
-func (service *FollowService) Follow(followerId string, followedId string) (string, error) {
-	return service.store.Follow(followerId, followedId)
+func (service *FollowService) Follow(ctx context.Context, followerId string, followedId string) (string, error) {
+	span := tracer.StartSpanFromContext(ctx, "SERVICE GetAll")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	return service.store.Follow(ctx, followerId, followedId)
 }
-func (service *FollowService) FollowRequest(followerId string, followedId string) (string, error) {
-	return service.store.FollowRequest(followerId, followedId)
+func (service *FollowService) FollowRequest(ctx context.Context, followerId string, followedId string) (string, error) {
+	span := tracer.StartSpanFromContext(ctx, "SERVICE GetAll")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	return service.store.FollowRequest(ctx, followerId, followedId)
 }
-func (service *FollowService) AcceptFollow(followerId string, followedId string) (string, error) {
-	return service.store.AcceptFollow(followerId, followedId)
+func (service *FollowService) AcceptFollow(ctx context.Context, followerId string, followedId string) (string, error) {
+	span := tracer.StartSpanFromContext(ctx, "SERVICE GetAll")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	return service.store.AcceptFollow(ctx, followerId, followedId)
 }
-func (service *FollowService) Unfollow(followerId string, followedId string) (string, error) {
-	return service.store.Unfollow(followerId, followedId)
+func (service *FollowService) Unfollow(ctx context.Context, followerId string, followedId string) (string, error) {
+	span := tracer.StartSpanFromContext(ctx, "SERVICE GetAll")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	return service.store.Unfollow(ctx, followerId, followedId)
 }
-func (service *FollowService) FollowRequestRemove(followerId string, followedId string) (string, error) {
-	return service.store.FollowRequestRemove(followerId, followedId)
+func (service *FollowService) FollowRequestRemove(ctx context.Context, followerId string, followedId string) (string, error) {
+	span := tracer.StartSpanFromContext(ctx, "SERVICE GetAll")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	return service.store.FollowRequestRemove(ctx, followerId, followedId)
 }
-func (service *FollowService) Recommended(id string) ([]*model.User, error) {
-	return service.store.Recommended(id)
+func (service *FollowService) Recommended(ctx context.Context, id string) ([]*model.User, error) {
+	span := tracer.StartSpanFromContext(ctx, "SERVICE GetAll")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	return service.store.Recommended(ctx, id)
 }

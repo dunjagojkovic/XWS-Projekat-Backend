@@ -3,6 +3,7 @@ package controller
 import (
 	pb "common/proto/follow_service"
 	user "common/proto/user_service"
+	"common/tracer"
 	"context"
 	"fmt"
 	"followS/service"
@@ -29,7 +30,10 @@ func NewFollowController(service *service.FollowService, userServiceEndpoint str
 }
 
 func (fc *FollowController) Follow(ctx context.Context, request *pb.FollowRequest) (*pb.FollowResponse, error) {
+	span := tracer.StartSpanFromContext(ctx, "CONTROLLER Follow")
+	defer span.Finish()
 
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 	followerId := request.FollowerId
 	followedId := request.FollowedId
 	userClient := NewUsersClient(fc.userServiceAddress)
@@ -38,7 +42,7 @@ func (fc *FollowController) Follow(ctx context.Context, request *pb.FollowReques
 		return nil, err
 	}
 	if !userResponse.IsPublic {
-		response, err := fc.service.FollowRequest(followerId, followedId)
+		response, err := fc.service.FollowRequest(ctx, followerId, followedId)
 		if err != nil {
 			fc.CustomLogger.ErrorLogger.Error("Creating following request between user with ID: " + followerId + " and user with ID: " + followedId + " failed")
 			return nil, err
@@ -49,7 +53,7 @@ func (fc *FollowController) Follow(ctx context.Context, request *pb.FollowReques
 		return responsePb, nil
 	}
 
-	response, err := fc.service.Follow(followerId, followedId)
+	response, err := fc.service.Follow(ctx, followerId, followedId)
 	if err != nil {
 		fc.CustomLogger.ErrorLogger.Error("Creating connection between user with ID: " + followerId + " and user with ID: " + followedId + " failed")
 		return nil, err
@@ -60,8 +64,12 @@ func (fc *FollowController) Follow(ctx context.Context, request *pb.FollowReques
 }
 
 func (fc *FollowController) Follows(ctx context.Context, request *pb.FollowsRequest) (*pb.FollowsResponse, error) {
+	span := tracer.StartSpanFromContext(ctx, "CONTROLLER Follows")
+	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 	id := request.Id
-	response, err := fc.service.Follows(id)
+	response, err := fc.service.Follows(ctx, id)
 	if err != nil {
 		fc.CustomLogger.ErrorLogger.Error("Follows for user with ID: " + id + " not found")
 		return nil, err
@@ -76,9 +84,13 @@ func (fc *FollowController) Follows(ctx context.Context, request *pb.FollowsRequ
 }
 
 func (fc *FollowController) Followers(ctx context.Context, request *pb.FollowersRequest) (*pb.FollowersResponse, error) {
+	span := tracer.StartSpanFromContext(ctx, "CONTROLLER GetAll")
+	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 	id := request.Id
 	fmt.Println(id)
-	response, err := fc.service.Followers(id)
+	response, err := fc.service.Followers(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -91,9 +103,13 @@ func (fc *FollowController) Followers(ctx context.Context, request *pb.Followers
 }
 
 func (fc *FollowController) Relationships(ctx context.Context, request *pb.RelationshipsRequest) (*pb.RelationshipsResponse, error) {
+	span := tracer.StartSpanFromContext(ctx, "CONTROLLER Relationships")
+	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 	followerId := request.FollowerId
 	followedId := request.FollowedId
-	response, err := fc.service.Relationship(followerId, followedId)
+	response, err := fc.service.Relationship(ctx, followerId, followedId)
 	if err != nil {
 		return nil, err
 	}
@@ -103,10 +119,14 @@ func (fc *FollowController) Relationships(ctx context.Context, request *pb.Relat
 }
 
 func (fc *FollowController) AcceptFollow(ctx context.Context, request *pb.AcceptFollowRequest) (*pb.AcceptFollowResponse, error) {
+	span := tracer.StartSpanFromContext(ctx, "CONTROLLER AcceptFollow")
+	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	followerId := request.FollowerId
 	followedId := request.FollowedId
-	response, err := fc.service.AcceptFollow(followerId, followedId)
+	response, err := fc.service.AcceptFollow(ctx, followerId, followedId)
 	if err != nil {
 		fc.CustomLogger.ErrorLogger.Error("Connection between user with ID: " + followerId + " and user with ID: " + followedId + " not approved")
 		return nil, err
@@ -117,10 +137,14 @@ func (fc *FollowController) AcceptFollow(ctx context.Context, request *pb.Accept
 }
 
 func (fc *FollowController) Unfollow(ctx context.Context, request *pb.UnfollowRequest) (*pb.UnfollowResponse, error) {
+	span := tracer.StartSpanFromContext(ctx, "CONTROLLER Unfollow")
+	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	followerId := request.FollowerId
 	followedId := request.FollowedId
-	response, err := fc.service.Unfollow(followerId, followedId)
+	response, err := fc.service.Unfollow(ctx, followerId, followedId)
 	if err != nil {
 		fc.CustomLogger.ErrorLogger.Error("Connection between user with ID: " + followerId + " and user with ID: " + followedId + " not removed")
 		return nil, err
@@ -131,10 +155,13 @@ func (fc *FollowController) Unfollow(ctx context.Context, request *pb.UnfollowRe
 }
 
 func (fc *FollowController) FollowRequestRemove(ctx context.Context, request *pb.FollowRequestRemoveRequest) (*pb.FollowRequestRemoveResponse, error) {
+	span := tracer.StartSpanFromContext(ctx, "CONTROLLER FollowRequestRemove")
+	defer span.Finish()
 
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 	followerId := request.FollowerId
 	followedId := request.FollowedId
-	response, err := fc.service.FollowRequestRemove(followerId, followedId)
+	response, err := fc.service.FollowRequestRemove(ctx, followerId, followedId)
 	if err != nil {
 		return nil, err
 	}
@@ -143,10 +170,14 @@ func (fc *FollowController) FollowRequestRemove(ctx context.Context, request *pb
 }
 
 func (fc *FollowController) FollowRequests(ctx context.Context, request *pb.FollowRequestsRequest) (*pb.FollowRequestsResponse, error) {
+	span := tracer.StartSpanFromContext(ctx, "CONTROLLER FollowRequests")
+	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 	md, _ := metadata.FromIncomingContext(ctx)
 	fmt.Println(md)
 	id := request.Id
-	response, err := fc.service.FollowRequests(id)
+	response, err := fc.service.FollowRequests(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -158,8 +189,12 @@ func (fc *FollowController) FollowRequests(ctx context.Context, request *pb.Foll
 }
 
 func (fc *FollowController) FollowerRequests(ctx context.Context, request *pb.FollowerRequestsRequest) (*pb.FollowerRequestsResponse, error) {
+	span := tracer.StartSpanFromContext(ctx, "CONTROLLER FollowerRequests")
+	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 	id := request.Id
-	response, err := fc.service.FollowerRequests(id)
+	response, err := fc.service.FollowerRequests(ctx, id)
 	if err != nil {
 		fc.CustomLogger.ErrorLogger.Error("Requests for user with ID: " + id + " not found")
 		return nil, err
@@ -175,8 +210,11 @@ func (fc *FollowController) FollowerRequests(ctx context.Context, request *pb.Fo
 }
 
 func (fc *FollowController) GetRecommended(ctx context.Context, request *pb.Id) (*pb.ListId, error) {
+	span := tracer.StartSpanFromContext(ctx, "CONTROLLER GetRecommended")
+	defer span.Finish()
 
-	users, err := fc.service.Recommended(request.Id)
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	users, err := fc.service.Recommended(ctx, request.Id)
 
 	if err != nil {
 		fc.CustomLogger.ErrorLogger.Error("Recommended users not found")

@@ -4,11 +4,16 @@ import (
 	"fmt"
 	"followS/config"
 	"followS/controller"
+	"io"
 	"log"
 	"net"
 	"strings"
 
 	pb "common/proto/follow_service"
+	"common/tracer"
+
+	otgo "github.com/opentracing/opentracing-go"
+
 	"followS/repository"
 	"followS/service"
 
@@ -16,16 +21,26 @@ import (
 	"google.golang.org/grpc"
 )
 
+const (
+	Name = "follow_service"
+)
+
 type Server struct {
 	config       *config.Config
 	CustomLogger *controller.CustomLogger
+	Tracer       otgo.Tracer
+	Closer       io.Closer
 }
 
 func NewServer(config *config.Config) *Server {
 	CustomLogger := controller.NewCustomLogger()
+	tracer, closer := tracer.Init(Name)
+	otgo.SetGlobalTracer(tracer)
 	return &Server{
 		config:       config,
 		CustomLogger: CustomLogger,
+		Tracer:       tracer,
+		Closer:       closer,
 	}
 }
 

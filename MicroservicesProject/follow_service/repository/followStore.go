@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"common/tracer"
+	"context"
 	"fmt"
 	"followS/model"
 	"io"
@@ -23,12 +25,15 @@ func NewFollowStore(driver *neo4j.Driver, dbName string) FollowStoreI {
 	}
 }
 
-func (store *FollowStore) Follows(id string) ([]*model.User, error) {
+func (store *FollowStore) Follows(ctx context.Context, id string) ([]*model.User, error) {
 	session := store.driver.NewSession(neo4j.SessionConfig{
 		AccessMode:   neo4j.AccessModeRead,
 		DatabaseName: store.databaseName,
 	})
 	defer unsafeClose(session)
+
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY Follows")
+	defer span.Finish()
 
 	followers, err := session.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
 		records, err := tx.Run(
@@ -56,12 +61,15 @@ func (store *FollowStore) Follows(id string) ([]*model.User, error) {
 	return followers.([]*model.User), nil
 }
 
-func (store *FollowStore) Followers(id string) ([]*model.User, error) {
+func (store *FollowStore) Followers(ctx context.Context, id string) ([]*model.User, error) {
 	session := store.driver.NewSession(neo4j.SessionConfig{
 		AccessMode:   neo4j.AccessModeRead,
 		DatabaseName: store.databaseName,
 	})
 	defer unsafeClose(session)
+
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY Followers")
+	defer span.Finish()
 
 	followers, err := session.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
 		records, err := tx.Run(
@@ -86,11 +94,10 @@ func (store *FollowStore) Followers(id string) ([]*model.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(followers)
 	return followers.([]*model.User), nil
 }
 
-func (store *FollowStore) FollowRequests(id string) ([]*model.User, error) {
+func (store *FollowStore) FollowRequests(ctx context.Context, id string) ([]*model.User, error) {
 	session := store.driver.NewSession(neo4j.SessionConfig{
 		AccessMode:   neo4j.AccessModeRead,
 		DatabaseName: store.databaseName,
@@ -123,12 +130,15 @@ func (store *FollowStore) FollowRequests(id string) ([]*model.User, error) {
 	return followers.([]*model.User), nil
 }
 
-func (store *FollowStore) FollowerRequests(id string) ([]*model.User, error) {
+func (store *FollowStore) FollowerRequests(ctx context.Context, id string) ([]*model.User, error) {
 	session := store.driver.NewSession(neo4j.SessionConfig{
 		AccessMode:   neo4j.AccessModeRead,
 		DatabaseName: store.databaseName,
 	})
 	defer unsafeClose(session)
+
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY FollowerRequests")
+	defer span.Finish()
 
 	followers, err := session.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
 		records, err := tx.Run(
@@ -155,12 +165,15 @@ func (store *FollowStore) FollowerRequests(id string) ([]*model.User, error) {
 	}
 	return followers.([]*model.User), nil
 }
-func (store *FollowStore) Relationship(followerId string, followedId string) (string, error) {
+func (store *FollowStore) Relationship(ctx context.Context, followerId string, followedId string) (string, error) {
 	session := store.driver.NewSession(neo4j.SessionConfig{
 		AccessMode:   neo4j.AccessModeRead,
 		DatabaseName: store.databaseName,
 	})
 	defer unsafeClose(session)
+
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY Relationship")
+	defer span.Finish()
 
 	relationship, err := session.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
 		records, err := tx.Run(
@@ -183,12 +196,15 @@ func (store *FollowStore) Relationship(followerId string, followedId string) (st
 	return relationship.(string), nil
 }
 
-func (store *FollowStore) Follow(followerId string, followedId string) (string, error) {
+func (store *FollowStore) Follow(ctx context.Context, followerId string, followedId string) (string, error) {
 	session := store.driver.NewSession(neo4j.SessionConfig{
 		AccessMode:   neo4j.AccessModeWrite,
 		DatabaseName: store.databaseName,
 	})
 	defer unsafeClose(session)
+
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY Follow")
+	defer span.Finish()
 
 	_, err := session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
 		currentTime := neo4j.LocalDateTime(time.Now())
@@ -212,12 +228,15 @@ func (store *FollowStore) Follow(followerId string, followedId string) (string, 
 	return session.LastBookmark(), nil
 }
 
-func (store *FollowStore) FollowRequest(followerId string, followedId string) (string, error) {
+func (store *FollowStore) FollowRequest(ctx context.Context, followerId string, followedId string) (string, error) {
 	session := store.driver.NewSession(neo4j.SessionConfig{
 		AccessMode:   neo4j.AccessModeWrite,
 		DatabaseName: store.databaseName,
 	})
 	defer unsafeClose(session)
+
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY FollowRequest")
+	defer span.Finish()
 
 	_, err := session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
 		currentTime := neo4j.LocalDateTime(time.Now())
@@ -241,12 +260,15 @@ func (store *FollowStore) FollowRequest(followerId string, followedId string) (s
 	return session.LastBookmark(), nil
 }
 
-func (store *FollowStore) AcceptFollow(followerId string, followedId string) (string, error) {
+func (store *FollowStore) AcceptFollow(ctx context.Context, followerId string, followedId string) (string, error) {
 	session := store.driver.NewSession(neo4j.SessionConfig{
 		AccessMode:   neo4j.AccessModeWrite,
 		DatabaseName: store.databaseName,
 	})
 	defer unsafeClose(session)
+
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY AcceptFollow")
+	defer span.Finish()
 
 	_, err := session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
 		currentTime := neo4j.LocalDateTime(time.Now())
@@ -270,12 +292,15 @@ func (store *FollowStore) AcceptFollow(followerId string, followedId string) (st
 	return session.LastBookmark(), nil
 }
 
-func (store *FollowStore) Unfollow(followerId string, followedId string) (string, error) {
+func (store *FollowStore) Unfollow(ctx context.Context, followerId string, followedId string) (string, error) {
 	session := store.driver.NewSession(neo4j.SessionConfig{
 		AccessMode:   neo4j.AccessModeWrite,
 		DatabaseName: store.databaseName,
 	})
 	defer unsafeClose(session)
+
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY Unfollow")
+	defer span.Finish()
 
 	_, err := session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
 		result, err := tx.Run(
@@ -295,12 +320,15 @@ func (store *FollowStore) Unfollow(followerId string, followedId string) (string
 	return session.LastBookmark(), nil
 }
 
-func (store *FollowStore) FollowRequestRemove(followerId string, followedId string) (string, error) {
+func (store *FollowStore) FollowRequestRemove(ctx context.Context, followerId string, followedId string) (string, error) {
 	session := store.driver.NewSession(neo4j.SessionConfig{
 		AccessMode:   neo4j.AccessModeWrite,
 		DatabaseName: store.databaseName,
 	})
 	defer unsafeClose(session)
+
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY FollowRequestRemove")
+	defer span.Finish()
 
 	_, err := session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
 		result, err := tx.Run(
@@ -320,12 +348,16 @@ func (store *FollowStore) FollowRequestRemove(followerId string, followedId stri
 	return session.LastBookmark(), nil
 }
 
-func (store *FollowStore) Recommended(id string) ([]*model.User, error) {
+func (store *FollowStore) Recommended(ctx context.Context, id string) ([]*model.User, error) {
 	session := store.driver.NewSession(neo4j.SessionConfig{
 		AccessMode:   neo4j.AccessModeRead,
 		DatabaseName: store.databaseName,
 	})
 	defer unsafeClose(session)
+
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY Recommended")
+	defer span.Finish()
+
 	followers, err := session.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
 		records, err := tx.Run(
 			"MATCH r = (u1:User{userId:$id}) - [f1:FOLLOWING] -> (u2:User) - [f2:FOLLOWING] -> (u3:User) "+

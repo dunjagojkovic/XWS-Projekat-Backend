@@ -1,19 +1,20 @@
 package repository
 
 import (
+	"context"
 	"followS/model"
 )
 
 type FollowStoreI interface {
-	Follows(id string) ([]*model.User, error)
-	Followers(id string) ([]*model.User, error)
-	FollowRequests(id string) ([]*model.User, error)
-	FollowerRequests(id string) ([]*model.User, error)
-	Relationship(followerId string, followedId string) (string, error)
-	Follow(followerId string, followedId string) (string, error)
-	FollowRequest(followerId string, followedId string) (string, error)
-	AcceptFollow(followerId string, followedId string) (string, error)
-	Unfollow(followerId string, followedId string) (string, error)
-	FollowRequestRemove(followerId string, followedId string) (string, error)
-	Recommended(id string) ([]*model.User, error)
+	Follows(ctx context.Context, id string) ([]*model.User, error)
+	Followers(ctx context.Context, id string) ([]*model.User, error)
+	FollowRequests(ctx context.Context, id string) ([]*model.User, error)
+	FollowerRequests(ctx context.Context, id string) ([]*model.User, error)
+	Relationship(ctx context.Context, followerId string, followedId string) (string, error)
+	Follow(ctx context.Context, followerId string, followedId string) (string, error)
+	FollowRequest(ctx context.Context, followerId string, followedId string) (string, error)
+	AcceptFollow(ctx context.Context, followerId string, followedId string) (string, error)
+	Unfollow(ctx context.Context, followerId string, followedId string) (string, error)
+	FollowRequestRemove(ctx context.Context, followerId string, followedId string) (string, error)
+	Recommended(ctx context.Context, id string) ([]*model.User, error)
 }
