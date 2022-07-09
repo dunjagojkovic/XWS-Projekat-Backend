@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+option go_package = "common/recommendation";
+
+package recommendation;
+
+import "google/api/annotations.proto";
+
+service RecommendationService{
+
+        rpc JobRecommendations(JobRecommendationsRequest) returns(JobRecommendationsResponse) {
+                option (google.api.http) = {
+                        post: "/jobRecommendations"
+                        body: "*"
+                };
+
+        }
+        
+}
+
+message JobRecommendationsRequest {
+        string id = 1;
+        repeated WorkExperience experiences = 2;
+        repeated string skills = 3;
+        repeated JobOffer jobOffers = 4;
+
+}
+
+message JobRecommendationsResponse {
+        repeated string ids = 1;
+}
+
+
+
+message WorkExperience {
+    string id = 1;
+    string description = 2;
+}
+
+message JobOffer {
+    string id = 1;
+    string position = 2;
+    string description = 3;
+    string dailyActivities = 4;
+    string precondition = 5;
+    string user = 6;
+
+}
+
+
+
+
+
+

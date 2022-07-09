@@ -5,6 +5,7 @@ import (
 	followGw "common/proto/follow_service"
 	messageGw "common/proto/message_service"
 	postGw "common/proto/post_service"
+	recommendationGw "common/proto/recommendation_service"
 	"context"
 	"fmt"
 	cfg "gateway/startup/config"
@@ -62,6 +63,12 @@ func (server *Server) initHandlers() {
 	errmessage := messageGw.RegisterMessageServiceHandlerFromEndpoint(context.TODO(), server.mux, messageEndpoint, opts)
 	if errmessage != nil {
 		panic(errmessage)
+	}
+
+	recommendationEndpoint := fmt.Sprintf("%s:%s", server.config.RecommendationHost, server.config.RecommendationPort)
+	errRec := recommendationGw.RegisterRecommendationServiceHandlerFromEndpoint(context.TODO(), server.mux, recommendationEndpoint, opts)
+	if errRec != nil {
+		panic(errRec)
 	}
 
 }
