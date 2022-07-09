@@ -2,6 +2,8 @@ package main
 
 import (
 	messageGW "common/proto/message_service"
+	saga "common/saga/messaging"
+	"common/saga/messaging/nats"
 	"context"
 	"fmt"
 	"log"
@@ -22,7 +24,12 @@ type Server struct {
 	CustomLogger *controller.CustomLogger
 }
 
+const (
+	QueueGroup = "order_service"
+)
+
 func NewServer(config *config.Config) *Server {
+
 	CustomLogger := controller.NewCustomLogger()
 	return &Server{
 		config:       config,
@@ -45,12 +52,57 @@ func (server *Server) Start() {
 
 	}
 	store := repository.NewMessageStore(client)
-	messageService := service.NewMessageService(store)
+
+	commandPublisher := server.initPublisher(server.config.CreateMessageCommandSubject)
+	replySubscriber := server.initSubscriber(server.config.CreateMessageReplySubject, QueueGroup)
+	createMessageOrchestrator := server.initCreateMessageOrchestrator(commandPublisher, replySubscriber)
+
+	messageService := service.NewMessageService(store, createMessageOrchestrator)
+
+	commandSubscriber := server.initSubscriber(server.config.CreateMessageCommandSubject, QueueGroup)
+	replyPublisher := server.initPublisher(server.config.CreateMessageReplySubject)
+	server.initCreateMessageHandler(messageService, replyPublisher, commandSubscriber)
+
 	messageController := controller.NewMessageController(messageService)
 
 	server.CustomLogger.SuccessLogger.Info("Starting gRPC server for message service")
 
 	server.startGrpcServer(messageController)
+}
+
+func (server *Server) initPublisher(subject string) saga.Publisher {
+	publisher, err := nats.NewNATSPublisher(
+		server.config.NatsHost, server.config.NatsPort,
+		server.config.NatsUser, server.config.NatsPass, subject)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return publisher
+}
+
+func (server *Server) initSubscriber(subject, queueGroup string) saga.Subscriber {
+	subscriber, err := nats.NewNATSSubscriber(
+		server.config.NatsHost, server.config.NatsPort,
+		server.config.NatsUser, server.config.NatsPass, subject, queueGroup)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return subscriber
+}
+
+func (server *Server) initCreateMessageOrchestrator(publisher saga.Publisher, subscriber saga.Subscriber) *service.CreateMessageOrchestrator {
+	orchestrator, err := service.NewCreateMessageOrchestrator(publisher, subscriber)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return orchestrator
+}
+
+func (server *Server) initCreateMessageHandler(service *service.MessageService, publisher saga.Publisher, subscriber saga.Subscriber) {
+	_, err := controller.NewCreateMessageCommandHandler(service, publisher, subscriber)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func (server *Server) startGrpcServer(jobController *controller.MessageController) {

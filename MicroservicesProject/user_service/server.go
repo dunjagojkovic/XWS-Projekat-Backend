@@ -11,6 +11,8 @@ import (
 	"userS/service"
 
 	userGW "common/proto/user_service"
+	saga "common/saga/messaging"
+	"common/saga/messaging/nats"
 
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -22,6 +24,10 @@ type Server struct {
 	config       *config.Config
 	CustomLogger *controller.CustomLogger
 }
+
+const (
+	QueueGroup = "user_service"
+)
 
 func NewServer(config *config.Config) *Server {
 	CustomLogger := controller.NewCustomLogger()
@@ -47,6 +53,11 @@ func (server *Server) Start() {
 	}
 	store := repository.NewUserStore(client)
 	userService := service.NewUserService(store)
+
+	commandSubscriber := server.initSubscriber(server.config.CreateMessageCommandSubject, QueueGroup)
+	replyPublisher := server.initPublisher(server.config.CreateMessageReplySubject)
+	server.initCreateMessageHandler(userService, replyPublisher, commandSubscriber)
+
 	userController := controller.NewUserController(userService)
 
 	server.CustomLogger.SuccessLogger.Info("Starting gRPC server for user service")
@@ -64,5 +75,32 @@ func (server *Server) startGrpcServer(userController *controller.UserController)
 	if err := grpcServer.Serve(listener); err != nil {
 		server.CustomLogger.ErrorLogger.Error("Failed to serve gRPC in user service: ", listener)
 		log.Fatalf("failed to serve: %s", err)
+	}
+}
+
+func (server *Server) initPublisher(subject string) saga.Publisher {
+	publisher, err := nats.NewNATSPublisher(
+		server.config.NatsHost, server.config.NatsPort,
+		server.config.NatsUser, server.config.NatsPass, subject)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return publisher
+}
+
+func (server *Server) initSubscriber(subject, queueGroup string) saga.Subscriber {
+	subscriber, err := nats.NewNATSSubscriber(
+		server.config.NatsHost, server.config.NatsPort,
+		server.config.NatsUser, server.config.NatsPass, subject, queueGroup)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return subscriber
+}
+
+func (server *Server) initCreateMessageHandler(service *service.UserService, publisher saga.Publisher, subscriber saga.Subscriber) {
+	_, err := controller.NewCreateMessageCommandHandler(service, publisher, subscriber)
+	if err != nil {
+		log.Fatal(err)
 	}
 }

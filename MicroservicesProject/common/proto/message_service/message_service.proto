@@ -11,11 +11,11 @@ import "google/protobuf/timestamp.proto";
 service MessageService{
 
     
-        rpc GetAllById(GetAllByIdRequest) returns(GetAllByIdResponse) {
+        /*rpc GetAllById(GetAllByIdRequest) returns(GetAllByIdResponse) {
         	option (google.api.http) = {
 			get: "/messages/{id}"
 		};
-        }
+        }*/
 
         rpc CreateMessage(CreateMessageRequest) returns(CreateMessageResponse) {
                 option (google.api.http) = {
@@ -32,20 +32,39 @@ service MessageService{
                 };
 
         }
+
+        rpc GetChats(GetChatsRequest) returns(GetChatsResponse) {
+        	option (google.api.http) = {
+			get: "/chats/{id}"
+		};
+        }
+
+        rpc GetMessages(GetChatsRequest) returns(GetMessagesResponse) {
+        	option (google.api.http) = {
+			get: "/messages/{id}"
+		};
+        }
         
+}
+
+message GetMessagesResponse {
+        repeated Message messages = 1;
 }
 
 message ChangeMessageStatusRequest {
     string status = 1;
     string id = 2;
+    string idChat = 3;
 }
 
-message GetAllByIdRequest {
+message GetChatsRequest {
     string id = 1;
 }
 
-message GetAllByIdResponse{
-    repeated Message messages = 1;
+
+message GetChatsResponse{
+   repeated Chat chats = 1;
+   repeated string list = 2;
 
 }
 
@@ -56,6 +75,13 @@ message Message {
     string receiver = 4;
     google.protobuf.Timestamp time  = 5;
     string status = 6;
+}
+
+message Chat {
+        string id = 1;
+        string firstUser = 2;
+        string secondUser = 3;
+        repeated Message messages = 4;
 }
 
 message CreateMessageRequest {

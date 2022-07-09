@@ -62,6 +62,34 @@ func (store *UserStore) Login(username, password string) (bool, error) {
 	return false, nil
 }
 
+func (store *UserStore) ChechBlocking(first, second string) bool {
+	idFirst, _ := primitive.ObjectIDFromHex(first)
+	idSecond, _ := primitive.ObjectIDFromHex(second)
+	filterFirstUser := bson.D{{"_id", idFirst}}
+	var firstUser model.User
+
+	store.users.FindOne(context.TODO(), filterFirstUser).Decode(&firstUser)
+
+	for _, blockFirstUser := range firstUser.BlockedUsers {
+		if blockFirstUser.BlockedId == idSecond {
+			return true
+		}
+	}
+
+	filterSecondUser := bson.D{{"_id", idSecond}}
+	var secondUser model.User
+
+	store.users.FindOne(context.TODO(), filterSecondUser).Decode(&secondUser)
+
+	for _, blockSecondUser := range secondUser.BlockedUsers {
+		if blockSecondUser.BlockedId == idFirst {
+			return true
+		}
+	}
+	return false
+
+}
+
 func (store *UserStore) CurrentUser(username string) (model.User, error) {
 	filter := bson.D{{"username", username}}
 	var result model.User

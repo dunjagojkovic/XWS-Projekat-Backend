@@ -7,7 +7,8 @@ import (
 )
 
 type MessageStoreI interface {
-	GetAllById(id string) ([]*model.Message, error)
-	CreateMessage(message *model.Message) (primitive.ObjectID, error)
-	ChangeMessageStatus(status, id string) (primitive.ObjectID, error)
+	GetMessages(id string) ([]model.Message, error)
+	GetChats(user string) ([]*model.Chat, []string, error)
+	CreateMessage(message *model.Message) (primitive.ObjectID, primitive.ObjectID, error)
+	ChangeMessageStatus(status, id, chatId string) (primitive.ObjectID, error)
 }

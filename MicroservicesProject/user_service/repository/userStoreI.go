@@ -19,4 +19,5 @@ type UserStoreI interface {
 	EditPrivacy(bool, string) (*model.User, error)
 	BlockUser(block *model.Block) (primitive.ObjectID, error)
 	Unblock(block *model.Block) (primitive.ObjectID, error)
+	ChechBlocking(first, second string) bool
 }
