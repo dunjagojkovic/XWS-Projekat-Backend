@@ -96,6 +96,7 @@ func mapUser(user *model.User) *pb.User {
 		BirthDate:       user.BirthDate,
 		Biography:       user.Biography,
 		WorkExperiences: make([]*pb.WorkExperience, 0),
+		BlockedUsers:    make([]*pb.Block, 0),
 	}
 
 	for _, workExperience := range user.WorkExperience {
@@ -106,6 +107,18 @@ func mapUser(user *model.User) *pb.User {
 		}
 
 		userPb.WorkExperiences = append(userPb.WorkExperiences, &workPb)
+	}
+
+	for _, block := range user.BlockedUsers {
+
+		blockPb := *&pb.Block{
+			Id:        block.Id.Hex(),
+			BlockedId: block.BlockedId.Hex(),
+			BlockerId: block.BlockerId.Hex(),
+			Status:    block.Status,
+		}
+
+		userPb.BlockedUsers = append(userPb.BlockedUsers, &blockPb)
 	}
 
 	return userPb
@@ -152,7 +165,7 @@ func (uc *UserController) CurrentUser(ctx context.Context, request *pb.CurrentUs
 	if err != nil {
 		return nil, err
 	}
-	userPb := mapEditedUser(&user)
+	userPb := mapUser(&user)
 
 	return userPb, nil
 }
@@ -166,7 +179,7 @@ func (uc *UserController) GetUser(ctx context.Context, request *pb.GetUserReques
 	if err != nil {
 		return nil, err
 	}
-	userPb := mapEditedUser(&user)
+	userPb := mapUser(&user)
 
 	return userPb, nil
 }
