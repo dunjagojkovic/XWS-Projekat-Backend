@@ -236,7 +236,15 @@ message User {
         string education = 13;
         string hobby = 14;
         string interest = 15;
+        repeated Block blockedUsers = 16;
         
+}
+
+message Block {
+        string id = 1;
+        string blockedId = 2;
+        string blockerId = 3;
+        string status = 4;
 }
 
 message EditUser {

@@ -455,14 +455,13 @@ func (store *UserStore) Unblock(block *model.Block) (primitive.ObjectID, error) 
 
 	var list []model.Block
 
-	for _, blockUser := range user.BlockedUsers {
-		if blockUser.BlockedId == block.BlockedId {
-			blockUser.Status = block.Status
-			fmt.Println(blockUser.Status)
-			list = append(list, blockUser)
-
+	for i := 0; i < len(user.BlockedUsers); i++ {
+		blockUser := user.BlockedUsers[i]
+		if block.BlockedId == blockUser.BlockedId {
+			list = append(user.BlockedUsers[:i], user.BlockedUsers[i+1:]...)
 		}
 	}
+
 	user.BlockedUsers = list
 
 	store.users.FindOneAndReplace(context.TODO(), filter, user)
