@@ -21,6 +21,14 @@ service NotificationService{
                 };
 
         }
+
+        rpc CreateNotifications(CreateNotificationsRequest) returns(CreateNotificationsResponse) {
+                option (google.api.http) = {
+                        post: "/notifications"
+                        body: "*"
+                };
+
+        }
         rpc ChangeStatus(ChangeStatusRequest) returns(GetByUserIdRequest) {
                 option (google.api.http) = {
                         put: "/notificationStatus"
@@ -42,6 +50,13 @@ message Notification {
     google.protobuf.Timestamp time  = 3;
     string userId = 4;
     bool read = 5;
+}
+message CreateNotificationsRequest {
+        repeated CreateNotificationRequest notifications = 1;
+}
+
+message CreateNotificationsResponse{
+        repeated string ids = 1;
 }
 
 message CreateNotificationRequest {

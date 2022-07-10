@@ -96,3 +96,26 @@ func (pc *NotificationController) CreateNotification(ctx context.Context, reques
 	}, nil
 
 }
+
+func (pc *NotificationController) CreateNotifications(ctx context.Context, request *pb.CreateNotificationsRequest) (*pb.CreateNotificationsResponse, error) {
+
+	list := request.Notifications
+	var notifications []model.Notification
+	for _, l := range list {
+		notification := mapNewNotification(l)
+		notifications = append(notifications, *notification)
+	}
+
+	ids, err := pc.service.CreateNotifications(notifications)
+	if err != nil {
+		return nil, err
+	}
+	var res []string
+	for _, id := range ids {
+		res = append(res, id.Hex())
+	}
+	return &pb.CreateNotificationsResponse{
+		Ids: res,
+	}, nil
+
+}

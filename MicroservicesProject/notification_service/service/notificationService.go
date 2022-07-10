@@ -28,3 +28,7 @@ func (service *NotificationService) ChangeStatus(id primitive.ObjectID, status b
 func (service *NotificationService) CreateNotification(notification *model.Notification) (primitive.ObjectID, error) {
 	return service.store.CreateNotification(notification)
 }
+
+func (service *NotificationService) CreateNotifications(notifications []model.Notification) ([]primitive.ObjectID, error) {
+	return service.store.CreateNotifications(notifications)
+}

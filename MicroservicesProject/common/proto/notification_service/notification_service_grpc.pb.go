@@ -24,6 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 type NotificationServiceClient interface {
 	GetByUserId(ctx context.Context, in *GetByUserIdRequest, opts ...grpc.CallOption) (*GetByUserIdResponse, error)
 	CreateNotification(ctx context.Context, in *CreateNotificationRequest, opts ...grpc.CallOption) (*GetByUserIdRequest, error)
+	CreateNotifications(ctx context.Context, in *CreateNotificationsRequest, opts ...grpc.CallOption) (*CreateNotificationsResponse, error)
 	ChangeStatus(ctx context.Context, in *ChangeStatusRequest, opts ...grpc.CallOption) (*GetByUserIdRequest, error)
 }
 
@@ -53,6 +54,15 @@ func (c *notificationServiceClient) CreateNotification(ctx context.Context, in *
 	return out, nil
 }
 
+func (c *notificationServiceClient) CreateNotifications(ctx context.Context, in *CreateNotificationsRequest, opts ...grpc.CallOption) (*CreateNotificationsResponse, error) {
+	out := new(CreateNotificationsResponse)
+	err := c.cc.Invoke(ctx, "/notification.NotificationService/CreateNotifications", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *notificationServiceClient) ChangeStatus(ctx context.Context, in *ChangeStatusRequest, opts ...grpc.CallOption) (*GetByUserIdRequest, error) {
 	out := new(GetByUserIdRequest)
 	err := c.cc.Invoke(ctx, "/notification.NotificationService/ChangeStatus", in, out, opts...)
@@ -68,6 +78,7 @@ func (c *notificationServiceClient) ChangeStatus(ctx context.Context, in *Change
 type NotificationServiceServer interface {
 	GetByUserId(context.Context, *GetByUserIdRequest) (*GetByUserIdResponse, error)
 	CreateNotification(context.Context, *CreateNotificationRequest) (*GetByUserIdRequest, error)
+	CreateNotifications(context.Context, *CreateNotificationsRequest) (*CreateNotificationsResponse, error)
 	ChangeStatus(context.Context, *ChangeStatusRequest) (*GetByUserIdRequest, error)
 	mustEmbedUnimplementedNotificationServiceServer()
 }
@@ -81,6 +92,9 @@ func (UnimplementedNotificationServiceServer) GetByUserId(context.Context, *GetB
 }
 func (UnimplementedNotificationServiceServer) CreateNotification(context.Context, *CreateNotificationRequest) (*GetByUserIdRequest, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateNotification not implemented")
+}
+func (UnimplementedNotificationServiceServer) CreateNotifications(context.Context, *CreateNotificationsRequest) (*CreateNotificationsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateNotifications not implemented")
 }
 func (UnimplementedNotificationServiceServer) ChangeStatus(context.Context, *ChangeStatusRequest) (*GetByUserIdRequest, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ChangeStatus not implemented")
@@ -134,6 +148,24 @@ func _NotificationService_CreateNotification_Handler(srv interface{}, ctx contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _NotificationService_CreateNotifications_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateNotificationsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NotificationServiceServer).CreateNotifications(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/notification.NotificationService/CreateNotifications",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NotificationServiceServer).CreateNotifications(ctx, req.(*CreateNotificationsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _NotificationService_ChangeStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ChangeStatusRequest)
 	if err := dec(in); err != nil {
@@ -166,6 +198,10 @@ var NotificationService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateNotification",
 			Handler:    _NotificationService_CreateNotification_Handler,
+		},
+		{
+			MethodName: "CreateNotifications",
+			Handler:    _NotificationService_CreateNotifications_Handler,
 		},
 		{
 			MethodName: "ChangeStatus",

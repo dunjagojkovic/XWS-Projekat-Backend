@@ -29,7 +29,7 @@ func NewNotificationStore(client *mongo.Client) NotificationStoreI {
 }
 
 func (store *NotificationStore) GetByUserId(id primitive.ObjectID) ([]model.Notification, error) {
-	filter := bson.D{{"user_id", id}}
+	filter := bson.D{{"user_id", id}, {"read", false}}
 
 	cur, err := store.notifications.Find(context.TODO(), filter)
 	if err != nil {
@@ -77,4 +77,20 @@ func (store *NotificationStore) CreateNotification(notification *model.Notificat
 	id := result.InsertedID.(primitive.ObjectID)
 
 	return id, nil
+}
+
+func (store *NotificationStore) CreateNotifications(notifications []model.Notification) ([]primitive.ObjectID, error) {
+
+	var ids []primitive.ObjectID
+	for _, notification := range notifications {
+		result, err := store.notifications.InsertOne(context.TODO(), notification)
+
+		if err != nil {
+			return nil, err
+		}
+		id := result.InsertedID.(primitive.ObjectID)
+		ids = append(ids, id)
+	}
+
+	return ids, nil
 }
