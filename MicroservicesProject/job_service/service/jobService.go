@@ -21,6 +21,10 @@ func (service *JobService) GetAll() ([]*model.JobOffer, error) {
 	return service.store.GetAll()
 }
 
+func (service *JobService) GetById(ids []string) ([]model.JobOffer, error) {
+	return service.store.GetById(ids)
+}
+
 func (service *JobService) CreateJobOffer(job *model.JobOffer) (primitive.ObjectID, error) {
 	return service.store.CreateJobOffer(job)
 }

@@ -53,7 +53,18 @@ service JobService{
 
         }
 
+        rpc GetById(GetByIdRequest) returns(GetAllResponse) {
+        	option (google.api.http) = {
+			post: "/getById"
+                        body: "*"
+		};
+        }
+
         
+}
+
+message GetByIdRequest {
+        repeated string ids = 1;
 }
 
 message OwnerJob {

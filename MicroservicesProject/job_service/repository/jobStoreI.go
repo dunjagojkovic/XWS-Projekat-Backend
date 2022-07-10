@@ -12,4 +12,5 @@ type JobStoreI interface {
 	JobOfferSearch(position string) ([]model.JobOffer, error)
 	GetOwnerJobOffers(key string) ([]model.JobOffer, error)
 	InsertKey(username string, key string) (primitive.ObjectID, error)
+	GetById(ids []string) ([]model.JobOffer, error)
 }
