@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+option go_package = "common/notification";
+
+package notification;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+service NotificationService{
+
+        rpc GetByUserId(GetByUserIdRequest) returns(GetByUserIdResponse) {
+        	option (google.api.http) = {
+			get: "/notifications/{id}"
+		};
+        }
+        rpc CreateNotification(CreateNotificationRequest) returns(GetByUserIdRequest) {
+                option (google.api.http) = {
+                        post: "/notification"
+                        body: "*"
+                };
+
+        }
+        rpc ChangeStatus(ChangeStatusRequest) returns(GetByUserIdRequest) {
+                option (google.api.http) = {
+                        put: "/notificationStatus"
+                        body: "*"
+                };
+
+        }
+
+        
+}
+
+message GetByUserIdResponse{
+    repeated Notification notifications =1;
+}
+
+message Notification {
+    string id = 1;
+    string text = 2;
+    google.protobuf.Timestamp time  = 3;
+    string userId = 4;
+    bool read = 5;
+}
+
+message CreateNotificationRequest {
+    string text = 1;
+    google.protobuf.Timestamp time  = 2;
+    string userId = 3;
+    bool read = 4;
+}
+
+message ChangeStatusRequest {
+    string id = 1;
+    bool status = 2;
+}
+
+message GetByUserIdRequest {
+        string id = 1;
+}
+
+
+
+
