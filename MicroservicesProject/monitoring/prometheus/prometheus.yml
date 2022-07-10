@@ -17,10 +17,10 @@
       static_configs:
         - targets: ['localhost:9090']
 
-    - job_name: 'servers'
+    - job_name: 'gateway'
       metrics_path: '/actuator/prometheus'
       static_configs:
-        - targets: ['servers:8080']
+        - targets: ['gateway:8000']
 
     - job_name: 'node_exporter'
       static_configs:

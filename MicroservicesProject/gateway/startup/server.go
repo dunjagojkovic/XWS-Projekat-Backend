@@ -11,9 +11,12 @@ import (
 	"fmt"
 	cfg "gateway/startup/config"
 	"io"
+	"time"
 
 	grpc_opentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
 	otgo "github.com/opentracing/opentracing-go"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/opentracing/opentracing-go"
@@ -140,8 +143,6 @@ func cors(h http.Handler, server *Server) http.Handler {
 		//h.ServeHTTP(w, r)
 
 		endpointName := r.Method + " " + r.URL.Path
-		log.Println("Context: ", r.Context())
-		log.Println("Endpoint: ", endpointName)
 
 		parentSpanContext, err2 := opentracing.GlobalTracer().Extract(
 			opentracing.HTTPHeaders,
@@ -159,7 +160,38 @@ func cors(h http.Handler, server *Server) http.Handler {
 		server.mux.ServeHTTP(lrw, r)
 
 		statusCode := lrw.Status()
-		log.Println("<-- ", statusCode)
+		ipAddr := r.RemoteAddr
+		fmt.Println("IP ADDRESS:", ipAddr)
+		browser := r.UserAgent()
+		fmt.Println("BROWSER:", browser)
+		t := time.Now()
+		fmt.Println("TIMESTAMP:", t.Format("2006-01-02 15:04:00"))
+
+		visitorLabel := prometheus.Labels{
+			"ip":        ipAddr,
+			"browser":   browser,
+			"timestamp": t.Format("2006-01-02 15:04:05"),
+		}
+		visitor.With(visitorLabel).Inc()
+
+		gb := r.ContentLength
+		fmt.Println(gb)
+		dataFlowFromReq.Add(float64(gb))
+		fmt.Println(dataFlowFromReq)
+
+		totalReq.Inc()
+		if statusCode >= 200 && statusCode <= 399 {
+			successfulReq.Inc()
+		} else if statusCode >= 400 && statusCode <= 599 {
+			if statusCode == 404 {
+				labels := prometheus.Labels{
+					"code":   "404",
+					"method": endpointName,
+				}
+				notFoundReq.With(labels).Inc()
+			}
+			failedReq.Add(3)
+		}
 	})
 }
 
@@ -178,3 +210,30 @@ func (server *Server) GetCloser() io.Closer {
 func (server *Server) CloseTracer() error {
 	return server.closer.Close()
 }
+
+var (
+	totalReq = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "dislinkt_total_req",
+		Help: "The total number of requests",
+	})
+	successfulReq = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "dislinkt_successful_req",
+		Help: "The number of successful requests",
+	})
+	failedReq = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "dislinkt_failed_req",
+		Help: "The total number of failed requests",
+	})
+	notFoundReq = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "dislinkt_not_found_req",
+		Help: "The total number of 404 requests with endpoint",
+	}, []string{"code", "method"})
+	visitor = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "dislinkt_visitor_req",
+		Help: "Visitor from request",
+	}, []string{"ip", "browser", "timestamp"})
+	dataFlowFromReq = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "dislinkt_data_flow_req",
+		Help: "Data flow from request",
+	})
+)
