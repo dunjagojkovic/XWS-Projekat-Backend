@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"userS/config"
@@ -13,6 +14,9 @@ import (
 	userGW "common/proto/user_service"
 	saga "common/saga/messaging"
 	"common/saga/messaging/nats"
+	"common/tracer"
+
+	otgo "github.com/opentracing/opentracing-go"
 
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -23,17 +27,24 @@ import (
 type Server struct {
 	config       *config.Config
 	CustomLogger *controller.CustomLogger
+	Tracer       otgo.Tracer
+	Closer       io.Closer
 }
 
 const (
 	QueueGroup = "user_service"
+	Name       = "user_service"
 )
 
 func NewServer(config *config.Config) *Server {
 	CustomLogger := controller.NewCustomLogger()
+	tracer, closer := tracer.Init(Name)
+	otgo.SetGlobalTracer(tracer)
 	return &Server{
 		config:       config,
 		CustomLogger: CustomLogger,
+		Tracer:       tracer,
+		Closer:       closer,
 	}
 }
 

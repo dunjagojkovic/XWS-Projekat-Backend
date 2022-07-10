@@ -1,6 +1,8 @@
 package service
 
 import (
+	"common/tracer"
+	"context"
 	"crypto/rand"
 	"encoding/base64"
 	"math"
@@ -38,16 +40,19 @@ func NewUserService(store repository.UserStoreI) *UserService {
 	}
 }
 
-func (service *UserService) RegisterUser(user *model.User) (*model.User, error) {
-	return service.store.RegisterUser(user)
+func (service *UserService) RegisterUser(ctx context.Context, user *model.User) (*model.User, error) {
+	span := tracer.StartSpanFromContext(ctx, "SERVICE RegisterUser")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	return service.store.RegisterUser(ctx, user)
 }
 
-func (service *UserService) CheckBlocking(first, second string) bool {
-	return service.store.ChechBlocking(first, second)
-}
+func (service *UserService) Login(ctx context.Context, username, password string) (string, string, error) {
+	span := tracer.StartSpanFromContext(ctx, "SERVICE Login")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 
-func (service *UserService) Login(username, password string) (string, string, error) {
-	isLoged, _ := service.store.Login(username, password)
+	isLoged, _ := service.store.Login(ctx, username, password)
 	if isLoged {
 
 		expirationTime := time.Now().Add(60 * time.Minute)
@@ -73,48 +78,76 @@ func (service *UserService) Login(username, password string) (string, string, er
 
 }
 
-func (service *UserService) CurrentUser(username string) (model.User, error) {
-	return service.store.CurrentUser(username)
+func (service *UserService) CurrentUser(ctx context.Context, username string) (model.User, error) {
+	span := tracer.StartSpanFromContext(ctx, "SERVICE CurrentUser")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	return service.store.CurrentUser(ctx, username)
 
 }
 
-func (service *UserService) GetUser(id primitive.ObjectID) (model.User, error) {
-	return service.store.GetUser(id)
+func (service *UserService) GetUser(ctx context.Context, id primitive.ObjectID) (model.User, error) {
+	span := tracer.StartSpanFromContext(ctx, "SERVICE GetUser")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	return service.store.GetUser(ctx, id)
 
 }
 
-func (service *UserService) GetUsers() ([]*model.User, error) {
-	return service.store.GetUsers()
+func (service *UserService) GetUsers(ctx context.Context) ([]*model.User, error) {
+	span := tracer.StartSpanFromContext(ctx, "SERVICE GetUsers")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	return service.store.GetUsers(ctx)
 
 }
 
-func (service *UserService) GetPublicUsers() ([]*model.User, error) {
-	return service.store.GetPublicUsers()
+func (service *UserService) GetPublicUsers(ctx context.Context) ([]*model.User, error) {
+	span := tracer.StartSpanFromContext(ctx, "SERVICE GetPublicUsers")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	return service.store.GetPublicUsers(ctx)
 
 }
 
-func (service *UserService) GetUsersById(users []string) ([]*model.User, error) {
-	return service.store.GetUsersById(users)
+func (service *UserService) GetUsersById(ctx context.Context, users []string) ([]*model.User, error) {
+	span := tracer.StartSpanFromContext(ctx, "SERVICE GetUsersById")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	return service.store.GetUsersById(ctx, users)
 
 }
 
-func (service *UserService) EditUser(user *model.User, work *model.WorkExperience) (*model.User, error) {
-	return service.store.EditUser(user, work)
+func (service *UserService) EditUser(ctx context.Context, user *model.User, work *model.WorkExperience) (*model.User, error) {
+	span := tracer.StartSpanFromContext(ctx, "SERVICE EditUser")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	return service.store.EditUser(ctx, user, work)
 
 }
 
-func (service *UserService) EditPassword(newPassword, oldPassword, username string) (*model.User, error) {
-	return service.store.EditPassword(newPassword, oldPassword, username)
+func (service *UserService) EditPassword(ctx context.Context, newPassword, oldPassword, username string) (*model.User, error) {
+	span := tracer.StartSpanFromContext(ctx, "SERVICE EditPassword")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	return service.store.EditPassword(ctx, newPassword, oldPassword, username)
 
 }
 
-func (service *UserService) EditPrivacy(isPublic bool, username string) (*model.User, error) {
-	return service.store.EditPrivacy(isPublic, username)
+func (service *UserService) EditPrivacy(ctx context.Context, isPublic bool, username string) (*model.User, error) {
+	span := tracer.StartSpanFromContext(ctx, "SERVICE EditPrivacy")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	return service.store.EditPrivacy(ctx, isPublic, username)
 
 }
 
-func (service *UserService) FilterUsers(searchTerm string) ([]*model.User, error) {
-	users, err := service.store.GetPublicUsers()
+func (service *UserService) FilterUsers(ctx context.Context, searchTerm string) ([]*model.User, error) {
+	span := tracer.StartSpanFromContext(ctx, "SERVICE FilterUsers")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	users, err := service.store.GetPublicUsers(ctx)
 	var filterUsers []*model.User
 	for _, user := range users {
 		if strings.Contains(strings.ToLower(user.Username), strings.ToLower(searchTerm)) || strings.Contains(strings.ToLower(user.Name), strings.ToLower(searchTerm)) || strings.Contains(strings.ToLower(user.Surname), strings.ToLower(searchTerm)) {
@@ -128,12 +161,25 @@ func (service *UserService) FilterUsers(searchTerm string) ([]*model.User, error
 
 }
 
-func (service *UserService) BlockUser(block *model.Block) (primitive.ObjectID, error) {
-	return service.store.BlockUser(block)
+func (service *UserService) BlockUser(ctx context.Context, block *model.Block) (primitive.ObjectID, error) {
+	span := tracer.StartSpanFromContext(ctx, "SERVICE BlockUser")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	return service.store.BlockUser(ctx, block)
 
 }
 
-func (service *UserService) Unblock(block *model.Block) (primitive.ObjectID, error) {
-	return service.store.Unblock(block)
+func (service *UserService) Unblock(ctx context.Context, block *model.Block) (primitive.ObjectID, error) {
+	span := tracer.StartSpanFromContext(ctx, "SERVICE Unblock")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	return service.store.Unblock(ctx, block)
 
+}
+
+func (service *UserService) CheckBlocking(ctx context.Context, first, second string) bool {
+	span := tracer.StartSpanFromContext(ctx, "SERVICE CheckBlocking")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	return service.store.CheckBlocking(ctx, first, second)
 }

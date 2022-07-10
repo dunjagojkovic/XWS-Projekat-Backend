@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"common/tracer"
 	"context"
 	"fmt"
 	"userS/model"
@@ -28,7 +29,10 @@ func NewUserStore(client *mongo.Client) UserStoreI {
 	}
 }
 
-func (store *UserStore) RegisterUser(user *model.User) (*model.User, error) {
+func (store *UserStore) RegisterUser(ctx context.Context, user *model.User) (*model.User, error) {
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY RegisterUser")
+	defer span.Finish()
+
 	result, err := store.users.InsertOne(context.TODO(), user)
 	if err != nil {
 		return nil, err
@@ -38,7 +42,7 @@ func (store *UserStore) RegisterUser(user *model.User) (*model.User, error) {
 	return user, nil
 }
 
-func (store *UserStore) Login(username, password string) (bool, error) {
+func (store *UserStore) Login(ctx context.Context, username, password string) (bool, error) {
 	filter := bson.D{{"username", username}}
 
 	cur, err := store.users.Find(context.TODO(), filter)
@@ -62,7 +66,7 @@ func (store *UserStore) Login(username, password string) (bool, error) {
 	return false, nil
 }
 
-func (store *UserStore) ChechBlocking(first, second string) bool {
+func (store *UserStore) CheckBlocking(ctx context.Context, first, second string) bool {
 	idFirst, _ := primitive.ObjectIDFromHex(first)
 	idSecond, _ := primitive.ObjectIDFromHex(second)
 	filterFirstUser := bson.D{{"_id", idFirst}}
@@ -90,7 +94,10 @@ func (store *UserStore) ChechBlocking(first, second string) bool {
 
 }
 
-func (store *UserStore) CurrentUser(username string) (model.User, error) {
+func (store *UserStore) CurrentUser(ctx context.Context, username string) (model.User, error) {
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY CurrentUser")
+	defer span.Finish()
+
 	filter := bson.D{{"username", username}}
 	var result model.User
 
@@ -101,7 +108,10 @@ func (store *UserStore) CurrentUser(username string) (model.User, error) {
 	return result, nil
 }
 
-func (store *UserStore) GetUser(id primitive.ObjectID) (model.User, error) {
+func (store *UserStore) GetUser(ctx context.Context, id primitive.ObjectID) (model.User, error) {
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY GetUser")
+	defer span.Finish()
+
 	filter := bson.D{{"_id", id}}
 	var result model.User
 
@@ -112,22 +122,33 @@ func (store *UserStore) GetUser(id primitive.ObjectID) (model.User, error) {
 	return result, nil
 }
 
-func (store *UserStore) GetUsers() ([]*model.User, error) {
+func (store *UserStore) GetUsers(ctx context.Context) ([]*model.User, error) {
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY GetUsers")
+	defer span.Finish()
+
 	filter := bson.D{{}}
-	return store.filter(filter)
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	return store.filter(ctx, filter)
 
 }
 
-func (store *UserStore) GetPublicUsers() ([]*model.User, error) {
+func (store *UserStore) GetPublicUsers(ctx context.Context) ([]*model.User, error) {
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY GetUsers")
+	defer span.Finish()
+
 	filter := bson.D{{"is_public", true}}
-	return store.filter(filter)
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	return store.filter(ctx, filter)
 
 }
 
-func (store *UserStore) GetUsersById(usersById []string) ([]*model.User, error) {
-	fmt.Println(usersById)
+func (store *UserStore) GetUsersById(ctx context.Context, usersById []string) ([]*model.User, error) {
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY GetUsersById")
+	defer span.Finish()
+
 	filter := bson.D{{}}
-	result, err := store.filter(filter)
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+	result, err := store.filter(ctx, filter)
 	var users []*model.User
 
 	if len(usersById) == 0 {
@@ -140,9 +161,7 @@ func (store *UserStore) GetUsersById(usersById []string) ([]*model.User, error) 
 	for _, user := range result {
 		for _, userById := range usersById {
 			objID, _ := primitive.ObjectIDFromHex(userById)
-			fmt.Println(user.Id)
 			if user.Id == objID {
-				fmt.Println(user.Id)
 				users = append(users, user)
 
 			}
@@ -152,7 +171,10 @@ func (store *UserStore) GetUsersById(usersById []string) ([]*model.User, error) 
 
 }
 
-func (store *UserStore) filter(filter interface{}) ([]*model.User, error) {
+func (store *UserStore) filter(ctx context.Context, filter interface{}) ([]*model.User, error) {
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY filter")
+	defer span.Finish()
+
 	cursor, err := store.users.Find(context.TODO(), filter)
 	defer cursor.Close(context.TODO())
 
@@ -175,7 +197,9 @@ func decode(cursor *mongo.Cursor) (users []*model.User, err error) {
 	return
 }
 
-func (store *UserStore) EditUser(user *model.User, work *model.WorkExperience) (*model.User, error) {
+func (store *UserStore) EditUser(ctx context.Context, user *model.User, work *model.WorkExperience) (*model.User, error) {
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY EditUser")
+	defer span.Finish()
 
 	filter := bson.D{{"username", user.Username}}
 	if user.Name != "" {
@@ -355,7 +379,9 @@ func (store *UserStore) EditUser(user *model.User, work *model.WorkExperience) (
 	return &result, err1
 }
 
-func (store *UserStore) EditPassword(newPassword, oldPassword, username string) (*model.User, error) {
+func (store *UserStore) EditPassword(ctx context.Context, newPassword, oldPassword, username string) (*model.User, error) {
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY EditPassword")
+	defer span.Finish()
 
 	filter := bson.D{{"username", username}}
 
@@ -394,7 +420,9 @@ func (store *UserStore) EditPassword(newPassword, oldPassword, username string) 
 	return &result, err1
 }
 
-func (store *UserStore) EditPrivacy(isPublic bool, username string) (*model.User, error) {
+func (store *UserStore) EditPrivacy(ctx context.Context, isPublic bool, username string) (*model.User, error) {
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY EditPrivacy")
+	defer span.Finish()
 
 	filter := bson.D{{"username", username}}
 
@@ -427,7 +455,9 @@ func (store *UserStore) EditPrivacy(isPublic bool, username string) (*model.User
 	return &result, err1
 }
 
-func (store *UserStore) BlockUser(block *model.Block) (primitive.ObjectID, error) {
+func (store *UserStore) BlockUser(ctx context.Context, block *model.Block) (primitive.ObjectID, error) {
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY BlockUser")
+	defer span.Finish()
 
 	filter := bson.D{{"_id", block.BlockerId}}
 
@@ -445,7 +475,9 @@ func (store *UserStore) BlockUser(block *model.Block) (primitive.ObjectID, error
 	return block.Id, err
 }
 
-func (store *UserStore) Unblock(block *model.Block) (primitive.ObjectID, error) {
+func (store *UserStore) Unblock(ctx context.Context, block *model.Block) (primitive.ObjectID, error) {
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY UnblockUser")
+	defer span.Finish()
 
 	filter := bson.D{{"_id", block.BlockerId}}
 
@@ -458,7 +490,6 @@ func (store *UserStore) Unblock(block *model.Block) (primitive.ObjectID, error) 
 	for _, blockUser := range user.BlockedUsers {
 		if blockUser.BlockedId == block.BlockedId {
 			blockUser.Status = block.Status
-			fmt.Println(blockUser.Status)
 			list = append(list, blockUser)
 
 		}

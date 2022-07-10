@@ -3,6 +3,8 @@ package controller
 import (
 	events "common/saga/create_message"
 	saga "common/saga/messaging"
+	"common/tracer"
+	"context"
 	"userS/service"
 )
 
@@ -25,12 +27,16 @@ func NewCreateMessageCommandHandler(userService *service.UserService, publisher 
 	return o, nil
 }
 
-func (handler *CreateMessageCommandHandler) handle(command *events.CreateMessageCommand) {
+func (handler *CreateMessageCommandHandler) handle(ctx context.Context, command *events.CreateMessageCommand) {
+	span := tracer.StartSpanFromContext(ctx, "HENDLER handle")
+	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 	reply := events.CreateMessageReply{Message: command.Message}
 
 	switch command.Type {
 	case events.CheckBlocking:
-		isBlocked := handler.userService.CheckBlocking(command.Message.Receiver, command.Message.Sender)
+		isBlocked := handler.userService.CheckBlocking(ctx, command.Message.Receiver, command.Message.Sender)
 		if isBlocked == true {
 			reply.Type = events.UserBlocked
 			break
