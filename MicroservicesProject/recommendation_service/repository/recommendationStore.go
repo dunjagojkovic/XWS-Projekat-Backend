@@ -31,7 +31,6 @@ func (store *RecommendationStore) JobRecommendations(ctx context.Context, id str
 	ctx = tracer.ContextWithSpan(context.Background(), span)
 	result, err := session.WriteTransaction(func(transaction neo4j.Transaction) (interface{}, error) {
 
-		//ako ne postoji korisnik, dodaj ga
 		if !checkIfUserExist(ctx, id, transaction) {
 			_, err := transaction.Run(
 				"CREATE (new_user:USER{userID:$userID})",
@@ -43,7 +42,6 @@ func (store *RecommendationStore) JobRecommendations(ctx context.Context, id str
 
 		}
 
-		//ako ne postoje vestine, dodaj ih
 		for _, s := range skills {
 			if !checkIfSkillExist(ctx, s, transaction) {
 				_, err := transaction.Run(
@@ -56,7 +54,6 @@ func (store *RecommendationStore) JobRecommendations(ctx context.Context, id str
 
 			}
 
-			//ako korisnik nije povezan sa vestinama, dodaj ih
 			if !checkIfRelationshipExist(ctx, id, s, transaction) {
 				fmt.Println("Veza ne postoji")
 				result, err := transaction.Run(
@@ -73,7 +70,6 @@ func (store *RecommendationStore) JobRecommendations(ctx context.Context, id str
 			}
 		}
 
-		//ako ne postoji iskustvo, dodaj ga
 		for _, s := range experiences {
 			if !checkIfExperienceExist(ctx, s.Description, transaction) {
 				_, err := transaction.Run(
@@ -86,7 +82,6 @@ func (store *RecommendationStore) JobRecommendations(ctx context.Context, id str
 
 			}
 
-			//ako korisnik nije povezan sa vestinama, dodaje ih
 			if !checkIfExpRelationshipExist(ctx, id, s.Description, transaction) {
 				result, err := transaction.Run(
 					"MATCH (u:USER) WHERE u.userID=$uIDa "+
@@ -102,7 +97,6 @@ func (store *RecommendationStore) JobRecommendations(ctx context.Context, id str
 			}
 		}
 
-		//ako ne postoji job offer, dodaje ga
 		for _, job := range jobOffers {
 
 			if !jobOfferExist(ctx, job.Id.Hex(), transaction) {
@@ -115,7 +109,6 @@ func (store *RecommendationStore) JobRecommendations(ctx context.Context, id str
 				}
 			}
 
-			//ako jobOffer nije povezan sa vestinama, povezuje ih
 			if !checkIfJobRelationshipExist(ctx, job.Id.Hex(), job.Precondition, transaction) {
 				result, err := transaction.Run(
 					"MATCH (j:JOB) WHERE j.jobID=$jobID "+
@@ -130,7 +123,6 @@ func (store *RecommendationStore) JobRecommendations(ctx context.Context, id str
 				fmt.Println(result)
 			}
 
-			//ako jobOffer nije povezan sa pozicijom, povezuje ih
 			if !checkIfJobPositionRelationshipExist(ctx, job.Id.Hex(), job.Position, transaction) {
 				result, err := transaction.Run(
 					"MATCH (j:JOB) WHERE j.jobID=$jobID "+
