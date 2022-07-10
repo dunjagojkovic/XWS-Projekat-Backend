@@ -4,6 +4,7 @@ import (
 	//"context"
 	followGw "common/proto/follow_service"
 	messageGw "common/proto/message_service"
+	notificationGw "common/proto/notification_service"
 	postGw "common/proto/post_service"
 	recommendationGw "common/proto/recommendation_service"
 	"context"
@@ -69,6 +70,12 @@ func (server *Server) initHandlers() {
 	errRec := recommendationGw.RegisterRecommendationServiceHandlerFromEndpoint(context.TODO(), server.mux, recommendationEndpoint, opts)
 	if errRec != nil {
 		panic(errRec)
+	}
+
+	notificationEndpoint := fmt.Sprintf("%s:%s", server.config.NotificationHost, server.config.NotificationPort)
+	errNotification := notificationGw.RegisterNotificationServiceHandlerFromEndpoint(context.TODO(), server.mux, notificationEndpoint, opts)
+	if errNotification != nil {
+		panic(errNotification)
 	}
 
 }

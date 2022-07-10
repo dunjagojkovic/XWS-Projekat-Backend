@@ -36,6 +36,21 @@ func (jc *JobController) GetAll(ctx context.Context, request *pb.GetAllRequest) 
 	return response, nil
 }
 
+func (jc *JobController) GetById(ctx context.Context, request *pb.GetByIdRequest) (*pb.GetAllResponse, error) {
+	jobs, err := jc.service.GetById(request.Ids)
+	if err != nil {
+		return nil, err
+	}
+	response := &pb.GetAllResponse{
+		Offers: []*pb.JobOffer{},
+	}
+	for _, job := range jobs {
+		current := mapJob(&job)
+		response.Offers = append(response.Offers, current)
+	}
+	return response, nil
+}
+
 func (jc *JobController) OwnerJobOffers(ctx context.Context, request *pb.OwnerJobOffersRequest) (*pb.GetAllResponse, error) {
 
 	key := request.Key.OwnerKey

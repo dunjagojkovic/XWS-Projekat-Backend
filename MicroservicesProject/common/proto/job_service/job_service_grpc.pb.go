@@ -27,6 +27,7 @@ type JobServiceClient interface {
 	JobOfferSearch(ctx context.Context, in *JobOfferSearchRequest, opts ...grpc.CallOption) (*GetAllResponse, error)
 	OwnerJobOffers(ctx context.Context, in *OwnerJobOffersRequest, opts ...grpc.CallOption) (*GetAllResponse, error)
 	AddKey(ctx context.Context, in *AddKeyRequest, opts ...grpc.CallOption) (*GetAllRequest, error)
+	GetById(ctx context.Context, in *GetByIdRequest, opts ...grpc.CallOption) (*GetAllResponse, error)
 }
 
 type jobServiceClient struct {
@@ -82,6 +83,15 @@ func (c *jobServiceClient) AddKey(ctx context.Context, in *AddKeyRequest, opts .
 	return out, nil
 }
 
+func (c *jobServiceClient) GetById(ctx context.Context, in *GetByIdRequest, opts ...grpc.CallOption) (*GetAllResponse, error) {
+	out := new(GetAllResponse)
+	err := c.cc.Invoke(ctx, "/job.JobService/GetById", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // JobServiceServer is the server API for JobService service.
 // All implementations must embed UnimplementedJobServiceServer
 // for forward compatibility
@@ -91,6 +101,7 @@ type JobServiceServer interface {
 	JobOfferSearch(context.Context, *JobOfferSearchRequest) (*GetAllResponse, error)
 	OwnerJobOffers(context.Context, *OwnerJobOffersRequest) (*GetAllResponse, error)
 	AddKey(context.Context, *AddKeyRequest) (*GetAllRequest, error)
+	GetById(context.Context, *GetByIdRequest) (*GetAllResponse, error)
 	mustEmbedUnimplementedJobServiceServer()
 }
 
@@ -112,6 +123,9 @@ func (UnimplementedJobServiceServer) OwnerJobOffers(context.Context, *OwnerJobOf
 }
 func (UnimplementedJobServiceServer) AddKey(context.Context, *AddKeyRequest) (*GetAllRequest, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddKey not implemented")
+}
+func (UnimplementedJobServiceServer) GetById(context.Context, *GetByIdRequest) (*GetAllResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetById not implemented")
 }
 func (UnimplementedJobServiceServer) mustEmbedUnimplementedJobServiceServer() {}
 
@@ -216,6 +230,24 @@ func _JobService_AddKey_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _JobService_GetById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetByIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(JobServiceServer).GetById(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/job.JobService/GetById",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(JobServiceServer).GetById(ctx, req.(*GetByIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // JobService_ServiceDesc is the grpc.ServiceDesc for JobService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -242,6 +274,10 @@ var JobService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AddKey",
 			Handler:    _JobService_AddKey_Handler,
+		},
+		{
+			MethodName: "GetById",
+			Handler:    _JobService_GetById_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
