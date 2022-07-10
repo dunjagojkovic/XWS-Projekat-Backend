@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"common/tracer"
+	"context"
 	"fmt"
 	"recommendationS/model"
 	"strings"
@@ -18,21 +20,21 @@ func NewRecommendationStore(client *neo4j.Driver) RecommendationStoreI {
 	}
 }
 
-func (store *RecommendationStore) JobRecommendations(id string, experiences []*model.WorkExperience, skills []string, jobOffers []*model.JobOffer) ([]*model.JobsId, error) {
+func (store *RecommendationStore) JobRecommendations(ctx context.Context, id string, experiences []*model.WorkExperience, skills []string, jobOffers []*model.JobOffer) ([]*model.JobsId, error) {
 
-	fmt.Println(skills)
+	span := tracer.StartSpanFromContext(ctx, "REPOSITORY JobRecommendations")
+	defer span.Finish()
+
 	session := (*store.recommendationDB).NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close()
 
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 	result, err := session.WriteTransaction(func(transaction neo4j.Transaction) (interface{}, error) {
 
-		//TODO: sredi povratne vrijednosti
-		//TODO: dodaj sva polja kod korisnika
-
-		//ako ne postoji korisnik, dodaje ga
-		if !checkIfUserExist(id, transaction) {
+		//ako ne postoji korisnik, dodaj ga
+		if !checkIfUserExist(ctx, id, transaction) {
 			_, err := transaction.Run(
-				"CREATE (new_user:USER{userID:$userID})", //TODO: potencijalno obrisati ime,prz,email
+				"CREATE (new_user:USER{userID:$userID})",
 				map[string]interface{}{"userID": id})
 
 			if err != nil {
@@ -41,9 +43,9 @@ func (store *RecommendationStore) JobRecommendations(id string, experiences []*m
 
 		}
 
-		//ako ne postoje vjestine, dodaje ih
+		//ako ne postoje vestine, dodaj ih
 		for _, s := range skills {
-			if !checkIfSkillExist(s, transaction) {
+			if !checkIfSkillExist(ctx, s, transaction) {
 				_, err := transaction.Run(
 					"CREATE (new_skill:SKILL{name : $Name})",
 					map[string]interface{}{"Name": s})
@@ -54,8 +56,8 @@ func (store *RecommendationStore) JobRecommendations(id string, experiences []*m
 
 			}
 
-			//ako korisnik nije povezan sa vjestinama, dodaje ih
-			if !checkIfRelationshipExist(id, s, transaction) {
+			//ako korisnik nije povezan sa vestinama, dodaj ih
+			if !checkIfRelationshipExist(ctx, id, s, transaction) {
 				fmt.Println("Veza ne postoji")
 				result, err := transaction.Run(
 					"MATCH (u:USER) WHERE u.userID=$uIDa "+
@@ -71,9 +73,9 @@ func (store *RecommendationStore) JobRecommendations(id string, experiences []*m
 			}
 		}
 
-		//ako ne postoji iskustvo, dodaje ga
+		//ako ne postoji iskustvo, dodaj ga
 		for _, s := range experiences {
-			if !checkIfExperienceExist(s.Description, transaction) {
+			if !checkIfExperienceExist(ctx, s.Description, transaction) {
 				_, err := transaction.Run(
 					"CREATE (new_exp:POSITION{description : $description}) ",
 					map[string]interface{}{"description": s.Description})
@@ -84,8 +86,8 @@ func (store *RecommendationStore) JobRecommendations(id string, experiences []*m
 
 			}
 
-			//ako korisnik nije povezan sa vjestinama, dodaje ih
-			if !checkIfExpRelationshipExist(id, s.Description, transaction) {
+			//ako korisnik nije povezan sa vestinama, dodaje ih
+			if !checkIfExpRelationshipExist(ctx, id, s.Description, transaction) {
 				result, err := transaction.Run(
 					"MATCH (u:USER) WHERE u.userID=$uIDa "+
 						"MATCH (s:POSITION) WHERE s.description=$description "+
@@ -101,10 +103,9 @@ func (store *RecommendationStore) JobRecommendations(id string, experiences []*m
 		}
 
 		//ako ne postoji job offer, dodaje ga
-		//
 		for _, job := range jobOffers {
 
-			if !jobOfferExist(job.Id.Hex(), transaction) {
+			if !jobOfferExist(ctx, job.Id.Hex(), transaction) {
 				_, err := transaction.Run(
 					"CREATE (new_job:JOB{position:$position, jobID:$jobID, description:$Description, preconditions: $preconditions})",
 					map[string]interface{}{"jobID": job.Id.Hex(), "Description": job.Description, "preconditions": job.Precondition, "position": job.Position})
@@ -114,8 +115,8 @@ func (store *RecommendationStore) JobRecommendations(id string, experiences []*m
 				}
 			}
 
-			//ako jobOffer nije povezan sa vjestinama, povezuje ih
-			if !checkIfJobRelationshipExist(job.Id.Hex(), job.Precondition, transaction) {
+			//ako jobOffer nije povezan sa vestinama, povezuje ih
+			if !checkIfJobRelationshipExist(ctx, job.Id.Hex(), job.Precondition, transaction) {
 				result, err := transaction.Run(
 					"MATCH (j:JOB) WHERE j.jobID=$jobID "+
 						"MATCH (s:SKILL) WHERE s.name=$name "+
@@ -130,8 +131,7 @@ func (store *RecommendationStore) JobRecommendations(id string, experiences []*m
 			}
 
 			//ako jobOffer nije povezan sa pozicijom, povezuje ih
-
-			if !checkIfJobPositionRelationshipExist(job.Id.Hex(), job.Position, transaction) {
+			if !checkIfJobPositionRelationshipExist(ctx, job.Id.Hex(), job.Position, transaction) {
 				result, err := transaction.Run(
 					"MATCH (j:JOB) WHERE j.jobID=$jobID "+
 						"MATCH (s:POSITION) WHERE s.description=$position "+
@@ -148,7 +148,7 @@ func (store *RecommendationStore) JobRecommendations(id string, experiences []*m
 
 		var recommendation []*model.JobsId
 
-		jobsRecommendations, err1 := getJobRecommendations(id, transaction)
+		jobsRecommendations, err1 := getJobRecommendations(ctx, id, transaction)
 		if err1 != nil {
 			return recommendation, err1
 		}
@@ -158,20 +158,14 @@ func (store *RecommendationStore) JobRecommendations(id string, experiences []*m
 		}
 
 		return recommendation, err1
-		//return nil, nil
 	})
 
-	fmt.Println(result)
 	fmt.Println(err)
-	//if err != nil || result == nil {
-	//	return nil, err
-	//}
 
 	return result.([]*model.JobsId), nil
-	//return nil, nil
 }
 
-func checkIfUserExist(userID string, transaction neo4j.Transaction) bool {
+func checkIfUserExist(ctx context.Context, userID string, transaction neo4j.Transaction) bool {
 	result, _ := transaction.Run(
 		"MATCH (existing_user:USER) WHERE existing_user.userID = $userID RETURN existing_user.userID",
 		map[string]interface{}{"userID": userID})
@@ -182,7 +176,7 @@ func checkIfUserExist(userID string, transaction neo4j.Transaction) bool {
 	return false
 }
 
-func checkIfSkillExist(skillName string, transaction neo4j.Transaction) bool {
+func checkIfSkillExist(ctx context.Context, skillName string, transaction neo4j.Transaction) bool {
 	result, _ := transaction.Run(
 		"MATCH (existing_skill:SKILL) WHERE toUpper(existing_skill.name) = $name RETURN toUpper(existing_skill.name)",
 		map[string]interface{}{"name": strings.ToUpper(skillName)})
@@ -193,7 +187,7 @@ func checkIfSkillExist(skillName string, transaction neo4j.Transaction) bool {
 	return false
 }
 
-func checkIfExperienceExist(expName string, transaction neo4j.Transaction) bool {
+func checkIfExperienceExist(ctx context.Context, expName string, transaction neo4j.Transaction) bool {
 	result, _ := transaction.Run(
 		"MATCH (e:POSITION) WHERE toUpper(e.description) = $description RETURN toUpper(e.description)",
 		map[string]interface{}{"description": strings.ToUpper(expName)})
@@ -204,7 +198,7 @@ func checkIfExperienceExist(expName string, transaction neo4j.Transaction) bool 
 	return false
 }
 
-func checkIfRelationshipExist(userID, skillName string, transaction neo4j.Transaction) bool {
+func checkIfRelationshipExist(ctx context.Context, userID, skillName string, transaction neo4j.Transaction) bool {
 	result, _ := transaction.Run(
 		"MATCH (u1:USER) WHERE u1.userID=$uIDa "+
 			"MATCH (s:SKILL) WHERE s.name=$name "+
@@ -220,7 +214,7 @@ func checkIfRelationshipExist(userID, skillName string, transaction neo4j.Transa
 	return false
 }
 
-func checkIfExpRelationshipExist(userID, expName string, transaction neo4j.Transaction) bool {
+func checkIfExpRelationshipExist(ctx context.Context, userID, expName string, transaction neo4j.Transaction) bool {
 	result, _ := transaction.Run(
 		"MATCH (u1:USER) WHERE u1.userID=$uIDa "+
 			"MATCH (s:POSITION) WHERE s.description=$description "+
@@ -234,7 +228,7 @@ func checkIfExpRelationshipExist(userID, expName string, transaction neo4j.Trans
 	return false
 }
 
-func jobOfferExist(jobId string, transaction neo4j.Transaction) bool {
+func jobOfferExist(ctx context.Context, jobId string, transaction neo4j.Transaction) bool {
 	result, _ := transaction.Run(
 		"MATCH (j:JOB) WHERE j.jobID = $id RETURN j.jobID",
 		map[string]interface{}{"id": jobId})
@@ -245,7 +239,7 @@ func jobOfferExist(jobId string, transaction neo4j.Transaction) bool {
 	return false
 }
 
-func checkIfJobRelationshipExist(jobID, skillName string, transaction neo4j.Transaction) bool {
+func checkIfJobRelationshipExist(ctx context.Context, jobID, skillName string, transaction neo4j.Transaction) bool {
 	result, _ := transaction.Run(
 		"MATCH (j:JOB) WHERE j.jobID=$jobID "+
 			"MATCH (s:SKILL) WHERE s.name=$name "+
@@ -259,7 +253,7 @@ func checkIfJobRelationshipExist(jobID, skillName string, transaction neo4j.Tran
 	return false
 }
 
-func checkIfJobPositionRelationshipExist(jobID, position string, transaction neo4j.Transaction) bool {
+func checkIfJobPositionRelationshipExist(ctx context.Context, jobID, position string, transaction neo4j.Transaction) bool {
 	result, _ := transaction.Run(
 		"MATCH (j:JOB) WHERE j.jobID=$jobID "+
 			"MATCH (s:POSITION) WHERE s.description=$position "+
@@ -273,7 +267,7 @@ func checkIfJobPositionRelationshipExist(jobID, position string, transaction neo
 	return false
 }
 
-func getJobRecommendations(userID string, transaction neo4j.Transaction) ([]*model.JobsId, error) {
+func getJobRecommendations(ctx context.Context, userID string, transaction neo4j.Transaction) ([]*model.JobsId, error) {
 	result, err := transaction.Run(
 		"MATCH  (u1:USER)-[:KNOWS]->(u4:SKILL)<-[:NEEDS]-(u3:JOB) "+
 			"WHERE u1.userID=$uID "+

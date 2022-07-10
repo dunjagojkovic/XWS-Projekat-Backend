@@ -1,7 +1,10 @@
 package repository
 
-import "recommendationS/model"
+import (
+	"context"
+	"recommendationS/model"
+)
 
 type RecommendationStoreI interface {
-	JobRecommendations(id string, experiences []*model.WorkExperience, skills []string, jobOffers []*model.JobOffer) ([]*model.JobsId, error)
+	JobRecommendations(ctx context.Context, id string, experiences []*model.WorkExperience, skills []string, jobOffers []*model.JobOffer) ([]*model.JobsId, error)
 }

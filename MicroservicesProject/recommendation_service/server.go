@@ -2,8 +2,11 @@ package main
 
 import (
 	"fmt"
+	"io"
 
 	pb "common/proto/recommendation_service"
+	"common/tracer"
+
 	"log"
 	"net"
 	"recommendationS/config"
@@ -12,16 +15,27 @@ import (
 	"recommendationS/service"
 
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	otgo "github.com/opentracing/opentracing-go"
 	"google.golang.org/grpc"
+)
+
+const (
+	Name = "recommendation_service"
 )
 
 type Server struct {
 	config *config.Config
+	Tracer otgo.Tracer
+	Closer io.Closer
 }
 
 func NewServer(config *config.Config) *Server {
+	tracer, closer := tracer.Init(Name)
+	otgo.SetGlobalTracer(tracer)
 	return &Server{
 		config: config,
+		Tracer: tracer,
+		Closer: closer,
 	}
 }
 

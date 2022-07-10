@@ -1,6 +1,8 @@
 package service
 
 import (
+	"common/tracer"
+	"context"
 	"recommendationS/model"
 	"recommendationS/repository"
 )
@@ -15,11 +17,14 @@ func NewRecommendationService(store repository.RecommendationStoreI) *Recommenda
 	}
 }
 
-func (service *RecommendationService) JobRecommendations(id string, experiences []*model.WorkExperience, skills []string, jobOffers []*model.JobOffer) ([]*model.JobsId, error) {
+func (service *RecommendationService) JobRecommendations(ctx context.Context, id string, experiences []*model.WorkExperience, skills []string, jobOffers []*model.JobOffer) ([]*model.JobsId, error) {
+	span := tracer.StartSpanFromContext(ctx, "SERVICE JobRecommendations")
+	defer span.Finish()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	var recommendations []*model.JobsId
 
-	recommendations, err := service.store.JobRecommendations(id, experiences, skills, jobOffers)
+	recommendations, err := service.store.JobRecommendations(ctx, id, experiences, skills, jobOffers)
 	if err != nil {
 		return nil, nil
 	}
