@@ -89,14 +89,12 @@ func (fc *FollowController) Followers(ctx context.Context, request *pb.Followers
 
 	ctx = tracer.ContextWithSpan(context.Background(), span)
 	id := request.Id
-	fmt.Println(id)
 	response, err := fc.service.Followers(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 	responsePb := &pb.FollowersResponse{Followers: []*pb.Follower{}}
 	for _, user := range response {
-		fmt.Println(user.Id)
 		responsePb.Followers = append(responsePb.Followers, &pb.Follower{Id: user.Id, Time: timestamppb.New(user.TimeOfFollow)})
 	}
 	return responsePb, nil

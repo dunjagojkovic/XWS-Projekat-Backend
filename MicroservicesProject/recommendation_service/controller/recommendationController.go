@@ -4,7 +4,6 @@ import (
 	pb "common/proto/recommendation_service"
 	"common/tracer"
 	"context"
-	"fmt"
 	"recommendationS/model"
 	"recommendationS/service"
 
@@ -49,8 +48,6 @@ func (handler *RecommendationController) JobRecommendations(ctx context.Context,
 	response := &pb.JobRecommendationsResponse{}
 	for _, rec := range recommendations {
 		response.Ids = append(response.Ids, rec.Id)
-
-		fmt.Println(rec)
 	}
 	return response, nil
 }
