@@ -1,5 +1,10 @@
 version: "3.8"
 
+x-logging: &fluent-bit
+  driver: fluentd
+  options:
+    fluentd-address: ${FLUENT_BIT_ADDRESS}:24224
+
 services:
   post_service:
     image: post_service
@@ -20,6 +25,7 @@ services:
       JAEGER_SAMPLER_PARAM: 1
     depends_on:
       - post_db
+    logging: *fluent-bit
     networks:
       - network
 
@@ -42,6 +48,7 @@ services:
       JAEGER_SAMPLER_PARAM: 1
     depends_on:
       - job_db
+    logging: *fluent-bit
     networks:
       - network
 
@@ -70,6 +77,7 @@ services:
       JAEGER_SAMPLER_PARAM: 1
     depends_on:
       - message_db
+    logging: *fluent-bit
     networks:
       - network
   
@@ -98,6 +106,7 @@ services:
       JAEGER_SAMPLER_PARAM: 1
     depends_on:
       - user_db
+    logging: *fluent-bit
     networks:
       - network
 
@@ -127,6 +136,7 @@ services:
       
     depends_on:
       - follow_db
+    logging: *fluent-bit
     networks:
       - network
 
@@ -154,6 +164,7 @@ services:
       
     depends_on:
       - recommendation_db
+    logging: *fluent-bit
     networks:
       - network
 
@@ -166,6 +177,7 @@ services:
     ports:
       - 7474:7474
       - 7687:7687
+    logging: *fluent-bit
     networks:
       - network
 
@@ -179,6 +191,7 @@ services:
     ports:
       - 11005:7474
       - 11003:7687
+    logging: *fluent-bit
     networks:
       - network
 
@@ -210,6 +223,7 @@ services:
       JAEGER_SAMPLER_PARAM: 1
       RECOMMENDATION_SERVICE_HOST: ${RECOMMENDATION_SERVICE_HOST}
       RECOMMENDATION_SERVICE_PORT: ${RECOMMENDATION_SERVICE_PORT}
+    logging: *fluent-bit
     networks:
       - network    
 
@@ -236,6 +250,7 @@ services:
       - POSTGRES_USERNAME=postgres
       - POSTGRES_PASSWORD=admin
       - POSTGRES_DB=agent
+    logging: *fluent-bit
 
   post_db:
     image: mongo

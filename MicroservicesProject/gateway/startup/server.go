@@ -13,10 +13,12 @@ import (
 	"io"
 	"time"
 
+	"github.com/gorilla/mux"
 	grpc_opentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
 	otgo "github.com/opentracing/opentracing-go"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/opentracing/opentracing-go"
@@ -29,6 +31,7 @@ import (
 	userGw "common/proto/user_service"
 
 	"github.com/urfave/negroni"
+	muxprom "gitlab.com/msvechla/mux-prometheus/pkg/middleware"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -196,6 +199,11 @@ func cors(h http.Handler, server *Server) http.Handler {
 }
 
 func (server *Server) Start() {
+	r := mux.NewRouter()
+	instrumentation := muxprom.NewDefaultInstrumentation()
+	r.Use(instrumentation.Middleware)
+	r.Path("/metrics").Handler(promhttp.Handler())
+	//r.PathPrefix("/").Handler(cors(muxMiddleware(server)))
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", server.config.Port), cors(server.mux, server)))
 }
 
